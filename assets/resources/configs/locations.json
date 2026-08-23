@@ -1,0 +1,48 @@
+﻿{
+  "locations": [
+    {
+      "id": "fog_edge", "name": "迷雾边缘", "unlockDay": 1, "cooldownDays": 0, "initialStock": 12,
+      "riskRate": 0.25, "chestChance": 0.30,
+      "baseYields": [ { "itemId": "mat_wood", "count": 2 }, { "itemId": "food_berry", "count": 1 } ],
+      "dangerLevel": 1
+    },
+    {
+      "id": "birch_forest", "name": "白桦林", "unlockDay": 2, "cooldownDays": 1, "initialStock": 14,
+      "riskRate": 0.35, "chestChance": 0.35,
+      "baseYields": [ { "itemId": "mat_wood", "count": 4 }, { "itemId": "mat_charcoal", "count": 1 }, { "itemId": "mat_rope", "count": 1 } ],
+      "dangerLevel": 2
+    },
+    {
+      "id": "supermarket", "name": "废弃超市", "unlockDay": 3, "cooldownDays": 2, "initialStock": 10,
+      "riskRate": 0.45, "chestChance": 0.40,
+      "baseYields": [ { "itemId": "food_canned", "count": 2 }, { "itemId": "food_biscuit", "count": 1 }, { "itemId": "water_dirty", "count": 1 }, { "itemId": "mat_cloth", "count": 1 } ],
+      "dangerLevel": 2
+    },
+    {
+      "id": "creek_valley", "name": "山泉溪谷", "unlockDay": 4, "cooldownDays": 1, "initialStock": 12,
+      "riskRate": 0.30, "chestChance": 0.30,
+      "baseYields": [ { "itemId": "water_clean", "count": 4 } ],
+      "dangerLevel": 1
+    },
+    {
+      "id": "abandoned_village", "name": "废弃村庄", "unlockDay": 6, "cooldownDays": 2, "initialStock": 8,
+      "riskRate": 0.55, "chestChance": 0.45,
+      "baseYields": [ { "itemId": "mat_cloth", "count": 2 }, { "itemId": "mat_scrap_metal", "count": 1 } ],
+      "dangerLevel": 3
+    },
+    {
+      "id": "mine", "name": "废弃矿洞", "unlockDay": 8, "cooldownDays": 2, "initialStock": 8,
+      "riskRate": 0.60, "chestChance": 0.50,
+      "baseYields": [ { "itemId": "mat_stone", "count": 4 }, { "itemId": "mat_scrap_metal", "count": 2 } ],
+      "dangerLevel": 3
+    },
+    {
+      "id": "deep_fog", "name": "浓雾深处", "unlockDay": 10, "cooldownDays": 2, "initialStock": 6,
+      "riskRate": 0.70, "chestChance": 0.60, "requiresTool": "tool_torch",
+      "baseYields": [ { "itemId": "key_mist_crystal", "count": 1 } ],
+      "dangerLevel": 4
+    }
+  ]
+}
+
+

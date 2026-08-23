@@ -1,0 +1,7 @@
+library/
+temp/
+local/
+build/
+native/
+extensions/
+node_modules/

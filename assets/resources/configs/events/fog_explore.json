@@ -1,0 +1,747 @@
+﻿{
+  "events": [
+    {
+      "id": "evt_edge_driftwood", "title": "漂流木", "type": "explore", "pool": ["fog_edge"],
+      "weight": 10, "once": false, "cooldownDays": 2,
+      "text": "雾气在脚下流淌。你在一截倒伏的巨木旁停下——木头深处似乎嵌着什么东西，泛着微弱的反光。",
+      "options": [
+        { "text": "费力撬出来",
+          "results": [
+            { "weight": 60, "text": "是一把还算完好的手电筒！电池居然还有电。",
+              "effects": { "gainItems": [ { "itemId": "tool_flashlight", "count": 1 } ] } },
+            { "weight": 40, "text": "只是个空罐头盒。白费力气。",
+              "effects": { "sanity": -2 } }
+          ]
+        },
+        { "text": "先劈开木头当柴火",
+          "results": [
+            { "weight": 100, "text": "干燥的木柴，今晚的火有着落了。",
+              "effects": { "sanity": 1, "gainItems": [ { "itemId": "mat_wood", "count": 2 } ] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_edge_bottle", "title": "漂流瓶", "type": "explore", "pool": ["fog_edge"],
+      "weight": 6, "once": true,
+      "text": "浓雾边缘，一只玻璃瓶卡在礁石缝里，瓶中卷着一张纸条：「如果你也看到这张纸——你不是一个人。」",
+      "options": [
+        { "text": "把纸条小心收好",
+          "results": [
+            { "weight": 100, "text": "知道有人在同一片迷雾里挣扎着，心里竟然踏实了一些。",
+              "effects": { "sanity": 8 }, "chatInject": "link_chest_showoff" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_edge_ashes", "title": "篝火的余温", "type": "explore", "pool": ["fog_edge"],
+      "weight": 9, "once": false, "cooldownDays": 3,
+      "text": "一圈石头围着一堆灰烬——有人在这里过夜。灰烬中央似乎还有没烧尽的东西。",
+      "options": [
+        { "text": "翻找灰烬",
+          "results": [
+            { "weight": 40, "text": "半截烧焦的布料还能用。主人应该走得不远……",
+              "effects": { "gainItems": [ { "itemId": "mat_cloth", "count": 1 } ], "sanity": -4 } },
+            { "weight": 35, "text": "只有灰。但灰是温的——就在刚才，还有人坐在这里。",
+              "effects": { "sanity": -8 } },
+            { "weight": 25, "text": "灰下埋着一个打火机！主人大概是忘了它。",
+              "effects": { "gainItems": [ { "itemId": "tool_lighter", "count": 1 } ] } }
+          ]
+        },
+        { "text": "别碰，赶紧离开",
+          "results": [ { "weight": 100, "text": "在迷雾里，其他幸存者未必是朋友。",
+            "effects": { "sanity": -2 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_edge_mire", "title": "滩涂泥沼", "type": "explore", "pool": ["fog_edge"],
+      "weight": 8, "once": false, "cooldownDays": 2,
+      "text": "退潮后的滩涂上，泥沼里陷着半个箱子，在雾里若隐若现。泥沼看起来不深——大概。",
+      "options": [
+        { "text": "卷起裤腿下去挖",
+          "results": [
+            { "weight": 55, "text": "箱子里是几罐保存完好的罐头！泥浆也算不了什么。",
+              "effects": { "gainItems": [ { "itemId": "food_canned", "count": 2 } ] } },
+            { "weight": 45, "text": "箱子是空的。而你的一只鞋永远留在了泥沼里，脚也被硬物划伤了。",
+              "effects": { "hp": -6, "addStatus": ["injured"], "sanity": -3 } }
+          ]
+        },
+        { "text": "用树枝够一够",
+          "requires": {},
+          "results": [
+            { "weight": 70, "text": "够到了！一小卷绳索从箱缝里滑了出来。",
+              "effects": { "gainItems": [ { "itemId": "mat_rope", "count": 1 } ] } },
+            { "weight": 30, "text": "树枝断了，箱子纹丝不动。",
+              "effects": { "sanity": -2 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_forest_boar", "title": "野猪！", "type": "explore", "pool": ["birch_forest"],
+      "weight": 12, "once": false, "cooldownDays": 2,
+      "text": "灌木丛猛地一颤——一头獠牙发黑的野猪正低头拱土，距离你不到十步。它还没发现你。",
+      "options": [
+        { "text": "握紧武器冲上去（战斗）",
+          "results": [
+            { "weight": 50, "text": "搏斗中你被撞翻在地，但最终结果了它。一大块鲜肉！",
+              "effects": { "hp": -10, "addStatus": ["injured"], "gainItems": [ { "itemId": "food_raw_meat", "count": 2 } ] } },
+            { "weight": 35, "text": "你灵活地爬上了树。野猪撞了几下树干，悻悻离去。",
+              "effects": { "hp": -5, "sanity": -4 } },
+            { "weight": 15, "text": "野猪的獠牙擦过你的大腿！你连滚带爬才逃开。",
+              "effects": { "hp": -18, "addStatus": ["injured", "sick"] } }
+          ]
+        },
+        { "text": "悄悄绕开",
+          "results": [
+            { "weight": 80, "text": "你屏住呼吸退进树影。它哼了一声，走远了。",
+              "effects": { "sanity": -3 } },
+            { "weight": 20, "text": "脚下枯枝一声脆响！野猪抬头直视你的方向……你狂奔逃命。",
+              "effects": { "hp": -8, "sanity": -8 } }
+          ]
+        },
+        { "text": "【猎手】算好风向，从上风口接近",
+          "requires": { "talent": "T06" },
+          "results": [
+            { "weight": 90, "text": "一击毙命。猎手的直觉从不出错。",
+              "effects": { "gainItems": [ { "itemId": "food_raw_meat", "count": 3 } ], "sanity": 5 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_forest_mushroom", "title": "蘑菇丛", "type": "explore", "pool": ["birch_forest"],
+      "weight": 10, "once": false, "cooldownDays": 1,
+      "text": "一棵朽木下长着一片蘑菇，肥厚饱满。其中几朵伞盖泛着不自然的紫色。",
+      "options": [
+        { "text": "只采白色的",
+          "results": [
+            { "weight": 85, "text": "安全第一。晚饭有着落了。",
+              "effects": { "gainItems": [ { "itemId": "food_berry", "count": 2 } ] } },
+            { "weight": 15, "text": "晚上吃完就开始头晕……好像混进去毒蘑菇！",
+              "effects": { "addStatus": ["poisoned"] } }
+          ]
+        },
+        { "text": "紫色的也许能卖钱？全采了",
+          "results": [
+            { "weight": 50, "text": "你赌赢了——这种「雾菇」晒干后是很好的安神药引。",
+              "effects": { "gainItems": [ { "itemId": "med_sedative", "count": 1 }, { "itemId": "food_berry", "count": 1 } ] } },
+            { "weight": 50, "text": "当晚你就上吐下泻。教训惨痛。",
+              "effects": { "hp": -12, "addStatus": ["poisoned"] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_forest_old_trap", "title": "捕兽夹", "type": "explore", "pool": ["birch_forest"],
+      "weight": 9, "once": false, "cooldownDays": 2,
+      "text": "锈迹斑斑的捕兽夹半埋在落叶里，弹簧还绷得紧紧的。夹子上挂着几缕灰白色的毛——不是任何你认识的动物。",
+      "options": [
+        { "text": "小心拆解它",
+          "results": [
+            { "weight": 60, "text": "咔哒一声，夹子松开了。弹簧和铁片都是好材料。",
+              "effects": { "gainItems": [ { "itemId": "mat_scrap_metal", "count": 1 }, { "itemId": "mat_rope", "count": 1 } ] } },
+            { "weight": 40, "text": "咔嚓——夹子猛地弹合，咬住了你的手指！",
+              "effects": { "hp": -10, "addStatus": ["injured"] } }
+          ]
+        },
+        { "text": "把它整个搬回去当武器",
+          "results": [
+            { "weight": 55, "text": "沉是沉了点，但这玩意儿既能防身又能再利用。",
+              "effects": { "gainItems": [ { "itemId": "mat_scrap_metal", "count": 2 } ] } },
+            { "weight": 45, "text": "搬运途中夹子突然弹开，划破了你的小臂。",
+              "effects": { "hp": -8, "addStatus": ["injured"] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_forest_sap", "title": "白桦树汁", "type": "explore", "pool": ["birch_forest"],
+      "weight": 8, "once": false, "cooldownDays": 2,
+      "text": "一棵粗壮的白桦树干上有道旧的切口，树汁正顺着痕迹缓缓渗出，在树下积成一个小水洼。",
+      "options": [
+        { "text": "切开树皮接树汁",
+          "results": [
+            { "weight": 75, "text": "清甜微凉的树汁，带着桦树的清香。这是迷雾里少见的温柔。",
+              "effects": { "gainItems": [ { "itemId": "water_clean", "count": 1 }, { "itemId": "food_berry", "count": 1 } ], "sanity": 3 } },
+            { "weight": 25, "text": "切口流出的汁液发苦发浊——这棵树病了。",
+              "effects": { "gainItems": [ { "itemId": "water_dirty", "count": 1 } ] } }
+          ]
+        },
+        { "text": "砍下带切口的树皮引火",
+          "results": [
+            { "weight": 100, "text": "桦树皮是最好的火引子，一点就着。",
+              "effects": { "gainItems": [ { "itemId": "mat_charcoal", "count": 1 }, { "itemId": "mat_wood", "count": 1 } ] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_market_pharmacy", "title": "药店柜台", "type": "explore", "pool": ["supermarket"],
+      "weight": 11, "once": false, "cooldownDays": 3,
+      "conditions": {},
+      "text": "超市角落的药店柜台玻璃碎了一地，处方药被搜刮了大半。柜台最里面有个带锁的抽屉，锁扣已经松动。",
+      "options": [
+        { "text": "撬开抽屉",
+          "results": [
+            { "weight": 45, "text": "抗生素、止痛药——这一抽屉能救命！",
+              "effects": { "gainItems": [ { "itemId": "med_antibiotic", "count": 1 }, { "itemId": "med_painkiller", "count": 1 } ] } },
+            { "weight": 35, "text": "只有一堆过期维生素和一本药品说明书。",
+              "effects": { "gainItems": [ { "itemId": "med_painkiller", "count": 1 } ], "sanity": -2 } },
+            { "weight": 20, "text": "抽屉里盘着一条冬眠的蛇！它受惊咬了你一口就窜走了。",
+              "effects": { "hp": -12, "addStatus": ["sick"] } }
+          ]
+        },
+        { "text": "太吵容易招人，放弃",
+          "results": [ { "weight": 100, "text": "谨慎点好。你退出了药店区。",
+            "effects": { "sanity": -1 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_market_freezer", "title": "冷冻库", "type": "explore", "pool": ["supermarket"],
+      "weight": 10, "once": false, "cooldownDays": 2,
+      "text": "生鲜区的冷冻库门虚掩着，冷气还在往外冒——这里居然还通着电？货架上的冻肉让你的胃狠狠抽搐了一下。",
+      "options": [
+        { "text": "冲进去能拿多少拿多少",
+          "results": [
+            { "weight": 65, "text": "两大块冻肉抱在怀里，透心凉，心里美！",
+              "effects": { "gainItems": [ { "itemId": "food_raw_meat", "count": 2 } ] } },
+            { "weight": 35, "text": "地面的冰霜滑得像陷阱。你摔了个结实，怀里的肉也掉了一半。",
+              "effects": { "hp": -7, "gainItems": [ { "itemId": "food_raw_meat", "count": 1 } ] } }
+          ]
+        },
+        { "text": "研究一下为什么还有电",
+          "results": [
+            { "weight": 100, "text": "你顺着电线摸过去，发现一台柴油发电机还在低吼。油箱里的存油……被抽走了大半，只留下一层底油和一股汽油味。",
+              "effects": { "sanity": -5, "setFlags": ["found_generator"] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_creek_fishing", "title": "溪边垂钓", "type": "explore", "pool": ["creek_valley"],
+      "weight": 10, "once": false, "cooldownDays": 1,
+      "conditions": { "items": [ { "itemId": "tool_fishing_rod", "count": 1 } ] },
+      "text": "溪水清澈见底，几条肥美的鱼在卵石间游弋。这里难得没有浓雾。",
+      "options": [
+        { "text": "下竿垂钓",
+          "results": [
+            { "weight": 65, "text": "浮漂一顿——两条鱼！今晚加餐。",
+              "effects": { "gainItems": [ { "itemId": "food_raw_fish", "count": 2 } ], "sanity": 5 } },
+            { "weight": 25, "text": "一下午只有一条小鱼咬钩。",
+              "effects": { "gainItems": [ { "itemId": "food_raw_fish", "count": 1 } ] } },
+            { "weight": 10, "text": "鱼没钓到，倒是脚底滑进溪水里，浑身湿透。",
+              "effects": { "sanity": -5 } }
+          ]
+        },
+        { "text": "顺便灌满水壶",
+          "results": [
+            { "weight": 100, "text": "上游的水很干净，直接喝也没大碍。",
+              "effects": { "gainItems": [ { "itemId": "water_clean", "count": 2 } ] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_creek_upstream", "title": "上游漂来的东西", "type": "explore", "pool": ["creek_valley"],
+      "weight": 9, "once": false, "cooldownDays": 2,
+      "text": "上游漂下来一个鼓鼓囊囊的防水包，卡在了两块岩石之间。包身写着一行褪色的字：户外用品店·促销。",
+      "options": [
+        { "text": "下水去捞",
+          "results": [
+            { "weight": 60, "text": "包里是一条崭新的鱼线和一把多功能刀片！今天运气不错。",
+              "effects": { "gainItems": [ { "itemId": "mat_rope", "count": 1 }, { "itemId": "mat_scrap_metal", "count": 1 } ] } },
+            { "weight": 40, "text": "水流比看上去急得多！你呛了好几口水才爬上岸，包也漂走了。",
+              "effects": { "hp": -8, "sanity": -6, "gainItems": [ { "itemId": "water_dirty", "count": 1 } ] } }
+          ]
+        },
+        { "text": "用鱼竿把包勾过来",
+          "requires": { "items": [ { "itemId": "tool_fishing_rod", "count": 1 } ] },
+          "results": [
+            { "weight": 85, "text": "工具用对了地方。包里的东西一件不少。",
+              "effects": { "gainItems": [ { "itemId": "mat_rope", "count": 1 }, { "itemId": "mat_cloth", "count": 1 } ], "sanity": 3 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_creek_reflection", "title": "水中倒影", "type": "explore", "pool": ["creek_valley"],
+      "weight": 8, "once": false, "cooldownDays": 3,
+      "conditions": { "stats": { "sanity": { "op": "<=", "value": 55 } } },
+      "text": "你在溪边蹲下想洗把脸。水面平静下来的那一刻，倒影里的「你」比你慢了半拍才抬手。",
+      "options": [
+        { "text": "死死盯住它，看谁先眨眼",
+          "results": [
+            { "weight": 40, "text": "对峙了不知多久，「它」先散开了。溪水依旧清澈。你忽然觉得没那么怕了——连自己的影子都吓不住你。",
+              "effects": { "sanity": 12, "setFlags": ["faced_reflection"] } },
+            { "weight": 60, "text": "倒影突然咧嘴笑了。你踉跄着后退，溅起的水花打碎了那张脸。",
+              "effects": { "sanity": -14, "hp": -3 } }
+          ]
+        },
+        { "text": "立刻转身离开，不再看水",
+          "results": [ { "weight": 100, "text": "眼不见为净。但那一整天，你都在回想那慢掉的半拍。",
+            "effects": { "sanity": -7 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_village_cellar", "title": "农舍地窖", "type": "explore", "pool": ["abandoned_village"],
+      "weight": 11, "once": true,
+      "text": "一间半塌的农舍后面，一扇木门斜嵌在地里——地窖。门轴锈死了，门缝里飘出陈腐的气息，以及……若有若无的食物味。",
+      "options": [
+        { "text": "打开手电筒下去",
+          "requires": { "items": [ { "itemId": "tool_flashlight", "count": 1 } ] },
+          "results": [
+            { "weight": 70, "text": "光柱扫过：整整齐齐两排储物架！罐头、腊肠、腌菜……这家人走得一定很匆忙。",
+              "effects": { "gainItems": [ { "itemId": "food_canned", "count": 2 }, { "itemId": "food_biscuit", "count": 1 } ], "sanity": 5 } },
+            { "weight": 30, "text": "架子上的食物早就烂透了。但角落里有只完好的急救箱。",
+              "effects": { "gainItems": [ { "itemId": "med_first_aid", "count": 1 } ] } }
+          ]
+        },
+        { "text": "摸黑下去",
+          "results": [
+            { "weight": 35, "text": "你凭着触觉摸到了几个罐头，赶紧逃出了黑暗。",
+              "effects": { "gainItems": [ { "itemId": "food_canned", "count": 1 } ], "sanity": -8 } },
+            { "weight": 65, "text": "第三级台阶是空的！你重重摔进黑暗里，有什么液体淋了一头。你连滚带爬冲向门口的光亮。",
+              "effects": { "hp": -14, "addStatus": ["injured"], "sanity": -12 } }
+          ]
+        },
+        { "text": "做个记号，改日再来",
+          "results": [ { "weight": 100, "text": "工欲善其事，必先利其器。至少要等有光源再说。",
+            "effects": {} } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_village_well", "title": "古井", "type": "explore", "pool": ["abandoned_village"],
+      "weight": 9, "once": true,
+      "text": "村子中央有一口古井。你朝井底扔了颗石子——很久很久之后，传来一声轻响。不对，井没那么深。而且刚才那声音……像是被什么软东西接住的。",
+      "options": [
+        { "text": "吊着绳子下去看看",
+          "requires": { "items": [ { "itemId": "mat_rope", "count": 1 } ] },
+          "results": [
+            { "weight": 50, "text": "井底的「软东西」是一个前人留下的背包！里面的物资保存完好。",
+              "effects": { "loseItems": [ { "itemId": "mat_rope", "count": 1 } ], "gainItems": [ { "itemId": "med_first_aid", "count": 1 }, { "itemId": "food_biscuit", "count": 1 } ] } },
+            { "weight": 50, "text": "背包旁边靠着一具白骨，手里攥着半张地图。你礼貌地道了歉，取走了地图和背包里的药。",
+              "effects": { "loseItems": [ { "itemId": "mat_rope", "count": 1 } ], "gainItems": [ { "itemId": "key_map_fragment", "count": 1 }, { "itemId": "med_painkiller", "count": 1 } ], "sanity": -10 } }
+          ]
+        },
+        { "text": "对着井口大喊一声",
+          "results": [
+            { "weight": 100, "text": "「喂——」回声散尽后，井底传来极轻极轻的一声回应。你决定不去细听那是回声还是别的什么。",
+              "effects": { "sanity": -9 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_mine_cart", "title": "矿车轨道", "type": "explore", "pool": ["mine"],
+      "weight": 10, "once": false, "cooldownDays": 2,
+      "text": "锈蚀的铁轨伸进矿洞深处。一辆还算完整的矿车停在岔口，轨道上方的指示牌歪歪斜斜：「3号矿脉 →」。",
+      "options": [
+        { "text": "推着矿车沿轨道深入",
+          "results": [
+            { "weight": 60, "text": "吱嘎声里，矿车把你送到了一处富矿断面！石料和金属管够。",
+              "effects": { "gainItems": [ { "itemId": "mat_stone", "count": 3 }, { "itemId": "mat_scrap_metal", "count": 2 } ], "sanity": -4 } },
+            { "weight": 40, "text": "半路一根枕木断裂，矿车脱轨侧翻！你被甩进了积水里。",
+              "effects": { "hp": -12, "sanity": -8 } }
+          ]
+        },
+        { "text": "只在岔口附近敲敲打打",
+          "results": [
+            { "weight": 100, "text": "稳妥起见。你捡到了些散落的矿石。",
+              "effects": { "gainItems": [ { "itemId": "mat_stone", "count": 2 } ] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_miner_helmet", "title": "矿工的遗物", "type": "explore", "pool": ["mine"],
+      "weight": 9, "once": true,
+      "text": "巷道尽头靠着墙坐着一位矿工——或者说，曾经是矿工的人。他头上的安全帽矿灯竟然还亮着一点幽光，膝盖上摊着一个笔记本。",
+      "options": [
+        { "text": "取下矿灯，合上本子",
+          "results": [
+            { "weight": 100, "text": "矿灯还能用！本子最后一页写着：「雾会听。别在洞里说想家。」你把这句话记住了，也把他的双手交叠好了。",
+              "effects": { "gainItems": [ { "itemId": "tool_flashlight", "count": 1 } ], "sanity": -6, "setFlags": ["read_miner_note"] } }
+          ]
+        },
+        { "text": "读完笔记本的每一页",
+          "results": [
+            { "weight": 100, "text": "整整四十页，记录的都是同一件事：他在雾里听见了他女儿的声音，一天比一天近。「明天我就去找她」。最后一页是空白。你默默取下了矿灯。",
+              "effects": { "gainItems": [ { "itemId": "tool_flashlight", "count": 1 }, { "itemId": "med_sedative", "count": 1 } ], "sanity": -10, "setFlags": ["read_miner_note"] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_deepfog_wall", "title": "低语之墙", "type": "explore", "pool": ["deep_fog"],
+      "weight": 15, "once": false, "cooldownDays": 3,
+      "text": "火把的光推开浓雾，照出一面光滑如镜的岩壁。贴近了才发现——岩壁里封着无数张一闪即逝的脸。它们在同时低语，说的都是你熟悉的话。",
+      "options": [
+        { "text": "凑近去听清楚一句",
+          "results": [
+            { "weight": 45, "text": "千百个声音里，你捕捉到了一句：「……第七天，向北……」。你不知道这意味着什么，但你记住了。",
+              "effects": { "sanity": -12, "setFlags": ["whisper_hint"] } },
+            { "weight": 55, "text": "所有声音在同一瞬间叫出了你的名字。你捂着耳朵跌坐在地，火把差点熄灭。",
+              "effects": { "sanity": -16 } }
+          ]
+        },
+        { "text": "捂住耳朵快步通过",
+          "results": [ { "weight": 100, "text": "不看，不听。低语声在身后渐渐远去，像潮水退出沙滩。",
+            "effects": { "sanity": -5 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_signal_plane", "title": "雾层之上的轰鸣", "type": "explore",
+      "pool": ["fog_edge", "birch_forest", "supermarket", "creek_valley", "abandoned_village"],
+      "weight": 7, "once": false, "cooldownDays": 0,
+      "conditions": { "items": [ { "itemId": "key_signal_gun", "count": 1 } ], "dayMin": 10 },
+      "text": "头顶的浓雾忽然震颤起来——那是引擎的轰鸣！有什么飞机正在雾层上方飞过。信号枪在你怀里烫得像一块炭。",
+      "options": [
+        { "text": "朝天发射信号弹！",
+          "results": [
+            { "weight": 80, "text": "红色的光柱刺穿了浓雾！轰鸣声盘旋了两圈，似乎……注意到了什么。雾层恢复了平静，但你知道他们看见了。",
+              "effects": { "loseItems": [ { "itemId": "key_signal_gun", "count": 1 } ], "setFlags": ["flare_used"], "sanity": 20, "chatInject": "link_chest_showoff" } },
+            { "weight": 20, "text": "信号弹哑火了。你看着手里这坨废铁，第一次在迷雾里哭出了声。",
+              "effects": { "loseItems": [ { "itemId": "key_signal_gun", "count": 1 } ], "sanity": -18 } }
+          ]
+        },
+        { "text": "留着，也许该在最后一天用",
+          "results": [
+            { "weight": 100, "text": "轰鸣声远去了。你盯着自己的手看了很久。这个决定是对是错，没人知道。",
+              "effects": { "sanity": -8 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_edge_sign", "title": "褪色的警告牌", "type": "explore", "pool": ["fog_edge"],
+      "weight": 7, "once": true,
+      "text": "一块歪斜的金属警示牌立在雾中：「前方区域 浓度异常 禁止入内」。落款处被人用马克笔加了一行字：「别信牌子 那边箱子多」。",
+      "options": [
+        { "text": "听后半句的",
+          "results": [
+            { "weight": 55, "text": "牌子后面果然是个小型补给点！留言的好人，祝你平安。",
+              "effects": { "gainItems": [ { "itemId": "food_biscuit", "count": 1 }, { "itemId": "water_dirty", "count": 1 } ], "sanity": 5 } },
+            { "weight": 45, "text": "你在浓得化不开的雾里摸到了一个箱子——然后被里面窜出的东西咬了！你退回来时手里只抓着半张网。",
+              "effects": { "hp": -9, "sanity": -6 } }
+          ]
+        },
+        { "text": "听牌子的",
+          "results": [ { "weight": 100, "text": "官方的牌子总不会害人。你绕开了那片区域。也许错过了箱子，但保住了命。",
+            "effects": { "sanity": 1 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_edge_dog", "title": "雾中犬吠", "type": "explore", "pool": ["fog_edge"],
+      "weight": 7, "once": false, "cooldownDays": 3,
+      "text": "「汪！汪汪！」狗叫声从雾里传来，声音里带着急切。有人养着狗？在这个世界里，一条狗比一把刀更稀罕。",
+      "options": [
+        { "text": "循声找过去",
+          "results": [
+            { "weight": 50, "text": "是一条被铁链缠住的老猎犬！你帮它解开缠结，它舔了舔你的手，叼来了一截绳子——像是回礼。",
+              "effects": { "gainItems": [ { "itemId": "mat_rope", "count": 1 } ], "sanity": 12 } },
+            { "weight": 50, "text": "叫声停了。你找了半小时一无所获，倒是被荆棘划了一腿的口子。",
+              "effects": { "hp": -5, "sanity": -4 } }
+          ]
+        },
+        { "text": "学两声狗叫逗逗它",
+          "results": [
+            { "weight": 40, "text": "远处的狗叫兴奋地回应了你，一声接一声。虽然幼稚，但你笑了——穿越以来第一次。",
+              "effects": { "sanity": 6 } },
+            { "weight": 60, "text": "你的模仿太烂了，对面的叫声突然变得低沉凶狠。你明智地撤退了。",
+              "effects": { "sanity": -2 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_forest_watchtower", "title": "瞭望台", "type": "explore", "pool": ["birch_forest"],
+      "weight": 8, "once": true,
+      "text": "一座消防瞭望塔立在林间空地上，梯子锈蚀但还算结实。塔顶视野应该能穿透一部分迷雾——如果上面安全的话。",
+      "options": [
+        { "text": "爬上塔顶眺望",
+          "results": [
+            { "weight": 60, "text": "从高处看，雾海像一片灰白色的海洋缓缓起伏。你辨认出了超市和矿洞的方向！这一眼值回票价。",
+              "effects": { "sanity": 8, "setFlags": ["climbed_tower"], "unlockLocation": "" } },
+            { "weight": 40, "text": "半路一根横档断裂！你挂在高空晃了半分钟才爬回去。心脏差点从嗓子眼里跳出来。",
+              "effects": { "hp": -8, "addStatus": ["injured"], "sanity": -8 } }
+          ]
+        },
+        { "text": "搜查塔底的值班室",
+          "results": [
+            { "weight": 100, "text": "值班室里有一床毛毯、半瓶驱蚊水和一本翻烂的扑克。你带走了能带的。",
+              "effects": { "gainItems": [ { "itemId": "mat_cloth", "count": 1 }, { "itemId": "food_berry", "count": 1 } ] } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_forest_hive", "title": "野蜂巢", "type": "explore", "pool": ["birch_forest"],
+      "weight": 7, "once": false, "cooldownDays": 3,
+      "text": "低矮的灌木上挂着一个野蜂巢，个头不小。蜂蜜是迷雾里的顶级奢侈品——如果操作得当的话。",
+      "options": [
+        { "text": "用湿布蒙面摘取",
+          "requires": { "items": [ { "itemId": "mat_cloth", "count": 1 } ] },
+          "results": [
+            { "weight": 70, "text": "收获满满一大块蜜脾！甜到发齁的幸福。",
+              "effects": { "loseItems": [ { "itemId": "mat_cloth", "count": 1 } ], "gainItems": [ { "itemId": "food_berry", "count": 2 }, { "itemId": "med_painkiller", "count": 1 } ], "sanity": 8 } },
+            { "weight": 30, "text": "布没蒙严实。你顶着三个大包狼狈逃窜，蜂蜜也没敢要了。",
+              "effects": { "loseItems": [ { "itemId": "mat_cloth", "count": 1 } ], "hp": -4, "sanity": -5 } }
+          ]
+        },
+        { "text": "太危险，放弃",
+          "results": [ { "weight": 100, "text": "你和蜜蜂井水不犯河水。走远些还能听见嗡嗡声。",
+            "effects": {} } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_market_lockers", "title": "员工储物柜", "type": "explore", "pool": ["supermarket"],
+      "weight": 8, "once": false, "cooldownDays": 3,
+      "text": "员工休息室的一排储物柜，大部分敞开着被掏空了。只剩三扇柜门还锁着——里面会是什么？",
+      "options": [
+        { "text": "逐个撬开",
+          "results": [
+            { "weight": 40, "text": "第一格：半包烟。第二格：换洗衣服。第三格：一把多功能小刀！这波不亏。",
+              "effects": { "gainItems": [ { "itemId": "mat_scrap_metal", "count": 1 }, { "itemId": "mat_cloth", "count": 1 } ] } },
+            { "weight": 35, "text": "三格全被撬过了，只剩一张全家福照片掉在地上。你把它摆正了才走。",
+              "effects": { "sanity": -3 } },
+            { "weight": 25, "text": "第三格里蹿出一只受惊的橘猫，撞翻了整排柜子！混乱中你捞到了它窝里垫着的旧外套。",
+              "effects": { "gainItems": [ { "itemId": "mat_cloth", "count": 2 } ], "sanity": 4 } }
+          ]
+        },
+        { "text": "只拿走明面上的东西",
+          "results": [ { "weight": 100, "text": "休息室的沙发垫下摸出了几颗糖。甜味让今天好过了一点。",
+            "effects": { "gainItems": [ { "itemId": "food_berry", "count": 1 } ], "sanity": 2 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_market_backdoor", "title": "仓库后门", "type": "explore", "pool": ["supermarket"],
+      "weight": 9, "once": false, "cooldownDays": 3,
+      "conditions": {},
+      "text": "货架区早就被搬空了，但收银台后面的仓库卷帘门只拉开了一半——下面压着一个轮胎。里面黑漆漆的，深不见底。",
+      "options": [
+        { "text": "用轮胎垫着钻进去",
+          "results": [
+            { "weight": 60, "text": "仓库深处还有整托盘的货！你扛了两箱压缩饼干出来，累得够呛。",
+              "effects": { "hp": -3, "gainItems": [ { "itemId": "food_biscuit", "count": 2 } ] } },
+            { "weight": 40, "text": "里面的味道不对劲。你的手电照到了角落里一堆白骨——是老鼠的。数不清的老鼠骨头。你退出得比进去快十倍。",
+              "effects": { "sanity": -12 } }
+          ]
+        },
+        { "text": "在门口喊两嗓子试试动静",
+          "results": [
+            { "weight": 50, "text": "回声散尽，毫无动静。看来是安全的……但你也喊来了别的什么注意。",
+              "effects": { "sanity": -4 } },
+            { "weight": 50, "text": "黑暗里有东西回应了你——不是语言，是一阵密集的、窸窣的移动声。你默默把卷帘门又压低了一点。",
+              "effects": { "sanity": -8 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_creek_glint", "title": "溪底的闪光", "type": "explore", "pool": ["creek_valley"],
+      "weight": 8, "once": false, "cooldownDays": 3,
+      "text": "阳光难得地刺破雾层，溪水深处有什么东西反了一下光——就在最深的那个水湾里。",
+      "options": [
+        { "text": "深吸一口气潜下去",
+          "results": [
+            { "weight": 55, "text": "是一把沉在河底的铁斧！斧刃还泛着新磨的光。谁把它扔在这的？",
+              "effects": { "gainItems": [ { "itemId": "tool_iron_axe", "count": 1 } ] } },
+            { "weight": 45, "text": "你摸到了冰凉的东西，浮上来才发现只是块亮片石头。顺带呛了半肚子水。",
+              "effects": { "hp": -3, "sanity": -4 } }
+          ]
+        },
+        { "text": "用鱼竿的线钩它",
+          "requires": { "items": [ { "itemId": "tool_fishing_rod", "count": 1 } ] },
+          "results": [
+            { "weight": 75, "text": "三钩两钩，钩上来一顶金属安全帽——帽檐下卡着一小块碎晶石。",
+              "effects": { "gainItems": [ { "itemId": "mat_scrap_metal", "count": 1 }, { "itemId": "key_mist_crystal", "count": 1 } ], "sanity": 5 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_creek_waterwheel", "title": "废弃水车", "type": "explore", "pool": ["creek_valley"],
+      "weight": 8, "once": true,
+      "text": "溪流上游立着一架废弃的老水车，轮叶上挂满了青苔。它还在缓缓转动，吱呀、吱呀，像这个世界残存的一口气。",
+      "options": [
+        { "text": "检查水车后的蓄水池",
+          "results": [
+            { "weight": 100, "text": "池子里积着经过沉淀的清水，还有几条被困住的鱼！水车替你干了半天的活。",
+              "effects": { "gainItems": [ { "itemId": "water_clean", "count": 1 }, { "itemId": "food_raw_fish", "count": 1 } ], "sanity": 6 } }
+          ]
+        },
+        { "text": "拆一块轮叶当木材",
+          "results": [
+            { "weight": 100, "text": "老水车吱呀了两声，像是在抗议。你取走了一块腐朽的轮叶，心里有点过意不去。",
+              "effects": { "gainItems": [ { "itemId": "mat_wood", "count": 2 } ], "sanity": -3 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_village_school", "title": "村小学", "type": "explore", "pool": ["abandoned_village"],
+      "weight": 9, "once": false, "cooldownDays": 4,
+      "text": "「希望小学」的门牌斜挂在锈蚀的大门上。黑板上还留着最后一课的板书：「同学们，明天我们学习《春天来了》。」教室里桌椅东倒西歪，值日表上的名字已经褪色。",
+      "options": [
+        { "text": "翻找教师的讲台柜",
+          "results": [
+            { "weight": 55, "text": "教师们的抽屉里翻出了急救包和一台收音机！知识就是力量， literal意思。",
+              "effects": { "gainItems": [ { "itemId": "med_first_aid", "count": 1 }, { "itemId": "tool_radio", "count": 1 } ] } },
+            { "weight": 45, "text": "粉笔、教案、一面小红旗。你在讲台抽屉最里面摸到了半包压缩饼干——某个老师留下的应急粮。",
+              "effects": { "gainItems": [ { "itemId": "food_biscuit", "count": 1 } ], "sanity": -4 } }
+          ]
+        },
+        { "text": "在黑板上写点什么",
+          "results": [ { "weight": 100, "text": "你拿起粉笔，在《春天来了》下面写上：「第X天，我还活着。」然后对着空教室上了一堂只有自己学生的课。心情竟然好了不少。",
+            "effects": { "sanity": 8 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_village_scarecrow", "title": "晒谷场的稻草人", "type": "explore", "pool": ["abandoned_village"],
+      "weight": 8, "once": false, "cooldownDays": 4,
+      "conditions": {},
+      "text": "晒谷场中央立着一个稻草人。你发誓刚才路过时它的脸朝向左边——现在，它正对着你。破草帽下的黑洞洞的脸，说不清是错觉还是别的。",
+      "options": [
+        { "text": "走过去把它推倒",
+          "results": [
+            { "weight": 65, "text": "就是个普通稻草人，木杆加稻草。你拆了它的「衣服」（其实是块不错的油布）扬长而去。战胜恐惧最好的方式就是拆了它。",
+              "effects": { "gainItems": [ { "itemId": "mat_cloth", "count": 1 }, { "itemId": "mat_wood", "count": 1 } ], "sanity": 6 } },
+            { "weight": 35, "text": "你的手刚碰到它，整具稻草人突然瘫软倒下——里面的木架子早就朽断了。但你被吓得连退五步，摔进了谷堆里。",
+              "effects": { "hp": -4, "sanity": -8 } }
+          ]
+        },
+        { "text": "朝它鞠一躬再绕行",
+          "results": [ { "weight": 100, "text": "入乡随俗，礼多鬼不怪。你郑重地鞠了一躬，从晒谷场边缘绕了过去。身后似乎传来一声轻笑，也可能是风。",
+            "effects": { "sanity": -2 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_mine_pool", "title": "矿洞水潭", "type": "explore", "pool": ["mine"],
+      "weight": 9, "once": false, "cooldownDays": 3,
+      "text": "巷道尽头是一片墨绿色的地下积水潭，水面平静得像镜面。潭边的岩壁上有敲凿的痕迹——这里曾经被人开采到水下。",
+      "options": [
+        { "text": "潜水探一探矿壁",
+          "results": [
+            { "weight": 50, "text": "水下岩缝里嵌着发亮的矿脉！你憋着气撬下了好几块。",
+              "effects": { "hp": -4, "gainItems": [ { "itemId": "mat_scrap_metal", "count": 1 }, { "itemId": "mat_stone", "count": 2 } ], "sanity": -5 } },
+            { "weight": 50, "text": "水下比想象的深。你的手碰到了什么软绵绵的东西，吓得一口气冲出水面——撞上了洞顶的钟乳石。",
+              "effects": { "hp": -10, "addStatus": ["injured"], "sanity": -10 } }
+          ]
+        },
+        { "text": "只灌一瓶潭边渗出的清水",
+          "results": [ { "weight": 100, "text": "岩石过滤过的地下水，清凉甘冽。不冒险也有不冒险的收获。",
+            "effects": { "gainItems": [ { "itemId": "water_clean", "count": 1 } ] } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_mine_creak", "title": "支撑木的呻吟", "type": "explore", "pool": ["mine"],
+      "weight": 10, "once": false, "cooldownDays": 2,
+      "text": "头顶的支撑木发出一声悠长的吱嘎声，细碎的尘土簌簌落下。这片巷道随时可能塌方——但缝隙里能看到未采掘的矿脉在闪光。",
+      "options": [
+        { "text": "快进快出，赌一把",
+          "requires": {},
+          "results": [
+            { "weight": 55, "text": "你在尘土飞扬中狂凿了几块富矿冲了出来！身后的支撑木在你跨出瞬间轰然倒塌。",
+              "effects": { "gainItems": [ { "itemId": "mat_stone", "count": 2 }, { "itemId": "mat_charcoal", "count": 1 } ], "sanity": -6 } },
+            { "weight": 45, "text": "塌方来得比预想更快！一块巨石擦着你的肩膀砸下来，把你掀翻在地。你拖着腿爬出来的时候天都黑了。",
+              "effects": { "hp": -16, "addStatus": ["injured"], "sanity": -10 } }
+          ]
+        },
+        { "text": "用木料加固后再挖",
+          "requires": { "items": [ { "itemId": "mat_wood", "count": 2 } ] },
+          "results": [ { "weight": 100, "text": "花了两根木料做支撑，挖掘变得安心许多。稳稳当当满载而归——工程学万岁。",
+            "effects": { "loseItems": [ { "itemId": "mat_wood", "count": 2 } ], "gainItems": [ { "itemId": "mat_stone", "count": 2 }, { "itemId": "mat_scrap_metal", "count": 1 } ] } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_deepfog_tree", "title": "倒悬之树", "type": "explore", "pool": ["deep_fog"],
+      "weight": 12, "once": false, "cooldownDays": 3,
+      "text": "浓雾里悬着一棵树——不是长在地上，而是根须朝天，枝丫垂向地面，整个倒悬浮在半空中，随着你的呼吸轻轻摇晃。树上结着拳头大小的、发光的果实。",
+      "options": [
+        { "text": "摘一颗果子",
+          "results": [
+            { "weight": 60, "text": "果实在掌心化成了一汪清凉的光，顺着喉咙流下去。疲惫一扫而空，连雾气都变得可以原谅了。",
+              "effects": { "hp": 10, "sanity": 10 } },
+            { "weight": 40, "text": "果实在你合拢手指的瞬间炸成一蓬冷光。你打了个寒战，感觉有什么东西顺着光钻进了你的记忆深处。",
+              "effects": { "sanity": -10, "setFlags": ["touched_hanging_fruit"] } }
+          ]
+        },
+        { "text": "绕开这棵不讲道理的树",
+          "results": [ { "weight": 100, "text": "物理学家看了会沉默。你选择尊重常识，绕行了三米远。",
+            "effects": { "sanity": -3 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_village_photo", "title": "农舍里的男人", "type": "explore", "pool": ["abandoned_village"],
+      "weight": 12, "once": true,
+      "text": "废弃村庄的一间农舍里，灶台居然是温的。墙角蜷着一个满脸胡茬的男人，见你进来，缓缓举起双手：「别紧张……我叫老K。」桌上摆着一张旧照片。",
+      "options": [
+        { "text": "和他搭伙",
+          "results": [
+            { "weight": 75, "text": "老K会修东西，还懂草药。他说等雾散了一起去找救援队。你多了个同伴。",
+              "effects": { "sanity": 12, "setFlags": ["laok_ally"], "companionJoin": true, "nextEvent": "evt_story_laok_gift" } },
+            { "weight": 25, "text": "当晚老K不见了，带走了你半个背包。照片还留在桌上。",
+              "effects": { "loseItems": [ { "itemId": "food_canned", "count": 1 } ], "sanity": -10, "setFlags": ["laok_betrayed"] } }
+          ]
+        },
+        { "text": "拿起照片看看",
+          "results": [
+            { "weight": 100, "text": "照片背面写着：老K，勿念。男人的眼圈红了。「这是我闺女画的。」他声音沙哑。气氛缓和了不少。",
+              "effects": { "sanity": 5, "setFlags": ["laok_photo_seen"], "gainItems": [ { "itemId": "key_old_photo", "count": 1 } ] } }
+          ]
+        },
+        { "text": "转身就走",
+          "results": [ { "weight": 100, "text": "你退出农舍。身后传来一声轻轻的叹息。",
+            "effects": { "sanity": -4 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_deepfog_altar", "title": "雾中之台", "type": "explore", "pool": ["deep_fog"],
+      "weight": 20, "once": false, "cooldownDays": 3,
+      "text": "火把的光只能推开半米浓雾。雾中忽然浮现出一座石台，台上凹槽的形状——和你口袋里的结晶一模一样。",
+      "options": [
+        { "text": "放入迷雾结晶",
+          "requires": { "items": [ { "itemId": "key_mist_crystal", "count": 1 } ] },
+          "results": [
+            { "weight": 40, "text": "石台嗡鸣，浓雾短暂地退开一线。你瞥见了远处沉船湾的轮廓，还有一块新的结晶躺在凹槽旁。",
+              "effects": { "loseItems": [ { "itemId": "key_mist_crystal", "count": 1 } ], "gainItems": [ { "itemId": "key_mist_crystal", "count": 1 } ], "sanity": 10, "setFlags": ["altar_used"] } },
+            { "weight": 60, "text": "结晶碎裂，一股寒意钻进你的骨髓。石台拒绝了这份供品。",
+              "effects": { "hp": -10, "sanity": -10, "loseItems": [ { "itemId": "key_mist_crystal", "count": 1 } ] } }
+          ]
+        },
+        { "text": "放入全部三块结晶（需要三块）",
+          "requires": { "items": [ { "itemId": "key_mist_crystal", "count": 3 } ] },
+          "results": [
+            { "weight": 100, "text": "三道光同时亮起——",
+              "effects": { "nextEvent": "evt_story_eye_of_mist" } }
+          ]
+        },
+        { "text": "记下位置，速速离开",
+          "results": [
+            { "weight": 100, "text": "好奇心会害死人。你标记了方位，原路撤回。",
+              "effects": { "sanity": -5 } }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+

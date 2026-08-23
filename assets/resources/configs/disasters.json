@@ -1,0 +1,27 @@
+﻿{
+  "disasters": [
+    {
+      "id": "cold_snap", "name": "❄ 寒流", "dueDay": 5, "durationDays": 1,
+      "nightCheck": {
+        "passIfAnyOf": ["campfire", "shelter>=2"],
+        "failHpLoss": -8, "failSanityLoss": -10
+      },
+      "chatPoolId": "link_disaster_cold"
+    },
+    {
+      "id": "acid_rain", "name": "☂ 酸雨", "dueDay": 9, "durationDays": 1,
+      "blockExplore": true,
+      "chatPoolId": "link_disaster_acid"
+    },
+    {
+      "id": "beast_tide", "name": "🐗 兽潮", "dueDay": 13, "durationDays": 1,
+      "nightCheck": {
+        "passIfAnyOf": ["door_bolt", "weapon", "shelter>=3"],
+        "failHpLoss": -20, "failSanityLoss": -15,
+        "passHpLoss": -6
+      },
+      "chatPoolId": "link_beast_tide"
+    }
+  ]
+}
+

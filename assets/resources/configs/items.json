@@ -1,0 +1,45 @@
+{
+  "items": [
+    { "id": "food_berry",       "name": "浆果",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "berries",        "desc": "酸涩但能果腹。", "use": { "hunger": 12 } },
+    { "id": "food_black_bread", "name": "黑面包",   "category": "food",  "stackable": true,  "maxStack": 3, "icon": "bread",          "desc": "又干又硬，但顶饱。", "use": { "hunger": 20 } },
+    { "id": "food_biscuit",     "name": "压缩饼干", "category": "food",  "stackable": true,  "maxStack": 3, "icon": "cookies",        "desc": "应急口粮的标准答案。", "use": { "hunger": 25 } },
+    { "id": "food_canned",      "name": "罐头",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "canned-food",    "desc": "迷雾里的硬通货。", "use": { "hunger": 40, "sanity": 2 } },
+    { "id": "food_raw_meat",    "name": "生肉",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "meat",           "desc": "最好别生吃。", "use": { "hunger": 20, "riskPoisonPct": 35 } },
+    { "id": "food_cooked_meat", "name": "烤肉",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "ham-shank",      "desc": "油脂的香气是最好的安慰剂。", "use": { "hunger": 45, "sanity": 5 } },
+    { "id": "food_raw_fish",    "name": "生鱼",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "fish",           "desc": "腥味很重。", "use": { "hunger": 18, "riskSickPct": 25 } },
+    { "id": "food_cooked_fish", "name": "烤鱼",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "fish-cooked",    "desc": "热腾腾的一餐。", "use": { "hunger": 40, "sanity": 8 } },
+
+    { "id": "water_dirty",      "name": "脏水",     "category": "water", "stackable": true,  "maxStack": 3, "icon": "water-bottle",   "desc": "喝了可能闹肚子，但渴起来没得选。", "use": { "thirst": 22, "riskSickPct": 35 } },
+    { "id": "water_clean",      "name": "净水",     "category": "water", "stackable": true,  "maxStack": 3, "icon": "glass-shot",     "desc": "清澈冰凉。", "use": { "thirst": 40 } },
+    { "id": "water_boiled",     "name": "开水",     "category": "water", "stackable": true,  "maxStack": 3, "icon": "tea-cup",        "desc": "煮沸过的安心。", "use": { "thirst": 45, "sanity": 2 } },
+
+    { "id": "med_bandage",      "name": "绷带",     "category": "med",   "stackable": true,  "maxStack": 3, "icon": "bandage-roll",   "desc": "处理外伤的基本功。", "use": { "cureStatus": ["injured"] } },
+    { "id": "med_antibiotic",   "name": "抗生素",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "pills",          "desc": "消炎救命。", "use": { "cureStatus": ["sick"] } },
+    { "id": "med_detox",        "name": "解毒剂",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "poison-bottle",  "desc": "误食毒物后的最后机会。", "use": { "cureStatus": ["poisoned"] } },
+    { "id": "med_painkiller",   "name": "止痛药",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "pill-drop",      "desc": "缓解疼痛。", "use": { "hp": 15 } },
+    { "id": "med_first_aid",    "name": "急救包",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "health-potion",  "desc": "全套急救用品。", "use": { "hp": 40, "cureStatus": ["injured"] } },
+    { "id": "med_sedative",     "name": "镇静剂",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "dripping-tube",  "desc": "让你在噩梦中也能睡着。", "use": { "sanity": 30 } },
+    { "id": "med_ointment",     "name": "药膏",     "category": "med",   "stackable": true,  "maxStack": 3, "icon": "ointment",       "desc": "对付灼伤有奇效。", "use": { "hp": 10, "cureStatus": ["acid_burn"] } },
+
+    { "id": "mat_wood",         "name": "木材",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "wood-beam",      "desc": "万能材料。" },
+    { "id": "mat_stone",        "name": "石料",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "stone-pile",     "desc": "建筑基石。" },
+    { "id": "mat_rope",         "name": "绳索",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "rope-coil",      "desc": "捆扎一切。" },
+    { "id": "mat_cloth",        "name": "布料",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "fabric-roll",    "desc": "撕开的衣物与床单。" },
+    { "id": "mat_scrap_metal",  "name": "金属件",   "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "gears",          "desc": "生锈但结实。" },
+    { "id": "mat_charcoal",     "name": "木炭",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "charcoal",       "desc": "净水装置的核心滤材。" },
+
+    { "id": "tool_stone_axe",   "name": "石斧",     "category": "tool",  "stackable": false, "maxStack": 1, "icon": "stone-axe",      "desc": "伐木产量翻倍，也能当武器。", "use": null },
+    { "id": "tool_iron_axe",    "name": "铁斧",     "category": "tool",  "stackable": false, "maxStack": 1, "icon": "axe",            "desc": "比石斧好用得多。", "use": null },
+    { "id": "tool_fishing_rod", "name": "鱼竿",     "category": "tool",  "stackable": false, "maxStack": 1, "icon": "fishing-pole",   "desc": "溪谷钓鱼的前提。", "use": null },
+    { "id": "tool_lighter",     "name": "打火机",   "category": "tool",  "stackable": false, "maxStack": 1, "icon": "lighter",        "desc": "文明的余烬。", "use": null },
+    { "id": "tool_torch",       "name": "火把",     "category": "tool",  "stackable": true,  "maxStack": 3, "icon": "torch",          "desc": "深入浓雾的必备品。", "use": null },
+    { "id": "tool_flashlight",  "name": "手电筒",   "category": "tool",  "stackable": false, "maxStack": 1, "icon": "flashlight",     "desc": "黑夜里的勇气。", "use": null },
+    { "id": "tool_radio",       "name": "收音机",   "category": "tool",  "stackable": false, "maxStack": 1, "icon": "radio-tower",    "desc": "每晚播报天气与救援进度。", "use": null },
+
+    { "id": "key_map_fragment", "name": "地图碎片", "category": "key",   "stackable": true,  "maxStack": 3, "icon": "map",            "desc": "集齐三块可拼出沉船湾的位置。" },
+    { "id": "key_mist_crystal", "name": "迷雾结晶", "category": "key",   "stackable": true,  "maxStack": 3, "icon": "crystal-ball",   "desc": "在浓雾深处微微发光……" },
+    { "id": "key_signal_gun",   "name": "信号枪",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "flare-gun",      "desc": "只有一发，但也许够了。" },
+    { "id": "key_radio_parts",  "name": "无线电零件","category": "key",  "stackable": true,  "maxStack": 3, "icon": "radioactive",    "desc": "集齐三件可以组装无线电。" },
+    { "id": "key_old_photo",    "name": "旧照片",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "photo",          "desc": "背面写着：老K，勿念。" }
+  ]
+}
