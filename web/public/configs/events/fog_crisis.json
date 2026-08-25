@@ -1,0 +1,154 @@
+{
+  "events": [
+    {
+      "id": "evt_crisis_dehydration", "title": "极度脱水", "type": "crisis",
+      "weight": 20, "once": false,
+      "conditions": { "stats": { "thirst": { "op": "<=", "value": 25 } } },
+      "text": "你的视线开始扭曲，喉咙像塞满了烧红的沙子。远处似乎有一汪清泉在雾里闪光……不，那不是水。",
+      "options": [
+        { "text": "喝下仅剩的脏水（需要脏水）",
+          "requires": { "items": [ { "itemId": "water_dirty", "count": 1 } ] },
+          "results": [ { "weight": 100, "text": "你颤抖着拧开瓶盖。至少，还活着。",
+            "effects": { "loseItems": [ { "itemId": "water_dirty", "count": 1 } ], "thirst": 22, "sanity": -3 } } ]
+        },
+        { "text": "咬破手指用血润喉",
+          "results": [ { "weight": 100, "text": "咸腥的味道让你清醒了一点。这不是办法，但今晚先活过去。",
+            "effects": { "hp": -5, "thirst": 8, "sanity": -6 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_crisis_starving", "title": "胃壁的抗议", "type": "crisis",
+      "weight": 20, "once": false,
+      "conditions": { "stats": { "hunger": { "op": "<=", "value": 25 } } },
+      "text": "饥饿像一只手从里面攥住你的胃。你盯着自己消瘦的手背发呆，突然觉得——树皮也许也能吃？",
+      "options": [
+        { "text": "啃桦树皮充饥",
+          "results": [ { "weight": 70, "text": "又苦又涩，但胃里的绞痛缓解了些。",
+            "effects": { "hunger": 12, "hp": -3 } } ]
+        },
+        { "text": "强忍着睡过去",
+          "results": [ { "weight": 100, "text": "你在半梦半醒间熬过这一夜。梦里全是食物。",
+            "effects": { "sanity": -6, "hp": -4 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_crisis_hallucination_friend", "title": "雾里的朋友", "type": "crisis",
+      "weight": 18, "once": false,
+      "conditions": { "stats": { "sanity": { "op": "<=", "value": 25 } } },
+      "text": "「嘿，好久不见。」门口站着你大学最好的朋友，笑着朝你挥手，就像你们上周才刚见过面。可你的这位朋友，在穿越那天就再也没上过线。",
+      "options": [
+        { "text": "陪他坐一会儿",
+          "results": [
+            { "weight": 50, "text": "你们聊了很多，聊到太阳落山。他走的时候说：「替我好好活。」你低头擦了擦脸，再抬头时门口只有雾。但胸口那块石头轻了一些。",
+              "effects": { "sanity": 10 } },
+            { "weight": 50, "text": "聊到一半，他的脖子开始以不可能的角度转动。你尖叫着后退，撞翻了水罐。雾散了，屋里只剩你一个人和满地狼藉。",
+              "effects": { "sanity": -12, "hp": -4 } }
+          ]
+        },
+        { "text": "闭眼默念：不是真的",
+          "results": [ { "weight": 100, "text": "等你睁开眼，门口空无一人。你在原地站了很久很久。",
+            "effects": { "sanity": -6 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_crisis_infection", "title": "伤口感染", "type": "crisis",
+      "weight": 20, "once": false,
+      "conditions": { "dayMin": 3, "statuses": ["injured"] },
+      "text": "伤口周围的皮肤又红又肿，一跳一跳地疼，边缘摸上去发烫。一道红线正顺着血管慢慢向上爬。这不是普通的伤。",
+      "options": [
+        { "text": "咬牙处理伤口（挤出脓血）",
+          "results": [
+            { "weight": 55, "text": "剧痛之后是一种奇异的轻松。红线的势头被遏制住了。",
+              "effects": { "hp": -6, "removeStatus": ["injured"], "sanity": -5 } },
+            { "weight": 45, "text": "脓血混着脏水溅了一地，伤口反而更深了。但至少，该排的都排出来了。",
+              "effects": { "hp": -10, "removeStatus": ["injured"] } }
+          ]
+        },
+        { "text": "用抗生素（需要）",
+          "requires": { "items": [ { "itemId": "med_antibiotic", "count": 1 } ] },
+          "results": [ { "weight": 100, "text": "药片下肚，烧很快退了。现代医学万岁——哪怕只是一片过期药。",
+            "effects": { "loseItems": [ { "itemId": "med_antibiotic", "count": 1 } ], "removeStatus": ["injured", "sick"] } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_crisis_sleepless", "title": "彻夜难眠", "type": "crisis",
+      "weight": 15, "once": false,
+      "conditions": { "stats": { "sanity": { "op": "<=", "value": 30 } } },
+      "text": "你已经两夜没合眼了。每次闭上眼，眼皮后面就有画面：雾、门缝、慢半拍的倒影。你的太阳穴突突直跳，眼前的世界开始轻微地扭曲。",
+      "options": [
+        { "text": "吃一片镇静剂（需要）",
+          "requires": { "items": [ { "itemId": "med_sedative", "count": 1 } ] },
+          "results": [ { "weight": 100, "text": "药物把你按进了无梦的深眠。醒来时晨光正好，世界暂时安静了。",
+            "effects": { "loseItems": [ { "itemId": "med_sedative", "count": 1 } ], "sanity": 20, "hp": 5 } } ]
+        },
+        { "text": "数呼吸：吸，一；呼，二……",
+          "results": [
+            { "weight": 60, "text": "数到四百多的时候，天亮了。虽然疲惫，但你守住了自己的意识。",
+              "effects": { "sanity": 6, "hp": -3 } },
+            { "weight": 40, "text": "数到两百时你忘了数到哪了。重新开始。又忘。窗外似乎有什么笑了一声。",
+              "effects": { "sanity": -8 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_crisis_give_up", "title": "算了吧", "type": "crisis",
+      "weight": 12, "once": false,
+      "conditions": { "stats": { "sanity": { "op": "<=", "value": 35 }, "hunger": { "op": "<=", "value": 40 }, "dayMin": 6 } },
+      "text": "你坐在门槛上看着雾。一个念头毫无预兆地浮上来：「就这么躺着不动，会怎么样呢？」它很轻，很温和，像一句劝慰。",
+      "options": [
+        { "text": "掐自己一把，站起来",
+          "results": [
+            { "weight": 65, "text": "疼是真的疼。疼说明你还活着。你骂骂咧咧地站起来继续干活——骂人也是活人的特权。",
+              "effects": { "hp": -2, "sanity": 8 } },
+            { "weight": 35, "text": "你在门槛上又坐了很久，直到腿麻得失去知觉才勉强起身。今天什么都没干成。",
+              "effects": { "sanity": -5 } }
+          ]
+        },
+        { "text": "看看门框上刻的日子",
+          "results": [ { "weight": 100, "text": "那些刻痕里有一道是你的。「第X天」——不管X是几，它还没结束。你深吸一口气，把雾关在了门外。",
+            "effects": { "sanity": 6 } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_crisis_body_limit", "title": "身体的极限", "type": "crisis",
+      "weight": 15, "once": false,
+      "conditions": { "stats": { "hp": { "op": "<=", "value": 30 } }, "dayMin": 4 },
+      "text": "一阵眩晕袭来，你扶住墙才没有倒下。视野边缘发黑，耳朵里全是自己的心跳声。你的身体在用最后的方式警告你：再这样下去，就要出人命了。",
+      "options": [
+        { "text": "吞掉所有能吃的，先活过今天",
+          "results": [
+            { "weight": 100, "text": "你翻出背包里所有能入口的东西一扫而空。胃里有了东西，眼前的黑雾终于散开了一点。",
+              "effects": { "hunger": 20, "thirst": 10, "sanity": -3 } }
+          ]
+        },
+        { "text": "使用急救包（需要）",
+          "requires": { "items": [ { "itemId": "med_first_aid", "count": 1 } ] },
+          "results": [ { "weight": 100, "text": "绷带、药剂、夹板……专业的力量。做完全套处理后，你感觉自己又能打十个。",
+            "effects": { "loseItems": [ { "itemId": "med_first_aid", "count": 1 } ], "hp": 40 } } ]
+        },
+        { "text": "今天彻底休息",
+          "results": [ { "weight": 100, "text": "你破例把宝贵的行动点全用来躺着。身体是革命的本钱——这句话现在听着格外有道理。",
+            "effects": { "hp": 8, "sanity": 5, "setFlags": ["rested_today"] } } ]
+        }
+      ]
+    },
+    {
+      "id": "evt_crisis_poison_worse", "title": "毒发", "type": "crisis",
+      "weight": 25, "once": false,
+      "conditions": { "statuses": ["poisoned"] },
+      "text": "腹部的绞痛突然加剧，一波强过一波。你扶着墙滑坐在地，冷汗浸透了后背——毒素正在和你的身体赛跑。",
+      "options": [
+        { "text": "灌大量水冲淡毒素",
+          "results": [ { "weight": 100, "text": "你几乎喝光了手头所有的水。反复的呕吐之后，绞痛终于轻了一些。",
+            "effects": { "hp": -8, "thirst": -10, "removeStatus": ["poisoned"] } } ]
+        }
+      ]
+    }
+  ]
+}

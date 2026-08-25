@@ -7,6 +7,7 @@ import { TalentSystem } from '../../assets/scripts/systems/TalentSystem';
 import { StatsSystem } from '../../assets/scripts/systems/StatsSystem';
 import { InventorySystem } from '../../assets/scripts/systems/InventorySystem';
 import { LootSystem } from '../../assets/scripts/systems/LootSystem';
+import { LocationSystem } from '../../assets/scripts/systems/LocationSystem';
 import { EventEngine } from '../../assets/scripts/systems/EventEngine';
 import { EndingSystem } from '../../assets/scripts/systems/EndingSystem';
 import type { GameCtx } from '../../assets/scripts/systems/RunModel';
@@ -108,6 +109,38 @@ describe('LootSystem 品质分布', () => {
     });
 });
 
+describe('LootSystem 数量倍率（黄昏"再探一轮"）', () => {
+    it('countMult 等比放大宝箱产出，默认 1 不改变结果', () => {
+        const a = makeCtx(777), b = makeCtx(777), c = makeCtx(777);
+        const base = LootSystem.openChest(a);
+        const same = LootSystem.openChest(b);                       // 默认倍率
+        const boosted = LootSystem.openChest(c, undefined, 1.5);    // 黄昏 +50%
+        // 同种子 → 品质与条目完全一致，仅数量不同
+        expect(same.tier).toBe(base.tier);
+        expect(boosted.tier).toBe(base.tier);
+        expect(same.gained.map(g => g.count)).toEqual(base.gained.map(g => g.count));
+        expect(boosted.gained.map(g => g.itemId)).toEqual(base.gained.map(g => g.itemId));
+        expect(boosted.gained.map(g => g.count)).toEqual(
+            base.gained.map(g => Math.max(1, Math.round(g.count * 1.5))));
+    });
+
+    it('LocationSystem.explore 的 yieldMult 接线到宝箱结算', () => {
+        let checked = 0;
+        for (let seed = 1; seed <= 300 && checked < 3; seed++) {
+            const a = makeCtx(seed), b = makeCtx(seed);
+            const ra = LocationSystem.explore(a, 'fog_edge', undefined, () => {});
+            const rb = LocationSystem.explore(b, 'fog_edge', { yieldMult: 1.5 }, () => {});
+            if (!ra.chest || !rb.chest) continue;   // 同种子 → 是否出箱一致，只比有箱的
+            checked++;
+            expect(rb.chest.tier).toBe(ra.chest.tier);
+            expect(rb.chest.gained.map(g => g.itemId)).toEqual(ra.chest.gained.map(g => g.itemId));
+            expect(rb.chest.gained.map(g => g.count)).toEqual(
+                ra.chest.gained.map(g => Math.max(1, Math.round(g.count * 1.5))));
+        }
+        expect(checked).toBeGreaterThan(0);   // 300 个种子里必有一批双开箱
+    });
+});
+
 describe('EventEngine', () => {
     let ctx: GameCtx;
     beforeEach(() => { ctx = makeCtx(); });
@@ -197,5 +230,28 @@ describe('SaveManager', () => {
         store.set('qs_run', '{"version":1,"seed":1,"day":99}');   // 篡改
         expect(sm.loadRun()).toBeNull();
         expect(store.get('qs_run_bak')).not.toBeNull();
+    });
+
+    it('全局档案：旧档缺 settings 字段时合并默认值', () => {
+        const store = new MemoryStorage();
+        const sm = new SaveManager(store);
+        store.set('qs_global', JSON.stringify({
+            version: 2, totalRuns: 3, bestDaysSurvived: 9,
+            endingsUnlocked: [], achievements: [], totalChestsOpened: 0,
+        }));
+        const g = sm.loadGlobal();
+        expect(g.totalRuns).toBe(3);
+        expect(g.settings).toEqual({ typeSpeed: 40, sound: true, vibrate: true });
+    });
+
+    it('全局档案：设置修改往返保留', () => {
+        const sm = new SaveManager(new MemoryStorage());
+        const g = sm.loadGlobal();
+        g.settings.typeSpeed = 0;
+        g.settings.sound = false;
+        g.settings.vibrate = false;
+        sm.saveGlobal(g);
+        const g2 = sm.loadGlobal();
+        expect(g2.settings).toEqual({ typeSpeed: 0, sound: false, vibrate: false });
     });
 });

@@ -1,0 +1,24 @@
+{
+  "talents": [
+    { "id": "T01", "name": "每日提示", "archetype": "信息流", "rarity": 4, "desc": "每天清晨收到一条高价值情报：宝箱方位或危险预警。部分事件会解锁专属隐藏选项。",
+      "hooks": [ { "type": "revealHintDaily" } ] },
+    { "id": "T02", "name": "物资增幅", "archetype": "资源流", "rarity": 4, "desc": "所有采集与开箱产出翻倍。囤货党的终极浪漫。",
+      "hooks": [ { "type": "lootMult", "mult": 2 } ] },
+    { "id": "T03", "name": "守夜人",   "archetype": "苟命流", "rarity": 3, "desc": "夜间恶性事件概率减半。黑夜属于它们，但今晚除外。",
+      "hooks": [ { "type": "nightRiskFactor", "factor": 0.5 } ] },
+    { "id": "T04", "name": "铁胃",     "archetype": "冒险流", "rarity": 3, "desc": "脏食脏水的副作用概率减半。别人的毒药，你的自助餐。",
+      "hooks": [ { "type": "dirtyConsumeFactor", "factor": 0.5 } ] },
+    { "id": "T05", "name": "巧匠",     "archetype": "基建流", "rarity": 4, "desc": "所有制作的材料需求减少1（至少为1）。",
+      "hooks": [ { "type": "craftCostReduce", "n": 1 } ] },
+    { "id": "T06", "name": "猎手",     "archetype": "战斗流", "rarity": 3, "desc": "战斗类选项成功率+25%。迷雾里的野兽也会成为猎物。",
+      "hooks": [ { "type": "combatBonus", "pct": 25 } ] },
+    { "id": "T07", "name": "囤积者",   "archetype": "囤货流", "rarity": 3, "desc": "背包容量+3格。仓库满了才有安全感。",
+      "hooks": [ { "type": "bagCapacityAdd", "n": 3 } ] },
+    { "id": "T08", "name": "福星",     "archetype": "欧皇流", "rarity": 4, "desc": "开箱时品质提升一档的概率+20%。运气也是实力。",
+      "hooks": [ { "type": "chestUpgradeChance", "pct": 20 } ] },
+    { "id": "T09", "name": "社牛",     "archetype": "社交流", "rarity": 3, "desc": "每3天收到世界频道网友私聊赠送的随机物资。",
+      "hooks": [ { "type": "giftEveryNDays", "n": 3 } ] },
+    { "id": "T10", "name": "第六感",   "archetype": "保命流", "rarity": 3, "desc": "进入高危地点或选择高危选项前会收到警告。",
+      "hooks": [ { "type": "dangerWarn" } ] }
+  ]
+}

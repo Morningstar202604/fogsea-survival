@@ -63,4 +63,18 @@ export interface GlobalProfile {
     endingsUnlocked: string[];
     achievements: string[];
     totalChestsOpened: number;
+    settings: PlayerSettings;
 }
+
+/** 玩家设置（随全局档案持久化；旧档缺字段由 loadGlobal 合并补齐） */
+export interface PlayerSettings {
+    typeSpeed: number;      // 打字机速度：字/秒；0 = 立即显示
+    sound: boolean;         // 音效开关（AudioManager 消费）
+    vibrate: boolean;       // 震动开关（引擎震动 API 接入后消费）
+}
+
+export const DEFAULT_SETTINGS: PlayerSettings = {
+    typeSpeed: 40,
+    sound: true,
+    vibrate: true,
+};

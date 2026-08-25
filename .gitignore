@@ -5,3 +5,15 @@ build/
 native/
 extensions/
 node_modules/
+
+# Web 构建产物
+web/dist/
+
+# Capacitor Android 本机构建产物与本机配置
+.gradle/
+local.properties
+*.log
+
+# 打包产物
+dist-apk/
+

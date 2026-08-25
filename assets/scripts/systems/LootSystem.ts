@@ -31,8 +31,11 @@ export class LootSystem {
     private static _tables: Map<ChestTier, LootTable> | null = null;
     private static _cfgRef: unknown = null;
 
-    /** 品质判定 → 抽取产出 → 天赋修正 → 入包 */
-    static openChest(ctx: GameCtx, minTier?: ChestTier): ChestOpenResult {
+    /**
+     * 品质判定 → 抽取产出 → 天赋修正 → 入包
+     * @param countMult 数量倍率（黄昏"再探一轮"的收益加成，作用于宝箱内所有物品）
+     */
+    static openChest(ctx: GameCtx, minTier?: ChestTier, countMult = 1): ChestOpenResult {
         let tier = this.rollTier(ctx);
         // T08 福星：整体上调一档
         let upgraded = false;
@@ -58,7 +61,7 @@ export class LootSystem {
                 entry = weightedPickWith(ctx.rng, table.entries);
             }
             pickedIdx.add(table.entries.indexOf(entry));
-            const count = ctx.rng.int(entry.min, entry.max) * mult;
+            const count = Math.max(1, Math.round(ctx.rng.int(entry.min, entry.max) * mult * countMult));
             gained.push({ itemId: entry.itemId, count });
         }
 

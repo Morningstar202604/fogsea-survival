@@ -93,7 +93,7 @@ export class LocationSystem {
             }
         }
 
-        // 2. 追加宝箱（天气修正：晴+10pp / 浓雾-10pp；枯竭减半）
+        // 2. 追加宝箱（天气修正：晴+10pp / 浓雾-10pp；枯竭减半；数量吃 yieldMult）
         let chest: ExploreOutcome['chest'] = null;
         if (!depleted) {
             let cc = def.chestChance;
@@ -101,7 +101,7 @@ export class LocationSystem {
             if (ctx.run.weather === 'fog_thick') cc -= 0.10;
             if (depleted) cc *= 0.5;
             if (ctx.rng.chance(Math.max(0, cc) * 100)) {
-                chest = LootSystem.openChest(ctx);
+                chest = LootSystem.openChest(ctx, undefined, opts?.yieldMult ?? 1);
             }
         }
 

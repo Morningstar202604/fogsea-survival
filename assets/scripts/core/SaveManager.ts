@@ -1,5 +1,5 @@
 // 存档管理：可注入存储后端（localStorage / 内存），含版本迁移与轻量防篡改
-import { SAVE_VERSION, RUN_KEY, GLOBAL_KEY } from '../data/SaveSchema';
+import { SAVE_VERSION, RUN_KEY, GLOBAL_KEY, DEFAULT_SETTINGS } from '../data/SaveSchema';
 import type { RunState, GlobalProfile } from '../data/SaveSchema';
 
 export interface StorageBackend {
@@ -77,10 +77,12 @@ export class SaveManager {
         const base: GlobalProfile = {
             version: SAVE_VERSION, totalRuns: 0, bestDaysSurvived: 0,
             endingsUnlocked: [], achievements: [], totalChestsOpened: 0,
+            settings: { ...DEFAULT_SETTINGS },
         };
         if (!raw) return base;
         try {
-            return { ...base, ...JSON.parse(raw) };
+            const parsed = JSON.parse(raw) as Partial<GlobalProfile>;
+            return { ...base, ...parsed, settings: { ...base.settings, ...(parsed.settings ?? {}) } };
         } catch {
             return base;
         }

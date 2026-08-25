@@ -36,17 +36,9 @@ export class RNG {
         return a;
     }
 
-    /** 加权随机抽取；权重和无需归一化 */
-    static weightedPick<T extends { weight: number }>(arr: T[]): T {
-        let total = 0;
-        for (const it of arr) total += Math.max(0, it.weight);
-        if (total <= 0) throw new Error('weightedPick: 总权重必须 > 0');
-        let roll = Math.random() * total;   // 注意：分布验证用；复现场景请用实例方法
-        for (const it of arr) {
-            roll -= Math.max(0, it.weight);
-            if (roll < 0) return it;
-        }
-        return arr[arr.length - 1];
+    /** 加权随机抽取；权重和无需归一化（实例方法，依赖可种子化序列，便于复现/测试） */
+    weightedPick<T extends { weight: number }>(arr: T[]): T {
+        return weightedPickWith(this, arr);
     }
 }
 

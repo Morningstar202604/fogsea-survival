@@ -1,6 +1,7 @@
 // 单局运行时模型 + 游戏上下文（systems 共享的句柄）
 import type { AllConfigs } from '../core/ConfigSchema';
 import type { RNG } from '../core/RNG';
+import { DEFAULT_SETTINGS } from '../data/SaveSchema';
 import type { RunState } from '../data/SaveSchema';
 import type { TalentRuntime } from './TalentSystem';
 
@@ -54,5 +55,6 @@ export function createGlobalProfile() {
         endingsUnlocked: [],
         achievements: [],
         totalChestsOpened: 0,
+        settings: { ...DEFAULT_SETTINGS },
     };
 }

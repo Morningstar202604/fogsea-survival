@@ -1,5 +1,6 @@
 // 场景根组件：唯一需要手动挂到 Canvas 的脚本
 import { _decorator, Component } from 'cc';
+import '../core/ConfigLoader';   // 侧效应：注册 Cocos 配置加载器
 import { GameManager } from '../core/GameManager';
 import { GameApp } from './GameApp';
 

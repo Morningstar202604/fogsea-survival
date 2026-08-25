@@ -1,9 +1,10 @@
 ﻿// 全部界面与流程编排（程序化 UI）
-import { Node, Label, Color } from 'cc';
+import { Node, Label, Color, UITransform } from 'cc';
 import { EventBus, GameEvents } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import type { GameCtx } from '../systems/RunModel';
-import { COL, fullScreen, node, panel, label, button, Typewriter, hexColor } from './UIKit';
+import { COL, fullScreen, node, panel, label, button, Typewriter, hexColor, scrollList, setClickSfx } from './UIKit';
+import { AudioManager } from '../core/AudioManager';
 import { TimeSystem } from '../systems/TimeSystem';
 import type { MorningReport } from '../systems/TimeSystem';
 import { EventEngine } from '../systems/EventEngine';
@@ -33,6 +34,7 @@ export class GameApp {
     private twLabel: Label | null = null;
     private chatBubble: Label | null = null;
     private lastChats: string[] = [];
+    private channelContent: Node | null = null;
     private hud: {
         stats?: Label; dayInfo?: Label; disaster?: Label; apDots?: Label;
         chips?: Label; actions?: Node; sleepBtn?: Node;
@@ -53,6 +55,7 @@ export class GameApp {
             this.lastChats.push(line);
             if (this.lastChats.length > 30) this.lastChats.shift();
             if (this.chatBubble) this.chatBubble.string = `💬 ${line}`;
+            if (this.channelContent) this.renderChannelRows();
         });
         EventBus.on(GameEvents.ChatInject, p => {
             const poolId = (p as { poolId: string }).poolId;
@@ -61,6 +64,11 @@ export class GameApp {
         });
 
         GameApp.I = this;
+        this.tw.setSpeed(GameManager.I.global.settings.typeSpeed);
+        AudioManager.I.mount(root);
+        AudioManager.I.setEnabled(GameManager.I.global.settings.sound);
+        setClickSfx(() => AudioManager.I.play('click', 0.6));
+        EventBus.on(GameEvents.ChestOpened, () => AudioManager.I.play('chest'));
     }
 
     tick(dt: number): void {
@@ -96,6 +104,8 @@ export class GameApp {
         y -= 96;
         button(scr, `成就 ${gm.global.achievements.length}`, 380, 80,
             () => this.showCollection(true)).setPosition(0, y);
+        y -= 96;
+        button(scr, '⚙ 设置', 380, 80, () => this.openSettings()).setPosition(0, y);
 
         label(scr, `累计 ${gm.global.totalRuns} 局 · 最长存活 ${gm.global.bestDaysSurvived} 天`,
             { size: 20, color: COL.dim, align: 'center', maxWidth: 720 }).node.setPosition(0, -520);
@@ -204,11 +214,9 @@ export class GameApp {
         this.chatBubble = label(scr, '💬 …', { size: 18, color: COL.dim, wrap: true, maxWidth: 660 });
         this.chatBubble.node.setPosition(-330, 118);
 
-        // 行动区容器 + 入睡按钮
+        // 行动区容器（按钮由 enableActions 动态重建，含入睡）
         this.hud.actions = node('actions', scr, 720, 320);
         this.hud.actions.setPosition(0, -160);
-        this.hud.sleepBtn = button(this.hud.actions, '🌙 入睡', 220, 64, () => this.goSleepPrompt());
-        this.hud.sleepBtn.setPosition(-170, -140);
         this.hud.apDots = label(scr, '', { size: 24, color: COL.accent, align: 'center', maxWidth: 720 });
         this.hud.apDots.node.setPosition(0, -345);
     }
@@ -290,6 +298,9 @@ export class GameApp {
         const bagB = button(box, `背包`, 210, 64, () => this.openInventory()); put(bagB);
         const intelB = button(box, `📋 情报`, 210, 64, () => this.openIntel()); put(intelB);
         const tradeB = button(box, `🔁 交易`, 210, 64, () => this.openTrade()); put(tradeB);
+        const chanB = button(box, `💬 频道`, 210, 64, () => this.openWorldChannel()); put(chanB);
+        const sleepB = button(box, '🌙 入睡', 210, 64, () => this.goSleepPrompt(), { bg: '#5a3038' });
+        put(sleepB);
         if (ctx.run.companion) {
             const c = ctx.run.companion;
             const hpTag = c.hp > 70 ? '安好' : c.hp > 35 ? '带伤' : '虚弱';
@@ -409,6 +420,55 @@ export class GameApp {
             .node.setPosition(0, y);
         button(pnl, '关闭', 200, 64, () => { this.clearDialogs(); this.enableActions(true); })
             .setPosition(0, -420);
+    }
+
+    // ================= 世界频道（全屏） =================
+    private openWorldChannel(): void {
+        const gm = GameManager.I;
+        this.clearDialogs();
+        this.dialogLayer.active = true;
+        panel(this.dialogLayer, 'mask', 720, 1280, '#05060a');
+        const pnl = panel(this.dialogLayer, 'channel', 680, 1060, COL.bg);
+        label(pnl, '💬 世界频道 · 幸存者发言', { size: 28, color: COL.accent }).node.setPosition(0, 480);
+
+        const list = scrollList(pnl, 'channel_list', 640, 830, 830);
+        list.setPosition(0, -10);
+        this.channelContent = list;
+        this.renderChannelRows();
+        if (!this.lastChats.length) {
+            label(list, '频道还很安静……迷雾里的人都在忙着活下去。', { size: 20, color: COL.dim, wrap: true, maxWidth: 560 });
+        }
+
+        button(pnl, '刷新', 180, 60, () => {
+            gm.chat?.forceRoll();
+            this.renderChannelRows();
+        }, { fontSize: 21 }).setPosition(-130, -480);
+        button(pnl, '关闭', 180, 60, () => {
+            this.channelContent = null;
+            this.clearDialogs(); this.enableActions(true);
+        }, { fontSize: 21 }).setPosition(130, -480);
+    }
+
+    /** 重排频道消息行：每行按文本长度估算换行高度，content 总高自适应 */
+    private renderChannelRows(): void {
+        const content = this.channelContent;
+        if (!content) return;
+        content.destroyAllChildren();
+        const W = 620, PAD = 14, LINE_H = 30, CHARS_PER_LINE = 26;
+        let y = -PAD;
+        for (const line of this.lastChats) {
+            const rows = Math.max(1, Math.ceil(line.length / CHARS_PER_LINE));
+            const h = rows * LINE_H + PAD + 6;
+            const row = panel(content, 'msg', W, h - PAD, '#1b202c');
+            row.getComponent(UITransform)!.setAnchorPoint(0.5, 1);
+            row.setPosition(0, y);
+            const lb = label(row, line, { size: 19, wrap: true, maxWidth: W - 24,
+                color: line.startsWith('[') ? COL.text : COL.accent });
+            lb.node.getComponent(UITransform)!.setAnchorPoint(0.5, 1);
+            lb.node.setPosition(0, -6);
+            y -= h;
+        }
+        content.getComponent(UITransform)!.setContentSize(W, Math.max(830, -y + PAD));
     }
 
     private busy = false;
@@ -617,6 +677,62 @@ export class GameApp {
         dlg.on(Node.EventType.TOUCH_END, () => this.tw.skip());
     }
 
+    // ================= 设置 =================
+    private openSettings(): void {
+        const gm = GameManager.I;
+        const s = gm.global.settings;
+        this.clearDialogs();
+        this.dialogLayer.active = true;
+        panel(this.dialogLayer, 'mask', 720, 1280, '#05060a');
+        const pnl = panel(this.dialogLayer, 'settings', 680, 900, COL.bg);
+        label(pnl, '⚙ 设置', { size: 30, color: COL.accent }).node.setPosition(0, 380);
+
+        // 打字机速度：三档
+        label(pnl, '文字速度', { size: 22, color: COL.text }).node.setPosition(-230, 260);
+        const speeds: { label: string; v: number }[] = [
+            { label: '慢', v: 15 }, { label: '快', v: 40 }, { label: '瞬间', v: 0 },
+        ];
+        speeds.forEach((sp, i) => {
+            const cur = (s.typeSpeed <= 0 && sp.v <= 0) || (s.typeSpeed > 0 && sp.v === s.typeSpeed)
+                || (s.typeSpeed > 0 && s.typeSpeed !== 15 && s.typeSpeed !== 40 && sp.v === 40);
+            button(pnl, cur ? `● ${sp.label}` : sp.label, 130, 64, () => {
+                s.typeSpeed = sp.v;
+                this.tw.setSpeed(sp.v);
+                this.persistGlobal();
+                this.openSettings();
+            }, { bg: cur ? COL.panelLine : COL.panel, textColor: cur ? COL.accent : COL.text })
+                .setPosition(i * 150 - 150, 180);
+        });
+        label(pnl, `当前：${s.typeSpeed <= 0 ? '瞬间显示' : `${s.typeSpeed} 字/秒`}`,
+            { size: 18, color: COL.dim }).node.setPosition(0, 110);
+
+        // 音效开关
+        label(pnl, '音效', { size: 22, color: COL.text }).node.setPosition(-230, 20);
+        button(pnl, s.sound ? '🔊 开' : '🔇 关', 130, 64, () => {
+            s.sound = !s.sound;
+            AudioManager.I.setEnabled(s.sound);
+            this.persistGlobal();
+            this.openSettings();
+        }, { textColor: s.sound ? COL.good : COL.dim }).setPosition(60, 20);
+
+        // 震动开关
+        label(pnl, '震动', { size: 22, color: COL.text }).node.setPosition(-230, -80);
+        button(pnl, s.vibrate ? '✓ 开' : '✗ 关', 130, 64, () => {
+            s.vibrate = !s.vibrate;
+            this.persistGlobal();
+            this.openSettings();
+        }, { textColor: s.vibrate ? COL.good : COL.dim }).setPosition(60, -80);
+        label(pnl, '设置保存在本机，随全局档案生效。', { size: 17, color: COL.dim })
+            .node.setPosition(0, -180);
+
+        button(pnl, '关闭', 200, 64, () => { this.clearDialogs(); this.showHome(); })
+            .setPosition(0, -380);
+    }
+
+    private persistGlobal(): void {
+        GameManager.I.save.saveGlobal(GameManager.I.global);
+    }
+
     // ================= 制作 / 背包 =================
     private openCraft(): void {
         const gm = GameManager.I;
@@ -627,13 +743,15 @@ export class GameApp {
         const pnl = panel(this.dialogLayer, 'craft', 680, 1000, COL.bg);
         label(pnl, '制作 / 建造（消耗1行动点）', { size: 28, color: COL.accent }).node.setPosition(0, 440);
 
-        let y = 370;
-        for (const r of gm.cfg!.recipes) {
-            if (!CraftSystem.isUnlocked(ctx, r)) continue;
+        const rows = gm.cfg!.recipes.filter(r => CraftSystem.isUnlocked(ctx, r));
+        const list = scrollList(pnl, 'craft_list', 660, 820, rows.length * 104 + 40);
+        list.setPosition(0, -15);
+        let y = -52;   // content 锚点在顶部，首行中心下移半行
+        for (const r of rows) {
             const cost = CraftSystem.effectiveCost(ctx, r)
                 .map(c => `${gm.cfg!.items.find(i => i.id === c.itemId)?.name}${c.count}`).join(' ');
             const chk = CraftSystem.canCraft(ctx, r);
-            const row = panel(pnl, `r_${r.id}`, 640, 92, chk.ok ? COL.panel : '#1a1e28');
+            const row = panel(list, `r_${r.id}`, 640, 92, chk.ok ? COL.panel : '#1a1e28');
             row.setPosition(0, y);
             label(row, r.name, { size: 24, color: chk.ok ? COL.text : COL.dim }).node.setPosition(-290, 24);
             label(row, `材料：${cost}`, { size: 17, color: COL.dim }).node.setPosition(-290, -12);
@@ -647,7 +765,6 @@ export class GameApp {
                 this.openCraft();
             }, { disabled: !chk.ok, fontSize: 19 }).setPosition(230, 0);
             y -= 104;
-            if (y < -430) break;   // 滚动省略，后续加 ScrollView
         }
         button(pnl, '关闭', 200, 64, () => { this.clearDialogs(); this.enableActions(true); })
             .setPosition(0, -470);
@@ -663,10 +780,13 @@ export class GameApp {
         label(pnl, `背包 ${InventorySystem.usedSlots(ctx)}/${InventorySystem.capacity(ctx)}`,
             { size: 28, color: COL.accent }).node.setPosition(0, 440);
 
-        let y = 370;
-        for (const slot of [...ctx.run.inventory]) {
+        const slots = [...ctx.run.inventory];
+        const list = scrollList(pnl, 'bag_list', 660, 820, slots.length * 92 + 40);
+        list.setPosition(0, -15);
+        let y = -46;
+        for (const slot of slots) {
             const def = gm.cfg!.items.find(i => i.id === slot.itemId)!;
-            const row = panel(pnl, `i_${slot.itemId}`, 640, 80, COL.panel);
+            const row = panel(list, `i_${slot.itemId}`, 640, 80, COL.panel);
             row.setPosition(0, y);
             label(row, `${def.name} ×${slot.count}`, { size: 23 }).node.setPosition(-270, 0);
             if (def.use) {
@@ -682,7 +802,6 @@ export class GameApp {
                 this.openInventory();
             }, { fontSize: 19 }).setPosition(90, 0);
             y -= 92;
-            if (y < -430) break;
         }
         button(pnl, '关闭', 200, 64, () => { this.clearDialogs(); this.enableActions(true); })
             .setPosition(0, -470);
@@ -702,6 +821,7 @@ export class GameApp {
         const ed = gm.cfg!.endings.find(e => e.id === endingId);
         this.clearScreens(); this.clearDialogs();
         this.hud = {};
+        AudioManager.I.play(ed?.kind === 'death' ? 'death' : 'clear');
 
         const kindColor = ed?.kind === 'death' ? COL.dim : ed?.kind === 'hidden' ? COL.purple : COL.accent;
         const scr = panel(this.screenLayer, 'ending', 720, 1280, ed?.kind === 'death' ? '#101216' : '#1c1a12');

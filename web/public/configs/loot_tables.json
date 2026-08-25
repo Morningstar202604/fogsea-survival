@@ -1,0 +1,36 @@
+{
+  "lootTables": [
+    { "tier": "wood", "entries": [
+      { "itemId": "mat_wood",       "min": 2, "max": 4, "weight": 26 },
+      { "itemId": "food_berry",     "min": 1, "max": 2, "weight": 20 },
+      { "itemId": "water_dirty",    "min": 1, "max": 2, "weight": 28 },
+      { "itemId": "mat_cloth",      "min": 1, "max": 1, "weight": 10 },
+      { "itemId": "med_bandage",    "min": 1, "max": 1, "weight": 8 },
+      { "itemId": "med_painkiller", "min": 1, "max": 1, "weight": 8 }
+    ]},
+    { "tier": "copper", "entries": [
+      { "itemId": "food_canned",    "min": 1, "max": 2, "weight": 26 },
+      { "itemId": "food_biscuit",   "min": 1, "max": 2, "weight": 16 },
+      { "itemId": "water_clean",    "min": 1, "max": 2, "weight": 18 },
+      { "itemId": "med_bandage",    "min": 1, "max": 1, "weight": 12 },
+      { "itemId": "mat_rope",       "min": 1, "max": 1, "weight": 10 },
+      { "itemId": "tool_torch",     "min": 1, "max": 1, "weight": 10 },
+      { "itemId": "key_map_fragment", "min": 1, "max": 1, "weight": 5 }
+    ]},
+    { "tier": "silver", "entries": [
+      { "itemId": "med_first_aid",  "min": 1, "max": 1, "weight": 22 },
+      { "itemId": "med_antibiotic", "min": 1, "max": 1, "weight": 18 },
+      { "itemId": "tool_fishing_rod", "min": 1, "max": 1, "weight": 12 },
+      { "itemId": "tool_flashlight","min": 1, "max": 1, "weight": 12 },
+      { "itemId": "key_radio_parts","min": 1, "max": 1, "weight": 20 },
+      { "itemId": "med_sedative",   "min": 1, "max": 1, "weight": 16 }
+    ]},
+    { "tier": "gold", "entries": [
+      { "itemId": "key_signal_gun", "min": 1, "max": 1, "weight": 20 },
+      { "itemId": "key_mist_crystal","min": 1, "max": 1,"weight": 20 },
+      { "itemId": "key_radio_parts","min": 2, "max": 3, "weight": 20 },
+      { "itemId": "food_canned",    "min": 2, "max": 3, "weight": 20 },
+      { "itemId": "med_first_aid",  "min": 2, "max": 2, "weight": 20 }
+    ]}
+  ]
+}
