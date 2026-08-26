@@ -495,7 +495,6 @@ export class GameApp {
 
     private doRest(): void {
         TimeSystem.rest(GameManager.I.ctx!);
-        SkillSystem.grantForAction(GameManager.I.ctx!, 'sleep');
         this.appendLog('【休息】你在火堆边打了个盹，精神好了一些。');
         this.refreshHUD(); this.enableActions(true);
         this.afterAction();

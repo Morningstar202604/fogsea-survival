@@ -12,6 +12,7 @@ import { StatusEffectSystem } from './StatusEffectSystem';
 import { RelationshipSystem } from './RelationshipSystem';
 import { ChapterSystem } from './ChapterSystem';
 import { SkillSystem } from './SkillSystem';
+import { SKILL_NAMES } from '../data/SkillDefs';
 import type { SkillCategory } from '../data/SkillDefs';
 
 export interface PickContext {
@@ -100,7 +101,9 @@ export class EventEngine {
         if (r.apLeft !== undefined && ctx.run.apLeft < r.apLeft) return '行动点不足';
         if (r.skillLevel) {
             for (const [cat, minLvl] of Object.entries(r.skillLevel) as [SkillCategory, number][]) {
-                if (SkillSystem.level(ctx, cat) < minLvl) return `${cat}等级不足`;
+                if (SkillSystem.level(ctx, cat) < minLvl) {
+                    return `需${SKILL_NAMES[cat].replace(/^\S+\s/, '')}Lv${minLvl}`;
+                }
             }
         }
         for (const [k, c] of Object.entries(r.stats ?? {})) {
@@ -169,6 +172,11 @@ export class EventEngine {
         }
         if (fx.apSpend) {
             ctx.run.apLeft = Math.max(0, ctx.run.apLeft - fx.apSpend);
+        }
+        if (fx.skillXp) {
+            for (const [cat, xp] of Object.entries(fx.skillXp) as [SkillCategory, number][]) {
+                if (xp > 0) SkillSystem.grant(ctx, cat, xp);
+            }
         }
         if (fx.chatInject) EventBus.emit(GameEvents.ChatInject, { poolId: fx.chatInject });
     }

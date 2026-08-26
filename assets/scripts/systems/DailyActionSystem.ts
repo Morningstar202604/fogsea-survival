@@ -1,4 +1,4 @@
-// 每日行动系统：白天可选的轻量行动（多数不消耗 AP，但每日一次）
+﻿// 每日行动系统：白天可选的轻量行动（多数不消耗 AP，但每日一次）
 // 全部收益由公式驱动，数值集中在本文件便于平衡调参。
 import { clamp } from '../core/RNG';
 import type { GameCtx } from './RunModel';
@@ -161,7 +161,7 @@ export class DailyActionSystem {
         if (ctx.rng.chance(25)) n += 1;
         // 采集者分支加成
         if (SkillSystem.featureUnlocked(ctx, 'herb_quality_1')) n += 1;
-        if (SkillSystem.featureUnlocked(ctx, 'herb暴击') && ctx.rng.chance(25)) n += 1;
+        if (SkillSystem.featureUnlocked(ctx, 'herb_crit') && ctx.rng.chance(25)) n += 1;
         InventorySystem.add(ctx, 'herb_green', n);
         return { ok: true, msg: `【采药】溪边、林缘、墙根。苦艾草×${n}。` };
     }
@@ -292,15 +292,18 @@ export class DailyActionSystem {
         const ingredient = mains[0];
         InventorySystem.remove(ctx, ingredient, 1);
         TimeSys_spendAp(ctx, 1);
+        // 灵感点燃 → 品质判定（与 CraftSystem 同口径：Lv2 精良 / Lv4+灵感 大师）
+        SkillSystem.consumeInspiration(ctx);
         const craftLv = SkillSystem.level(ctx, 'craft');
-        const quality = SkillSystem.hasInspiration(ctx) ? 'master' :
-                        craftLv >= 3 ? 'fine' : 'normal';
+        const ignitedByThisCook = SkillSystem.hasInspiration(ctx);
+        const quality = craftLv >= 4 && ignitedByThisCook ? 'master' :
+                        craftLv >= 2 ? 'fine' : 'normal';
+        if (quality !== 'normal') SkillSystem.tickInspirationCharge(ctx);
         const qualBonus = quality === 'master' ? 1.6 : quality === 'fine' ? 1.3 : 1;
         const hunger = Math.round(25 * qualBonus);
         const san = Math.round(10 * qualBonus);
         StatsSystem.apply(ctx, 'hunger', hunger);
         StatsSystem.apply(ctx, 'sanity', san);
-        SkillSystem.tickInspirationCharge(ctx);
         const qualTag = quality === 'master' ? '✨大师级' : quality === 'fine' ? '⭐精良' : '';
         return { ok: true, msg: `【精致料理】用心烹制，${qualTag}出品。（饱食+${hunger} 精神+${san}）`, apCost: 1 };
     }

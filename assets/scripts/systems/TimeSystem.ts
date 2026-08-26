@@ -12,6 +12,7 @@ import { TradingSystem } from './TradingSystem';
 import { EndingSystem } from './EndingSystem';
 import { ChapterSystem } from './ChapterSystem';
 import { SceneSystem } from './SceneSystem';
+import { SkillSystem } from './SkillSystem';
 import type { GameCtx } from './RunModel';
 
 const WEATHER_POOL: { id: string; weight: number }[] = [
@@ -334,7 +335,8 @@ export class TimeSystem {
             return { ended: true, endingId: ending, newDay: run.day };
         }
 
-        // 8. 推进到下一天清晨
+        // 8. 推进到下一天清晨（安睡一夜授予生存经验）
+        SkillSystem.grantForAction(ctx, 'sleep');
         run.day += 1;
         run.phase = 'morning';
         EventBus.emit(GameEvents.DayAdvance, { newDay: run.day });

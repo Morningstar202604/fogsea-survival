@@ -13,6 +13,9 @@ import { LocationSystem } from '../../assets/scripts/systems/LocationSystem';
 import { ItemUsageSystem } from '../../assets/scripts/systems/ItemUsageSystem';
 import { StatusEffectSystem } from '../../assets/scripts/systems/StatusEffectSystem';
 import { TradingSystem } from '../../assets/scripts/systems/TradingSystem';
+import { SkillSystem } from '../../assets/scripts/systems/SkillSystem';
+import { DailyActionSystem } from '../../assets/scripts/systems/DailyActionSystem';
+import { SceneSystem } from '../../assets/scripts/systems/SceneSystem';
 import type { EventDef } from '../../assets/scripts/data/EventDefs';
 
 const TOTAL_DAYS = 15;
@@ -116,6 +119,15 @@ function playOnce(seed: number, talentId: string): { days: number; endingId: str
         }
         // T09 赠礼已由 startMorning 直接入包（含频道插播），无需处理
 
+        // v0.7.1 场景推进：像玩家一样把多拍剧本演完（每拍选第一个可用项）
+        let sceneGuard = 0;
+        while (!ctx.run.endingId && sceneGuard++ < 40) {
+            const ev = SceneSystem.activeNode(ctx);
+            if (!ev) break;
+            const branch = EventEngine.resolveOption(ctx, ev, 0);
+            if (SceneSystem.followUp(ctx, ev, branch) === null) break;
+        }
+
         // 白天：跟随系统提示的新手策略（会做明显准备动作，但不会深度优化）
         while (TimeSystem.canAct(ctx)) {
             if (!TimeSystem.exploreAllowed(ctx)) break;
@@ -199,6 +211,7 @@ function playOnce(seed: number, talentId: string): { days: number; endingId: str
             } catch {
                 break;   // 工具缺失等情况直接休息
             }
+            SkillSystem.grantForAction(ctx, 'explore');   // v0.7.1 模拟器感知技能树
             tidyBag(ctx);   // 探索产出后整理背包（模拟真人丢杂物）
             runEventChain(ctx, eventId);
             if (ctx.run.endingId) break;
@@ -207,6 +220,10 @@ function playOnce(seed: number, talentId: string): { days: number; endingId: str
 
         // 黄昏：保守策略——回家
         void TimeSystem.duskNeeded;
+
+        // 睡前习惯：写日记 / 冥想（像人一样积累知识线）
+        DailyActionSystem.journal(ctx);
+        if (ctx.rng.chance(50)) DailyActionSystem.meditate(ctx);
 
         // 夜晚
         const night = TimeSystem.beginNight(ctx);

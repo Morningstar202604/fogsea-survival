@@ -27,6 +27,7 @@ export interface EffectPayload {
     morality?: number;                         // 道德值增减（救人+ 抢劫-）
     fogPressure?: number;                      // 雾压增减（深入浓雾/招惹未知 +）
     apSpend?: number;                          // 场景玩法钩子：直接消耗行动点
+    skillXp?: Partial<Record<SkillCategory, number>>;   // v0.7.1 场景/事件选择授予技能经验
 }
 
 export interface ResultBranch extends EffectPayload {

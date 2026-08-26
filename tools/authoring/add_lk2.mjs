@@ -1,0 +1,100 @@
+// v0.7.1 场景补写·老K线（下）：s5~s8（含跨系统flag回收）
+export const ADD_LK2 = {
+  'laok_s5_patrol/offer': [
+    { text: '把你的火把塞进他背包侧袋',
+      requires: { items: [{ itemId: 'tool_torch', count: 1 }] },
+      outcomes: [{ text: '他低头看了一眼，没推回来，只拍了拍包侧：「晚上给你带溪谷的月亮回来。」——向导接受火把的方式，就是承诺归期。',
+        effects: { relNpc: 'laok', relDelta: 4, skillXp: { survival: 4, social: 3 } }, goto: 'debrief' }] },
+  ],
+  'laok_s5_patrol/debrief': [
+    { text: '在木板地图上补上你见过的那道车辙',
+      requires: { flags: ['scout_spotted'] },
+      outcomes: [{ text: '他的炭条停在你画的车辙上，盯了足有十秒。「雾墙外……」他把两个标记连了一条虚线，「你从高地看到的，和我踩到的点，对上了。」两张情报拼成一张图的那一刻，这间屋子有了真正的作战室的样子。',
+        effects: { setFlags: ['lk_joint_map'], sanity: 3, skillXp: { knowledge: 7 } } }] },
+    { text: '把爪印的位置用炭条圈了个圈',
+      requires: { skillLevel: { combat: 1 } },
+      outcomes: [{ text: '「圈它干嘛？」「下次绕着走。」他看了看你，又看了看那个圈，把整块木板转了个方向——让圈正对着门口。「行。以后出门先看圈。」猎人的规矩和老兵的规矩，就这样合了流。',
+        effects: { sanity: 2, skillXp: { combat: 5, survival: 3 } } }] },
+  ],
+  'laok_s6_secret/key': [
+    { text: '问：「如果我回不来呢？」',
+      outcomes: [{ text: '他盯着你，火光在他眼底烧。「那就说明，」他一个字一个字地说，「我不配让你去。」——这句话没有商量余地。你把钥匙攥紧了：这不是嘱托，是军令。',
+        effects: { sanity: -2, relNpc: 'laok', relDelta: 4, skillXp: { social: 4 } } }] },
+    { text: '把钥匙在掌心焐热了才还给他看：「记下了」',
+      outcomes: [{ text: '你没有立刻接话，只是把钥匙的齿口朝向、绳缠的圈数默默记了两遍，然后还到他掌心：「现在你去拿也行，我去拿也行。」他捏着那枚被你焐热的黄铜，半晌，重重点头。',
+        effects: { sanity: 2, skillXp: { knowledge: 5 } } }] },
+  ],
+  'laok_s6_secret/trek': [
+    { text: '进洞前，在支撑木上补刻一个活扣记号',
+      outcomes: [{ text: '刀尖刻下去的时候你想：万一他也来过，万一他回头找路——多一个记号，就少一次摸黑。刻痕比他的浅些，但打法一模一样。',
+        effects: { setFlags: ['lk_mark_added'], sanity: 2, skillXp: { craft: 5 } } }] },
+  ],
+  'laok_s6_secret/room': [
+    { text: '合掌默立三秒，再动手开箱',
+      outcomes: [{ text: '灰尘在光柱里浮动。你对着一箱不属于你的告别站直了身体——不为别的，只为这三个字的主人当年没能到场。然后你蹲下去，解开了防水的结。',
+        effects: { sanity: 3, skillXp: { social: 3 } } }] },
+    { text: '先查看箱子四周有没有布设机关',
+      requires: { skillLevel: { survival: 2 } },
+      outcomes: [{ text: '绕箱一圈：无绊索，无铃线，箱盖缝隙里的灰完整未破——没有机关，也没有人来过。老K的谨慎全用在了防水防潮上，却没防人。这座矿洞里，他谁都不防。',
+        effects: { sanity: 1, skillXp: { survival: 5 } } }] },
+  ],
+  'laok_s6_secret/letter': [
+    { text: '把信按原折痕放回去：有些话该他自己读',
+      outcomes: [{ text: '你把药和东西分装好，唯独那封信原样压回了箱底，连石头都照原样盖好。——替人看一眼是情分，替人读完是越界。有些路标只能指到路口，最后几步得他自己走。',
+        effects: { setFlags: ['lk_letter_unread'], relNpc: 'laok', relDelta: 5, sanity: 2, skillXp: { social: 4 } } }] },
+  ],
+  'laok_s6_secret/quiet_end': [
+    { text: '夜里把工具房钥匙擦亮，挂上门后的钉子',
+      outcomes: [{ text: '黄铜在袖口蹭了几下就亮了。你把它挂在最顺手的高度——哪天他问起来，伸手就能够到。谎话已经说过，但钥匙可以一直诚实：它随时都在。',
+        effects: { sanity: 2, skillXp: { craft: 3 } } }] },
+  ],
+  'laok_s6_secret/trust_end': [
+    { text: '烧一锅热水，等他回来烫脚',
+      outcomes: [{ text: '后半夜哨响，他进门时屋里水汽正暖。「搞什么？」他愣在门口。「山里人的规矩，」你把他按到小板凳上，「开工唱歌，收工烫脚。」他骂了一句什么，声音哑哑的，脚在水里泡了很久很久。',
+        effects: { relNpc: 'laok', relDelta: 6, sanity: 4, skillXp: { social: 4, survival: 3 } } }] },
+  ],
+  'laok_s7_plan/proposal': [
+    { text: '指着高地缺口问：「第一波冲这里怎么办」',
+      requires: { skillLevel: { knowledge: 2 } },
+      outcomes: [{ text: '他眼睛倏地亮了，抓过炭条就在缺口外添了两道弧线：「拒马斜置，让它们自己往两边挤——挤出来的空当就是射击位！」两个人趴在一张木板上越画越快，像两个回到山里的老向导。计划还是他的计划，但现在它多了第三道防线。',
+        effects: { setFlags: ['lk_plan_refined'], relNpc: 'laok', relDelta: 4, skillXp: { knowledge: 7 } }, goto: 'eve' }] },
+  ],
+  'laok_s7_plan/eve': [
+    { text: '往陶罐的沙里掺石灰粉',
+      requires: { skillLevel: { craft: 2 } },
+      outcomes: [{ text: '「沙子压重，石灰迷眼。」你拍实最后一个罐口。老K拎起罐子掂了掂，忽然大笑：「好小子——这一下顶我三根拒马！」工地上响起今晚第一次不成调的歌，这次是你起的头。',
+        effects: { setFlags: ['lk_lime_jars'], relNpc: 'laok', relDelta: 4, skillXp: { craft: 7 } }, goto: 'night' }] },
+  ],
+  'laok_s7_plan/night': [
+    { text: '背靠背时数他的呼吸给自己定拍',
+      outcomes: [{ text: '嘶吼声浪一阵阵压过来，你的心跳开始抢拍。于是你数他的呼吸——稳的，深的，像山里人的钟摆。第四个来回，你的手不抖了。所谓并肩，就是把自己的节律借给对方一半。',
+        effects: { sanity: 5, skillXp: { combat: 6, social: 3 } } }] },
+  ],
+  'laok_s7_plan/stubborn': [
+    { text: '给斧头柄缠上一圈防滑布条',
+      requires: { items: [{ itemId: 'mat_cloth', count: 1 }] },
+      outcomes: [{ text: '布条缠了三层，收尾掖进缝里。走廊尽头传来极轻的一声——像是他看见了，也像是木头在夜里挪动。但你握斧的手心再没打过滑，而他守窗的身影，不知不觉把你这边挡得更严了。',
+        effects: { loseItems: [{ itemId: 'mat_cloth', count: 1 }], skillXp: { craft: 5 } } }] },
+  ],
+  'laok_s8_oath/repair': [
+    { text: '把最后一把完好的钉子留给他收着',
+      outcomes: [{ text: '「留着干嘛？」「数日子用不完，总得剩一颗压箱底。」他捏着那颗钉子看了看，忽然笑了，随手别进了胸前的口袋——贴着心口的位置。物资见底不可怕，可怕的是没人跟你一起数。',
+        effects: { relNpc: 'laok', relDelta: 4, skillXp: { social: 3 } }, goto: 'compass' }] },
+  ],
+  'laok_s8_oath/compass': [
+    { text: '问他砍痕的来历',
+      outcomes: [{ text: '「狼獾。」他说完这两个字就不说了，自己先笑了，笑得肩膀直抖。你等着下文，等了半天只有下文没有了。「就俩字？」「就俩字。」他把指南针往你手里又按了按——有些故事的门票，得活着出去再买。',
+        effects: { setFlags: ['lk_compass_story'], sanity: 4, skillXp: { knowledge: 4 } } }] },
+  ],
+  'laok_s8_oath/school': [
+    { text: '「教你孙子下棋。让你尝尝连输五把的滋味」',
+      outcomes: [{ text: '他愣了整整三秒，随即一口茶喷进火堆，呛得又咳又笑：「兔崽子！我闺女还没嫁人你就给我孙子安排上了？！」笑完他抹了抹眼角——不知是呛的还是别的——「行啊。那你可得多备几个棋盘。」',
+        effects: { relNpc: 'laok', relDelta: 6, sanity: 6, skillXp: { social: 6 } }, goto: 'oath' }] },
+  ],
+  'laok_s8_oath/oath': [
+    { text: '击掌之后补一句：「信我留着，出去那天还你」',
+      requires: { flags: ['lk_letter_unread'] },
+      outcomes: [{ text: '他的手掌在你掌心僵了一瞬。喉结动了动，最终只说了两个字：「成交。」握得更紧了。有些约定不需要解释内容——一个信封，一个日期，足够两个人各自挺直腰板走完最后一程。',
+        effects: { relNpc: 'laok', relDelta: 7, setFlags: ['lk_letter_pledge'], sanity: 3, skillXp: { social: 5 } } }] },
+  ],
+};

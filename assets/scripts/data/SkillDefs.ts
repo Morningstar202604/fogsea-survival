@@ -1,4 +1,4 @@
-// 技能树定义：5线×3分支=15节点，跨线前置条件形成交错成长
+﻿// 技能树定义：5线×3分支=15节点，跨线前置条件形成交错成长
 export type SkillCategory = 'survival' | 'combat' | 'craft' | 'knowledge' | 'social';
 export const SKILL_CATEGORIES: SkillCategory[] = ['survival', 'combat', 'craft', 'knowledge', 'social'];
 
@@ -11,7 +11,7 @@ export const BRANCH_NAMES: Record<string, string> = {
     forager: '采集者', pathfinder: '探路者', endurer: '耐力者',
     hunter: '猎手', brawler: '格斗家', tactician: '战术家',
     builder: '建造者', cook: '烹饪师', inventor: '发明家',
-    scout精英: '侦察兵', scholar: '学者', mystic: '灵媒',
+    scout_elite: '侦察兵', scholar: '学者', mystic: '灵媒',
     merchant: '商人', diplomat: '外交官', leader: '领袖',
 };
 
@@ -42,7 +42,7 @@ export const SKILL_BRANCHES: SkillBranch[] = [
     { id: 'forager', category: 'survival', name: '采集者',
       unlocksByLevel: [
           ['herb_quality_1'],           // Lv1: 草药品质+1
-          ['herb暴击'],                 // Lv2: 采药25%暴击(+1额外)
+          ['herb_crit'],                 // Lv2: 采药25%暴击(+1额外)
           ['forage_locations'],         // Lv3: 解锁隐藏采集点
       ]},
     { id: 'pathfinder', category: 'survival', name: '探路者',
@@ -75,7 +75,7 @@ export const SKILL_BRANCHES: SkillBranch[] = [
           ['counter_attack'],           // Lv3: 反击(战斗事件额外收益)
       ]},
     { id: 'tactician', category: 'combat', name: '战术家',
-      prereq: [{ branch: 'brawler', level: 1 }, { branch: 'knowledge', branchId: 'scout精英', level: 1 }],
+      prereq: [{ branch: 'brawler', level: 1 }, { branch: 'knowledge', branchId: 'scout_elite', level: 1 }],
       unlocksByLevel: [
           ['night_intel'],              // Lv1: 夜战前侦察(降低夜战概率)
           ['beast_tide_plan'],          // Lv2: 兽潮防御工事+30%
@@ -105,14 +105,14 @@ export const SKILL_BRANCHES: SkillBranch[] = [
       ]},
 
     // ── 知识线 ──
-    { id: 'scout精英', category: 'knowledge', name: '侦察兵',
+    { id: 'scout_elite', category: 'knowledge', name: '侦察兵',
       unlocksByLevel: [
           ['scout_range_plus'],         // Lv1: 侦察范围+(更多情报)
           ['map_reveal'],               // Lv2: 地图揭示(隐藏地点)
           ['threat_predict'],           // Lv3: 威胁预判(灾前3天预警)
       ]},
     { id: 'scholar', category: 'knowledge', name: '学者',
-      prereq: [{ branch: 'scout精英', level: 1 }],
+      prereq: [{ branch: 'scout_elite', level: 1 }],
       unlocksByLevel: [
           ['radio_decrypt'],            // Lv1: 广播解密(情报质量+)
           ['lore_knowledge'],           // Lv2: 世界观知识(隐藏事件线索)
@@ -153,7 +153,7 @@ export const SKILL_BRANCHES: SkillBranch[] = [
 export const FEATURE_REGISTRY: FeatureUnlock[] = [
     // ── 生存线 ──
     { id: 'herb_quality_1', name: '草药精选', desc: '采药+1品质', type: 'passive', hook: 'daily.herbs.quality1' },
-    { id: 'herb暴击', name: '草药暴击', desc: '采药25%概率+1额外', type: 'passive', hook: 'daily.herbs.crit' },
+    { id: 'herb_crit', name: '草药暴击', desc: '采药25%概率+1额外', type: 'passive', hook: 'daily.herbs.crit' },
     { id: 'forage_locations', name: '隐藏采集点', desc: '解锁隐藏草药采集点', type: 'ui', hook: 'explore.forage_spot' },
     { id: 'explore_cooldown_minus', name: '轻装上阵', desc: '探索冷却-1天', type: 'passive', hook: 'explore.cooldown' },
     { id: 'fog_navigation', name: '雾中辨向', desc: '迷雾深处探索安全+1', type: 'passive', hook: 'explore.fog_safe' },
@@ -231,5 +231,7 @@ export const ACTION_XP: Record<string, [number, number, number, number, number]>
     playChess:       [0, 0, 0, 0, 10],
     leaveFood:       [0, 0, 0, 0, 12],
     checkTrap:       [3, 5, 0, 0, 0],
+    scoutDeep:       [0, 0, 0, 18, 0],
+    weaveRopeUp:     [0, 0, 10, 0, 0],
     sleep:           [3, 0, 0, 0, 0],
 };

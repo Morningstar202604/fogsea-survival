@@ -1,6 +1,6 @@
 // 技能树引擎：XP/等级/分支/解锁/灵感系统
 import { SKILL_CATEGORIES, XP_PER_LEVEL, MAX_SKILL_LEVEL, ACTION_XP,
-         SKILL_BRANCHES, type SkillCategory } from '../data/SkillDefs';
+         SKILL_BRANCHES, SKILL_NAMES, FEATURE_REGISTRY, type SkillCategory } from '../data/SkillDefs';
 import type { GameCtx } from './RunModel';
 
 export interface SkillBranchState {
@@ -41,6 +41,18 @@ export class SkillSystem {
         }
         // 检查灵感触发
         this.checkInspiration(ctx, actionId);
+    }
+
+    /** 行动将获得的 XP 摘要（授予前调用，用于 UI 回执，如 "⭐+15生存 +3知识"） */
+    static xpSummaryFor(_ctx: GameCtx, actionId: string): string {
+        const row = ACTION_XP[actionId];
+        if (!row) return '';
+        const cats = SKILL_CATEGORIES;
+        const parts: string[] = [];
+        for (let i = 0; i < 5; i++) {
+            if (row[i] > 0) parts.push(`+${row[i]}${SKILL_NAMES[cats[i]].replace(/^\S+\s/, '')}`);
+        }
+        return parts.length ? `⭐ ${parts.join(' ')}` : '';
     }
 
     // ===== 等级查询 =====
@@ -116,6 +128,33 @@ export class SkillSystem {
     /** 检查分支达到指定等级（用于分支特定门槛） */
     static branchAtLeast(ctx: GameCtx, branchId: string, minLevel: number): boolean {
         return this.branchLevel(ctx, branchId) >= minLevel;
+    }
+
+    /** 下一级的解锁预告（数据派生：分支已开→列特性名；未开→提示前置），供 UI 展示 */
+    static nextUnlockPreview(ctx: GameCtx, category: SkillCategory): string {
+        const lv = this.level(ctx, category);
+        const nextLv = Math.min(MAX_SKILL_LEVEL, lv + 1);
+        const feats: string[] = [];
+        let blockedBy = '';
+        for (const b of SKILL_BRANCHES) {
+            if (b.category !== category) continue;
+            if (!this.branchUnlocked(ctx, b.id)) {
+                const pre = (b.prereq ?? [])[0];
+                if (pre) {
+                    const pb = SKILL_BRANCHES.find(x => x.id === (pre.branchId ?? pre.branch));
+                    const pn = pb ? `${SKILL_NAMES[pb.category].replace(/^\S+\s/, '')}·${pb.name}` : pre.branchId ?? pre.branch;
+                    blockedBy = `前置：${pn} Lv${pre.level}`;
+                }
+                continue;
+            }
+            const unlocks = b.unlocksByLevel[nextLv - 1] ?? [];
+            for (const fid of unlocks) {
+                const f = FEATURE_REGISTRY.find(x => x.id === fid);
+                if (f) feats.push(f.name);
+            }
+        }
+        if (feats.length) return `Lv${nextLv} 解锁：${feats.slice(0, 3).join('、')}`;
+        return blockedBy || `Lv${nextLv}`;
     }
 
     // ===== 灵感系统 =====

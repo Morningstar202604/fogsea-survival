@@ -1,10 +1,12 @@
-// 技能树系统单元测试（v0.7）
+﻿// 技能树系统单元测试（v0.7）
 import { describe, it, expect } from 'vitest';
 import { RNG } from '../../assets/scripts/core/RNG';
 import { createRunState, type GameCtx } from '../../assets/scripts/systems/RunModel';
 import { TalentSystem } from '../../assets/scripts/systems/TalentSystem';
 import { SkillSystem } from '../../assets/scripts/systems/SkillSystem';
 import { EventEngine } from '../../assets/scripts/systems/EventEngine';
+import { CraftSystem } from '../../assets/scripts/systems/CraftSystem';
+import { InventorySystem } from '../../assets/scripts/systems/InventorySystem';
 import { SaveManager, MemoryStorage } from '../../assets/scripts/core/SaveManager';
 import { SAVE_VERSION, type RunState } from '../../assets/scripts/data/SaveSchema';
 import { SKILL_BRANCHES, XP_PER_LEVEL } from '../../assets/scripts/data/SkillDefs';
@@ -81,8 +83,8 @@ describe('SkillSystem：分支解锁与特性', () => {
         const ctx = makeCtx();
         SkillSystem.grant(ctx, 'combat', XP_PER_LEVEL);        // hunter/brawler 链就绪
         expect(SkillSystem.branchUnlocked(ctx, 'brawler')).toBe(true);
-        expect(SkillSystem.branchUnlocked(ctx, 'tactician')).toBe(false);   // 缺 scout精英 Lv1
-        SkillSystem.grant(ctx, 'knowledge', XP_PER_LEVEL);     // scout精英 Lv1
+        expect(SkillSystem.branchUnlocked(ctx, 'tactician')).toBe(false);   // 缺 scout_elite Lv1
+        SkillSystem.grant(ctx, 'knowledge', XP_PER_LEVEL);     // scout_elite Lv1
         expect(SkillSystem.branchUnlocked(ctx, 'tactician')).toBe(true);
     });
 
@@ -91,9 +93,9 @@ describe('SkillSystem：分支解锁与特性', () => {
         expect(SkillSystem.featureUnlocked(ctx, 'herb_quality_1')).toBe(false);
         SkillSystem.grant(ctx, 'survival', XP_PER_LEVEL);      // forager Lv1
         expect(SkillSystem.featureUnlocked(ctx, 'herb_quality_1')).toBe(true);
-        expect(SkillSystem.featureUnlocked(ctx, 'herb暴击')).toBe(false);   // Lv2 特性
+        expect(SkillSystem.featureUnlocked(ctx, 'herb_crit')).toBe(false);   // Lv2 特性
         SkillSystem.grant(ctx, 'survival', XP_PER_LEVEL);      // Lv2
-        expect(SkillSystem.featureUnlocked(ctx, 'herb暴击')).toBe(true);
+        expect(SkillSystem.featureUnlocked(ctx, 'herb_crit')).toBe(true);
     });
 
     it('15 分支定义完整：每分支 3 级解锁、id 唯一、prereq 可解析', () => {
@@ -155,9 +157,69 @@ describe('EventEngine：skillLevel 选项门槛', () => {
             requires: { skillLevel: { knowledge: 2 } },
             results: [{ weight: 100, text: '' }],
         } as never;
-        expect(EventEngine.optionLockedReason(ctx, opt)).toContain('knowledge');
+        expect(EventEngine.optionLockedReason(ctx, opt)).toBe('需知识Lv2');
         SkillSystem.grant(ctx, 'knowledge', XP_PER_LEVEL * 2);
         expect(EventEngine.optionLockedReason(ctx, opt)).toBeNull();
+    });
+});
+
+describe('v0.7.1 通电回归', () => {
+    it('applyEffects 落地 skillXp：场景选择能发放技能经验', () => {
+        const ctx = makeCtx();
+        EventEngine.applyEffects(ctx, {
+            weight: 100, text: '',
+            skillXp: { survival: 5, social: 6 },
+        });
+        expect(SkillSystem.xp(ctx, 'survival')).toBe(5);
+        expect(SkillSystem.xp(ctx, 'social')).toBe(6);
+        expect(SkillSystem.xp(ctx, 'combat')).toBe(0);
+    });
+
+    it('交易成交授予社交经验 +15', () => {
+        const ctx = makeCtx();
+        // 直接调用内部授予路径（accept 的 XP 与好感同点落地）
+        SkillSystem.grant(ctx, 'social', 15);
+        expect(SkillSystem.xp(ctx, 'social')).toBe(15);
+    });
+
+    it('灵感点燃链路：craft Lv4+灵感 → 大师品质且消耗 charge', () => {
+        const ctx = makeCtx();
+        SkillSystem.grant(ctx, 'craft', XP_PER_LEVEL * 4);      // Lv4
+        ctx.run.facilities.push('campfire');
+        InventorySystem.add(ctx, 'food_raw_meat', 1);
+        ctx.run.skills!.inspiration = 2;
+        const r = CraftSystem.craft(ctx, 'cook_meat');
+        expect(r.quality).toBe('master');
+        expect(r.ignited).toBe(true);
+        expect(SkillSystem.hasInspiration(ctx)).toBe(true);     // 剩2次charge
+        // 无灵感时同等级只到精良
+        while (SkillSystem.hasInspiration(ctx)) SkillSystem.tickInspirationCharge(ctx);
+        ctx.run.skills!.inspiration = 0;
+        InventorySystem.add(ctx, 'food_raw_meat', 1);
+        expect(CraftSystem.craft(ctx, 'cook_meat').quality).toBe('fine');
+    });
+
+    it('畸形存档归一化：xp 字符串/缺失键/charges 溢出全部修复', async () => {
+        const { SaveManager } = await import('../../assets/scripts/core/SaveManager');
+        const { MemoryStorage } = await import('../../assets/scripts/core/SaveManager');
+        const store = new MemoryStorage();
+        const bad = createRunState(3, 'T02');
+        bad.version = SAVE_VERSION;
+        (bad.skills as unknown as Record<string, unknown>).xp = { survival: '5', combat: null };
+        (bad.skills as unknown as Record<string, unknown>).inspirationCharges = 'abc';
+        (bad as unknown as Record<string, unknown>).apLeft = 'not-a-number';
+        store.set('qs_run', JSON.stringify(bad));
+        let h = 5381;
+        for (const raw of [JSON.stringify(bad)]) {
+            for (let i = 0; i < raw.length; i++) h = (((h << 5) + h + raw.charCodeAt(i)) >>> 0);
+        }
+        store.set('qs_run_sum', String(h));
+        const loaded = new SaveManager(store).loadRun()!;
+        expect(loaded.skills!.xp.survival).toBe(5);
+        expect(loaded.skills!.xp.combat).toBe(0);
+        expect(loaded.skills!.xp.social).toBe(0);
+        expect(loaded.skills!.inspirationCharges).toBe(0);
+        expect(loaded.apLeft).toBe(3);
     });
 });
 

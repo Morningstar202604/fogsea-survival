@@ -46,6 +46,35 @@ const MIGRATIONS: Record<number, Migration> = {
     },
 };
 
+/** 载入后的字段级归一化：畸形类型一律修复为合法默认（防 NaN/字符串拼接/undefined 炸点） */
+function normalizeRunState(d: RunState): void {
+    // 技能树
+    if (!d.skills || typeof d.skills !== 'object') {
+        d.skills = { xp: { survival: 0, combat: 0, craft: 0, knowledge: 0, social: 0 }, inspiration: 0, inspirationCharges: 0 };
+    } else {
+        const xp = (d.skills.xp && typeof d.skills.xp === 'object' ? d.skills.xp : {}) as Record<string, unknown>;
+        for (const cat of ['survival', 'combat', 'craft', 'knowledge', 'social']) {
+            const n = Number(xp[cat]);
+            xp[cat] = Number.isFinite(n) ? Math.max(0, n) : 0;
+        }
+        d.skills.xp = xp as NonNullable<RunState['skills']>['xp'];
+        d.skills.inspiration = clampInt(d.skills.inspiration, 0, 5);
+        d.skills.inspirationCharges = clampInt(d.skills.inspirationCharges, 0, 3);
+    }
+    // 常用数值字段兜底
+    if (!Number.isFinite(Number(d.day))) d.day = 1;
+    if (!Number.isFinite(Number(d.apLeft))) d.apLeft = 3;
+    if (!Array.isArray(d.inventory)) d.inventory = [];
+    if (!Array.isArray(d.flags)) d.flags = [];
+    if (!Array.isArray(d.scenesDone)) d.scenesDone = [];
+    if (!d.counters || typeof d.counters !== 'object') d.counters = {};
+}
+
+function clampInt(v: unknown, lo: number, hi: number): number {
+    const n = Math.trunc(Number(v));
+    return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : lo;
+}
+
 export class SaveManager {
     constructor(private store: StorageBackend) {}
 
@@ -68,6 +97,7 @@ export class SaveManager {
                 data = MIGRATIONS[v]?.(data as unknown as Record<string, unknown>) as unknown as RunState;
                 v++;
             }
+            normalizeRunState(data);
             data.version = SAVE_VERSION;
             return data;
         } catch {

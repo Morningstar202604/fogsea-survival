@@ -44,12 +44,12 @@ export class CraftSystem {
         return { ok: true };
     }
 
-    /** 计算本次制作品质 */
+    /** 计算本次制作品质（Lv2 精良；Lv4+灵感 大师） */
     static computeQuality(ctx: GameCtx): CraftQuality {
         const craftLv = SkillSystem.level(ctx, 'craft');
         const hasInspiration = SkillSystem.hasInspiration(ctx);
-        if (craftLv >= 6 && hasInspiration) return 'master';
-        if (craftLv >= 3) return 'fine';
+        if (craftLv >= 4 && hasInspiration) return 'master';
+        if (craftLv >= 2) return 'fine';
         return 'normal';
     }
 
@@ -58,14 +58,15 @@ export class CraftSystem {
         return QUALITY_MULT[quality];
     }
 
-    static craft(ctx: GameCtx, recipeId: string): { quality: CraftQuality } {
+    static craft(ctx: GameCtx, recipeId: string): { quality: CraftQuality; ignited: boolean } {
         const recipe = this.getRecipe(ctx, recipeId);
         const check = this.canCraft(ctx, recipe);
         if (!check.ok) throw new Error(`无法制作 ${recipeId}: ${check.reason}`);
 
         InventorySystem.removeMany(ctx, this.effectiveCost(ctx, recipe));
 
-        // 计算品质
+        // 灵感点燃：攒有点数且当前无燃烧 → 消耗1点换3次大师加成
+        const ignited = SkillSystem.consumeInspiration(ctx);
         const quality = this.computeQuality(ctx);
         if (quality !== 'normal') SkillSystem.tickInspirationCharge(ctx);
 
@@ -91,6 +92,6 @@ export class CraftSystem {
         const xpBonus = quality === 'master' ? 1.5 : quality === 'fine' ? 1.2 : 1;
         SkillSystem.grant(ctx, 'craft', Math.round(15 * xpBonus));
 
-        return { quality };
+        return { quality, ignited };
     }
 }

@@ -30,6 +30,19 @@ const WEATHER_NAME: Record<string, string> = {
     cold_front: '❄寒流', acid_rain: '☂酸雨',
 };
 
+const SKILL_SHORT: Record<string, string> = {
+    survival: '生存', combat: '战斗', craft: '制作', knowledge: '知识', social: '社交',
+};
+
+/** 技能面板的经验来源提示（数值与 ACTION_XP 表一致；不含未解锁行动的循环指引） */
+const SKILL_SOURCE_HINT: Record<string, string> = {
+    survival: '探索+15 · 钓鱼+12 · 采药+8 · 冥想+8 · 安睡+3',
+    combat: '打猎+15 · 锻炼+10 · 查陷阱+5',
+    craft: '每次制作+15 · 盛宴+20 · 精致料理+18 · 编织/巧编+8~10',
+    knowledge: '日记+10 · 广播+12 · 侦察+15(Lv1后) · 深度侦察+18(Lv2后)',
+    social: '每笔交易+15 · 下棋+10 · 留饭+12',
+};
+
 interface HudRefs {
     stats?: HTMLElement; dayInfo?: HTMLElement; disaster?: HTMLElement;
     chips?: HTMLElement; apDots?: HTMLElement;
@@ -189,7 +202,16 @@ export class AppDom {
     private continueRun(): void {
         const gm = GameManager.I;
         const ctx = gm.continueRun();
-        if (!ctx) return;
+        if (!ctx) {
+            // 存档损坏（已自动备份 _bak）：给玩家明确出路，而不是幽灵按钮
+            this.dialog('⚠ 存档已损毁');
+            const box = document.querySelector('#dialog .dlg')!;
+            txt('上一次的存档无法读取（原始数据已备份）。', box as HTMLElement, 'msgline').style.color = COL.bad;
+            const row = div('', box as HTMLElement); row.style.marginTop = '12px';
+            btn(row, '开始新的一局', () => { this.clearDialogs(); this.showTalentDraw(); }, { kind: 'primary' });
+            btn(row, '返回主菜单', () => { this.clearDialogs(); this.showHome(); });
+            return;
+        }
         this.buildGameScreen();
         this.refreshHUD();
         this.appendLog(`【系统】第 ${ctx.run.day} 天，你从短暂的黑暗中醒来。`);
@@ -308,53 +330,58 @@ export class AppDom {
             btn(box, label, fn, { small: true, disabled });
         };
         if (InventorySystem.count(ctx, 'tool_fishing_rod') > 0) {
-            act('🎣 钓鱼', () => this.doDailyAction(() => DailyActionSystem.fish(ctx)), ctx.run.apLeft <= 0);
+            act('🎣 钓鱼', () => this.doDailyAction(() => DailyActionSystem.fish(ctx), 'fish'), ctx.run.apLeft <= 0);
         }
         if (InventorySystem.count(ctx, 'tool_bow') > 0) {
-            act('🏹 打猎', () => this.doDailyAction(() => DailyActionSystem.hunt(ctx)), ctx.run.apLeft <= 0);
+            act('🏹 打猎', () => this.doDailyAction(() => DailyActionSystem.hunt(ctx), 'hunt'), ctx.run.apLeft <= 0);
         }
-        act('🌿 采药', () => this.doDailyAction(() => DailyActionSystem.gatherHerbs(ctx)));
+        act('🌿 采药', () => this.doDailyAction(() => DailyActionSystem.gatherHerbs(ctx), 'gatherHerbs'));
         if (ctx.run.facilities.includes('trap')) {
-            act('🪤 查陷阱', () => this.doDailyAction(() => DailyActionSystem.checkTrap(ctx)), ctx.run.apLeft <= 0);
+            act('🪤 查陷阱', () => this.doDailyAction(() => DailyActionSystem.checkTrap(ctx), 'checkTrap'), ctx.run.apLeft <= 0);
         }
-        act('🧵 编织', () => this.doDailyAction(() => DailyActionSystem.weaveRope(ctx)));
+        // 建造者Lv1 后替换为高效巧编（1布=1绳）
+        if (SkillSystem.featureUnlocked(ctx, 'build_cost_minus')) {
+            act('🧵 巧编', () => this.doDailyAction(() => DailyActionSystem.weaveRopeUpgraded(ctx), 'weaveRopeUp'));
+        } else {
+            act('🧵 编织', () => this.doDailyAction(() => DailyActionSystem.weaveRope(ctx), 'weaveRope'));
+        }
         // —— v0.7 技能解锁：侦察需知识 Lv1，深度侦察需侦察兵特性 ——
         if (SkillSystem.level(ctx, 'knowledge') >= 1) {
-            act('🚶 侦察', () => this.doDailyAction(() => DailyActionSystem.scout(ctx)), ctx.run.apLeft <= 0);
+            act('🚶 侦察', () => this.doDailyAction(() => DailyActionSystem.scout(ctx), 'scout'), ctx.run.apLeft <= 0);
             if (SkillSystem.featureUnlocked(ctx, 'map_reveal')) {
-                act('🔍 深度侦察', () => this.doDailyAction(() => DailyActionSystem.scoutDeep(ctx)), ctx.run.apLeft <= 0);
+                act('🔍 深度侦察', () => this.doDailyAction(() => DailyActionSystem.scoutDeep(ctx), 'scoutDeep'), ctx.run.apLeft <= 0);
             }
         } else {
             const b = btn(box, '🚶 侦察 🔒', () => this.openSkills(), { small: true });
             txt('知识Lv1', b, 'tag').style.color = COL.dim;
         }
         if (ctx.run.flags.includes('kid_met')) {
-            act('🍚 留饭', () => this.doDailyAction(() => DailyActionSystem.leaveFoodForKid(ctx)));
+            act('🍚 留饭', () => this.doDailyAction(() => DailyActionSystem.leaveFoodForKid(ctx), 'leaveFood'));
         }
         if (ctx.run.companion || ctx.run.flags.includes('laok_ally')) {
-            act('♟ 下棋', () => this.doDailyAction(() => DailyActionSystem.playChessWithLaok(ctx)));
+            act('♟ 下棋', () => this.doDailyAction(() => DailyActionSystem.playChessWithLaok(ctx), 'playChess'));
         }
         const feastable = ['food_raw_meat', 'food_raw_fish', 'food_mushroom']
             .filter(id => InventorySystem.count(ctx, id) > 0).length >= 2;
         if (feastable && SkillSystem.level(ctx, 'craft') >= 2) {
-            act('🍳 盛宴', () => this.doDailyAction(() => DailyActionSystem.cookFeast(ctx)), ctx.run.apLeft <= 0);
+            act('🍳 盛宴', () => this.doDailyAction(() => DailyActionSystem.cookFeast(ctx), 'cookFeast'), ctx.run.apLeft <= 0);
         }
         // v0.7 精致料理：烹饪师特性解锁
         if (ctx.run.facilities.includes('campfire') && SkillSystem.featureUnlocked(ctx, 'cook_quality_2')) {
             const fineable = ['food_raw_meat', 'food_raw_fish', 'food_mushroom']
                 .some(id => InventorySystem.count(ctx, id) > 0);
             if (fineable) {
-                act('🍲 精致料理', () => this.doDailyAction(() => DailyActionSystem.cookFine(ctx)), ctx.run.apLeft <= 0);
+                act('🍲 精致料理', () => this.doDailyAction(() => DailyActionSystem.cookFine(ctx), 'cookFine'), ctx.run.apLeft <= 0);
             }
         }
-        act('💪 锻炼', () => this.doDailyAction(() => DailyActionSystem.exercise(ctx)));
-        act('🧘 冥想', () => this.doDailyAction(() => DailyActionSystem.meditate(ctx)));
-        act('📔 日记', () => this.doDailyAction(() => DailyActionSystem.journal(ctx)));
+        act('💪 锻炼', () => this.doDailyAction(() => DailyActionSystem.exercise(ctx), 'exercise'));
+        act('🧘 冥想', () => this.doDailyAction(() => DailyActionSystem.meditate(ctx), 'meditate'));
+        act('📔 日记', () => this.doDailyAction(() => DailyActionSystem.journal(ctx), 'journal'));
         if (ctx.run.facilities.includes('radio')) {
-            act('📻 广播', () => this.doDailyAction(() => DailyActionSystem.listenRadio(ctx)));
+            act('📻 广播', () => this.doDailyAction(() => DailyActionSystem.listenRadio(ctx), 'listenRadio'));
         }
         if (ctx.run.facilities.includes('campfire') && InventorySystem.count(ctx, 'mat_wood') > 0) {
-            act('🔥 添柴', () => this.doDailyAction(() => DailyActionSystem.stokeFire(ctx)));
+            act('🔥 添柴', () => this.doDailyAction(() => DailyActionSystem.stokeFire(ctx), 'stokeFire'));
         }
         btn(box, '⚙', () => this.openSettings(true), { small: true });
         if (ctx.run.companion) {
@@ -374,25 +401,18 @@ export class AppDom {
 
     private busy = false;
 
-    /** 执行一次每日行动：刷新 HUD 并把结果写进日志 */
-    private doDailyAction(fn: () => { ok: boolean; msg: string }): void {
+    /** 执行一次每日行动：刷新 HUD 并把结果写进日志（actionId 显式传入，驱动技能 XP） */
+    private doDailyAction(fn: () => { ok: boolean; msg: string }, actionId?: string): void {
         const before = EffectReporter.snap(GameManager.I.ctx!);
         const r = fn();
         if (r.ok) {
             const diff = EffectReporter.report(GameManager.I.ctx!, before);
-            this.appendLog(r.msg + (diff ? `\n▸ ${diff}` : ''));
-            // 根据行动消息推断 actionId 并授予技能 XP
-            const actionMap: [string, string][] = [
-                ['钓鱼', 'fish'], ['打猎', 'hunt'], ['采药', 'gatherHerbs'],
-                ['查陷阱', 'checkTrap'], ['编织', 'weaveRope'], ['高效编织', 'weaveRope'],
-                ['侦察', 'scout'], ['深度侦察', 'scout'], ['留饭', 'leaveFood'],
-                ['下棋', 'playChess'], ['盛宴', 'cookFeast'], ['精致料理', 'cookFine'],
-                ['锻炼', 'exercise'], ['冥想', 'meditate'], ['日记', 'journal'],
-                ['广播', 'listenRadio'], ['添柴', 'stokeFire'],
-            ];
-            for (const [kw, actId] of actionMap) {
-                if (r.msg.includes(kw)) { SkillSystem.grantForAction(GameManager.I.ctx!, actId); break; }
+            let xpNote = '';
+            if (actionId) {
+                xpNote = ' ' + SkillSystem.xpSummaryFor(GameManager.I.ctx!, actionId);
+                SkillSystem.grantForAction(GameManager.I.ctx!, actionId);
             }
+            this.appendLog(r.msg + (diff ? `\n▸ ${diff}` : '') + xpNote);
         } else {
             this.appendLog(r.msg);
         }
@@ -420,7 +440,6 @@ export class AppDom {
 
     private doRest(): void {
         TimeSystem.rest(GameManager.I.ctx!);
-        SkillSystem.grantForAction(GameManager.I.ctx!, 'sleep');
         this.appendLog('【休息】你在火堆边打了个盹，精神好了一些。');
         this.refreshHUD(); this.enableActions(true);
         this.afterAction();
@@ -617,11 +636,18 @@ export class AppDom {
                     const branch = EventEngine.resolveOption(gm.ctx!, ev, i);
                     shownText = branch.text;   // 跳字目标切换为结果文本
                     clear(optsBox);
-                    // —— 效果回执行：让每个选择都看得见后果 ——
+                    // —— 效果回执行：让每个选择都看得见后果（含技能经验） ——
                     const fxLine = div('dlg-sub', dlg);
                     const fxText = EffectReporter.report(gm.ctx!, beforeFx);
-                    if (fxText) {
-                        fxLine.textContent = `▸ ${fxText}`;
+                    let xpNote = '';
+                    if (branch.skillXp) {
+                        const parts = Object.entries(branch.skillXp)
+                            .filter(([, v]) => (v ?? 0) > 0)
+                            .map(([k, v]) => `+${v}${SKILL_SHORT[k] ?? k}`);
+                        if (parts.length) xpNote = ` ⭐ ${parts.join(' ')}`;
+                    }
+                    if (fxText || xpNote) {
+                        fxLine.textContent = `▸ ${fxText}${xpNote}`;
                         fxLine.style.color = COL.accent;
                     } else {
                         fxLine.textContent = '▸ （没有产生直接变化）';
@@ -733,15 +759,20 @@ export class AppDom {
                 const before = EffectReporter.snap(ctx);
                 let made = false;
                 let quality: 'normal' | 'fine' | 'master' = 'normal';
+                let ignited = false;
                 try {
-                    quality = CraftSystem.craft(ctx, r.id).quality;
+                    const res = CraftSystem.craft(ctx, r.id);
+                    quality = res.quality;
+                    ignited = res.ignited;
                     TimeSystem.spendAp(ctx, 1);
                     made = true;
                 } catch { /* 条件不满足时静默 */ }
                 if (made) {
                     const diff = EffectReporter.report(ctx, before);
-                    const qTag = quality === 'master' ? ' ✨大师品质！' : quality === 'fine' ? ' ⭐精良' : '';
-                    this.appendLog(`【制作·${r.name}】${diff || '完成。'}${qTag}`);
+                    const qTag = quality === 'master' ? ' ✨大师品质！'
+                        : quality === 'fine' ? ' ⭐精良' : '';
+                    const iTag = ignited ? ' 💡灵感点燃！' : '';
+                    this.appendLog(`【制作·${r.name}】${diff || '完成。'}${qTag}${iTag}`);
                 }
                 GameManager.I.persist(); this.refreshHUD();
                 this.openCraft();
@@ -889,22 +920,12 @@ export class AppDom {
         const inspLine = txt(insp, list, 'msgline');
         inspLine.style.color = sk.inspirationCharges > 0 ? COL.accent : COL.dim;
 
-        // 五条技能线
-        const CATS: [string, string, string][] = [
-            ['survival', '🏕 生存', '探索·钓鱼·采药·冥想'],
-            ['combat', '⚔ 战斗', '打猎·锻炼·陷阱'],
-            ['craft', '🔧 制作', '制作·编织·烹饪'],
-            ['knowledge', '📖 知识', '侦察·广播·日记'],
-            ['social', '🤝 社交', '交易·下棋·留饭'],
+        // 五条技能线：解锁预告数据派生自 SkillSystem.nextUnlockPreview
+        const CATS: [string, string][] = [
+            ['survival', '🏕 生存'], ['combat', '⚔ 战斗'], ['craft', '🔧 制作'],
+            ['knowledge', '📖 知识'], ['social', '🤝 社交'],
         ];
-        const nextUnlock: Record<string, string[]> = {
-            survival: ['Lv1 采集者：草药+1', 'Lv2 探路者：探索冷却-1', 'Lv3 隐藏采集点'],
-            combat: ['Lv1 猎手：弓伤+15%', 'Lv2 格斗家：受伤减免', 'Lv3 战术家：兽潮布阵'],
-            craft: ['Lv1 建造者：材料-15%｜精致料理', 'Lv2 盛宴解锁', 'Lv3 大师品质'],
-            knowledge: ['Lv1 解锁侦察', 'Lv2 地图揭示：深度侦察', 'Lv3 威胁预判'],
-            social: ['Lv1 商人：交易折扣', 'Lv2 外交官：好感+50%', 'Lv3 领袖：士气鼓舞'],
-        };
-        for (const [cat, name, src] of CATS) {
+        for (const [cat, name] of CATS) {
             const lv = SkillSystem.level(ctx, cat as never);
             const xp = SkillSystem.xp(ctx, cat as never);
             const toNext = SkillSystem.xpToNext(ctx, cat as never);
@@ -915,8 +936,8 @@ export class AppDom {
             txt(`${name} Lv.${lv}`, line, 'msgline').style.color =
                 lv >= 5 ? COL.purple : lv >= 2 ? COL.blue : COL.text;
             txt(`   ${bar} ${lv >= 10 ? 'MAX' : `${xp % 100}/100`}`, line).style.color = COL.dim;
-            txt(`   来源：${src}`, line).style.fontSize = '11px';
-            txt(`   ${toNext > 0 ? `距下级还需 ${toNext} 经验 · 下级解锁：${nextUnlock[cat][Math.min(2, lv)]}` : '本线已臻化境'}`,
+            txt(`   经验参考：${SKILL_SOURCE_HINT[cat]}`, line).style.fontSize = '11px';
+            txt(`   ${toNext > 0 ? `距下级还需 ${toNext} 经验 · ${SkillSystem.nextUnlockPreview(ctx, cat as never)}` : '本线已臻化境'}`,
                 line).style.fontSize = '11px';
             txt('', line);
         }

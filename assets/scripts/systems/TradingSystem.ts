@@ -10,6 +10,7 @@ import { InventorySystem } from './InventorySystem';
 import { RelationshipSystem } from './RelationshipSystem';
 import type { NpcId } from './RelationshipSystem';
 import { ChapterSystem } from './ChapterSystem';
+import { SkillSystem } from './SkillSystem';
 import type { GameCtx } from './RunModel';
 
 interface TradeTemplate {
@@ -124,6 +125,8 @@ export class TradingSystem {
         // 与关联 NPC 的每次成交 +3 好感（老医生/小女孩）
         const tpl = TRADE_POOL.find(t => t.id === offer.id);
         if (tpl?.npc) RelationshipSystem.add(ctx, tpl.npc, 3);
+        // v0.7.1 成交授予社交经验
+        SkillSystem.grant(ctx, 'social', 15);
         EventBus.emit(GameEvents.ChatInject, { poolId: 'link_gift' });
         return true;
     }
