@@ -14,7 +14,7 @@ export interface GameCtx {
 
 export function createRunState(seed: number, talentId: string): RunState {
     return {
-        version: 2,
+        version: 4,
         seed,
         day: 1,
         phase: 'morning',
@@ -43,6 +43,13 @@ export function createRunState(seed: number, talentId: string): RunState {
         companion: null,
         tradesToday: [],
         tradesAccepted: [],
+        scene: null,
+        scenesDone: [],
+        skills: {
+            xp: { survival: 0, combat: 0, craft: 0, knowledge: 0, social: 0 },
+            inspiration: 0,
+            inspirationCharges: 0,
+        },
     };
 }
 

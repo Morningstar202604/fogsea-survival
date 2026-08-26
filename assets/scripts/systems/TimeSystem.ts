@@ -10,6 +10,8 @@ import { LocationSystem } from './LocationSystem';
 import { EventEngine } from './EventEngine';
 import { TradingSystem } from './TradingSystem';
 import { EndingSystem } from './EndingSystem';
+import { ChapterSystem } from './ChapterSystem';
+import { SceneSystem } from './SceneSystem';
 import type { GameCtx } from './RunModel';
 
 const WEATHER_POOL: { id: string; weight: number }[] = [
@@ -27,6 +29,8 @@ export interface MorningReport {
     dailyEventId: string | null;
     giftItemId: string | null;    // T09 社牛赠礼
     storyEventId: string | null;  // 剧情链自然触发
+    anchorEventId: string | null; // v0.5 章节转场大事件（必发锚点）
+    sceneId: string | null;       // v0.6 场景（多拍剧本）调度
 }
 
 export interface ExploreRequest {
@@ -71,12 +75,29 @@ export class TimeSystem {
         // 行动点恢复（充沛 buff +1）
         run.apLeft = 3 + (run.statuses.some(s => s.id === 'energized') ? 1 : 0);
 
-        // 天气实感：晴天振奋 / 雨天免费集水
+        // 天气实感：晴天振奋 / 雨天免费集水（净水装置 +1）
         if (run.weather === 'sunny') StatsSystem.apply(ctx, 'sanity', 5);
-        if (run.weather === 'rain') InventorySystem.add(ctx, 'water_dirty', 1);
+        if (run.weather === 'rain') {
+            InventorySystem.add(ctx, 'water_dirty', 1);
+            if (run.facilities.includes('water_filter')) InventorySystem.add(ctx, 'water_clean', 1);
+        }
 
         // 随从每日重置
         if (run.companion) run.companion.exploredToday = false;
+
+        // 设施 → 条件旗标同步（供事件 conditions.flags 使用）
+        if (run.facilities.includes('radio') && !run.flags.includes('radio_owner')) {
+            run.flags.push('radio_owner');
+        }
+        if (run.facilities.includes('campfire') && !run.flags.includes('has_fire')) {
+            run.flags.push('has_fire');
+        }
+
+        // —— 章节同步（v0.5 锚点）——
+        const anchorEventId = ChapterSystem.sync(ctx);
+
+        // —— 场景调度（v0.6：优先恢复挂起幕，否则按优先级开新幕）——
+        const sceneId = SceneSystem.morningStart(ctx);
 
         // 今日交易报价
         TradingSystem.rollOffers(ctx);
@@ -109,6 +130,8 @@ export class TimeSystem {
             dailyEventId: dailyEv ? dailyEv.id : null,
             giftItemId: gift,
             storyEventId: storyEv ? storyEv.id : null,
+            anchorEventId,
+            sceneId,
         };
     }
 
@@ -158,13 +181,64 @@ export class TimeSystem {
         return ctx.run.apLeft > 0 && ctx.run.phase !== 'night';
     }
 
-    // ============ 夜晚结算（两段式：beginNight → [弹夜间事件] → finishNight）============
+    /**
+     * 夜间环境温度模型：
+     *   temp = 20(基础) -6(夜) -8(寒流) -3(酸雨) -2(浓雾) +4*(shelterLevel-1)
+     * 舒适阈 12。coldStress = max(0, 12 - temp)，正常夜=0；寒流夜≈6（严酷但可备）。
+     *   SAN 损失 = ceil(coldStress / (有火?4:2))；失温风险 = coldStress≥4 时 coldStress*6%
+     */
+    private static nightTemperature(ctx: GameCtx): { temp: number; coldStress: number } {
+        const run = ctx.run;
+        let temp = 20 - 6;
+        const w = run.weather;
+        if (w === 'cold_front') temp -= 8;
+        else if (w === 'acid_rain') temp -= 3;
+        else if (w === 'fog_thick') temp -= 2;
+        temp += 4 * (run.shelterLevel - 1);
+        return { temp, coldStress: Math.max(0, 12 - temp) };
+    }
+
     static beginNight(ctx: GameCtx): { nightEventId: string | null } {
         const run = ctx.run;
         run.phase = 'night';
 
-        // 0. 火堆/石屋驱寒：有火源则失温状态当晚解除
-        if (run.facilities.includes('campfire') || ShelterSystem.effectsOf(ctx).coldImmune) {
+        // —— 夜间姿态（入睡弹窗选择，flag 形式消费）——
+        const watching = run.flags.includes('posture_watch');
+        const reading = run.flags.includes('posture_read');
+        run.flags = run.flags.filter(f => f !== 'posture_watch' && f !== 'posture_read' && f !== 'slept_well');
+        if (!watching && !reading && ctx.rng.chance(25 + run.shelterLevel * 5)) {
+            run.flags.push('slept_well');   // 安睡奖励在 finishNight 兑现（避开当晚状态结算）
+        }
+        if (watching) StatsSystem.apply(ctx, 'sanity', -4);
+        if (reading) StatsSystem.apply(ctx, 'sanity', 10);
+
+        // —— 火堆燃料结算：每晚消耗 1；燃料尽则自动烧背包木材（1木=1夜）——
+        let fireActive = false;
+        if (run.facilities.includes('campfire')) {
+            if ((run.fireFuel ?? 0) <= 0 && InventorySystem.count(ctx, 'mat_wood') >= 1) {
+                InventorySystem.remove(ctx, 'mat_wood', 1);
+                run.fireFuel = 1;
+            }
+            if ((run.fireFuel ?? 0) > 0) {
+                run.fireFuel = (run.fireFuel ?? 0) - 1;
+                fireActive = true;
+                StatsSystem.apply(ctx, 'sanity', 3);      // 火光让人安心
+            }
+        }
+
+        // —— 体温模型 ——
+        const { coldStress } = this.nightTemperature(ctx);
+        const immuneToCold = ShelterSystem.effectsOf(ctx).coldImmune || fireActive;
+        if (coldStress > 0 && !immuneToCold) {
+            const sanLoss = Math.ceil(coldStress / (fireActive ? 4 : 2));
+            StatsSystem.apply(ctx, 'sanity', -sanLoss);
+            if (!fireActive && coldStress >= 4 && ctx.rng.chance(coldStress * 6)) {
+                StatusEffectSystem.add(ctx, 'hypothermia');
+            }
+        }
+
+        // 0. 火堆/石屋驱寒：体温达标则失温状态当晚解除
+        if (fireActive || ShelterSystem.effectsOf(ctx).coldImmune) {
             StatusEffectSystem.remove(ctx, 'hypothermia');
         }
 
@@ -195,8 +269,7 @@ export class TimeSystem {
         autoConsume(ctx, 'water');
         if (thirsty) autoConsume(ctx, 'water');
 
-        // 火堆的火光让人安心（奖励生产行为）
-        if (run.facilities.includes('campfire')) StatsSystem.apply(ctx, 'sanity', 3);
+        // 火堆的火光让人安心（奖励生产行为）——已并入上方燃料结算
 
         // 2. 自然衰减 + 状态结算
         StatsSystem.dailyDecay(ctx);
@@ -209,11 +282,16 @@ export class TimeSystem {
         }
         StatsSystem.applyStarvationPenalty(ctx);
 
-        // 3. 庇护所夜间 SAN 消耗
-        StatsSystem.apply(ctx, 'sanity', -ShelterSystem.effectsOf(ctx).nightSanityDrain);
+        // 3. 庇护所夜间 SAN 消耗 + 章节压迫
+        const chMods = ChapterSystem.modifiers(ctx);
+        StatsSystem.apply(ctx, 'sanity',
+            -(ShelterSystem.effectsOf(ctx).nightSanityDrain + chMods.extraNightSanDrain));
 
-        // 4. 夜间事件抽取（42% × 守夜人 × 隐蔽）
-        let chance = 42 * ctx.talent.nightRiskFactor;
+        // 4. 夜间事件抽取（42% × 守夜人 × 姿态 × 隐蔽 × 章节 × 雾压）
+        let chance = 42 * ctx.talent.nightRiskFactor * chMods.nightChanceMult;
+        chance *= 1 + Math.min(30, ctx.run.counters.fogPressure ?? 0) * 0.008;
+        if (watching) chance *= 0.55;                     // 守夜：盯紧门外
+        if (reading) chance *= 1.15;                      // 读书入太深……
         if (run.statuses.some(s => s.id === 'hidden')) chance *= 0.5;
         const ev = ctx.rng.chance(chance)
             ? EventEngine.pick(ctx, { poolType: 'night' })
@@ -236,6 +314,13 @@ export class TimeSystem {
         // 6. 崩溃连击计数
         if (run.stats.sanity <= 0) run.sanZeroStreak += 1;
         else run.sanZeroStreak = 0;
+
+        // 6.5 安睡奖励兑现（状态结算之后 → 明早生效）
+        const sleptIdx = run.flags.indexOf('slept_well');
+        if (sleptIdx >= 0) {
+            run.flags.splice(sleptIdx, 1);
+            StatusEffectSystem.add(ctx, 'energized');
+        }
 
         // 7. 结局判定（死亡 / 崩溃 / D15 收官）
         const ending = EndingSystem.evaluate(ctx, {

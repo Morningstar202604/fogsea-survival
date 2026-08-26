@@ -13,9 +13,10 @@ describe('配置表完整性', () => {
     it('基础数量底线', () => {
         const cfg = loadConfigsFromDisk();
         expect(cfg.items.length).toBeGreaterThanOrEqual(36);
-        expect(cfg.talents.length).toBe(10);
+        expect(cfg.talents.length).toBe(12);
         expect(cfg.events.filter(e => e.type === 'explore').length).toBeGreaterThanOrEqual(8);
         expect(cfg.chatPools.every(p => p.messages.length >= 4)).toBe(true);
-        expect(cfg.endings.length).toBe(12);
+        expect(cfg.endings.length).toBe(14);
+        expect((cfg.scenes ?? []).length).toBeGreaterThanOrEqual(8);   // v0.6 场景剧本
     });
 });

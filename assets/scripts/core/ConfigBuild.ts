@@ -16,7 +16,9 @@ export const CONFIG_PATHS = {
 } as const;
 
 const EVENT_FILES = ['events/fog_explore', 'events/fog_daily', 'events/fog_crisis',
-    'events/fog_night', 'events/fog_story'];
+    'events/fog_night', 'events/fog_story', 'events/fog_explore2', 'events/fog_daily2',
+    'events/fog_crisis2', 'events/fog_night2', 'events/fog_story2', 'events/fog_chapters',
+    'events/fog_generated'];
 
 const ROOT_KEYS = {
     items: 'items', statuses: 'statuses', talents: 'talents', recipes: 'recipes',
@@ -32,6 +34,9 @@ export async function buildAllConfigs(load: RawConfigLoader): Promise<AllConfigs
     const eventsFiles = await Promise.all(EVENT_FILES.map(p =>
         load(`configs/${p}`) as Promise<Record<string, unknown[]>>));
     const chatRaw = await load('configs/chat_pools') as Record<string, unknown[]>;
+    // 兼容同步/异步加载器：统一包一层 Promise；缺 scenes.json 时优雅降级为空池
+    const scenesRaw = await Promise.resolve(load('configs/scenes'))
+        .catch(() => ({ scenes: [] })) as Record<string, unknown[]>;
 
     const [items, statuses, talents, recipes, locations, lootTables,
         disasters, endings] = await Promise.all([
@@ -39,10 +44,11 @@ export async function buildAllConfigs(load: RawConfigLoader): Promise<AllConfigs
         one('locations'), one('lootTables'), one('disasters'), one('endings'),
     ]);    const events = eventsFiles.flatMap(a => a.events ?? []);
     const chatPools = chatRaw.chatPools ?? [];
+    const scenes = (scenesRaw.scenes ?? []) as AllConfigs['scenes'];
 
     const cfg: AllConfigs = {
         items, statuses, talents, recipes, locations,
-        lootTables, disasters, endings, events, chatPools,
+        lootTables, disasters, endings, events, chatPools, scenes,
     } as unknown as AllConfigs;
 
     const issues = validateConfigs(cfg);

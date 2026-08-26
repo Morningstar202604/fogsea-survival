@@ -1,131 +1,259 @@
 {
   "events": [
     {
-      "id": "evt_story_laok_gift", "title": "老K的礼物", "type": "story",
-      "weight": 0, "once": true,
-      "conditions": { "flags": ["laok_ally"], "notFlags": ["laok_betrayed"] },
-      "text": "清晨醒来，门口放着一个小布包。老K在旁边劈柴，头也不回：「拿着吧，我以前是干野外向导的。这点东西，够你应急。」",
-      "options": [
-        { "text": "收下并道谢",
-          "results": [ { "weight": 100, "text": "绷带、抗生素，还有一小瓶净水。这个满脸胡茬的男人，比看起来可靠得多。",
-            "effects": { "sanity": 10, "gainItems": [ { "itemId": "med_bandage", "count": 1 }, { "itemId": "med_antibiotic", "count": 1 }, { "itemId": "water_clean", "count": 1 } ], "setFlags": ["laok_trust"] } } ]
-        }
-      ]
-    },
-    {
-      "id": "evt_story_laok_past", "title": "老K的过去", "type": "story",
-      "weight": 8, "once": true,
-      "conditions": { "flags": ["laok_ally", "laok_trust"], "dayMin": 7 },
-      "text": "晚饭后，老K摩挲着那张旧照片，破天荒地开了口：「我闺女今年该上初中了。穿越那天她在外婆家……我这辈子最后悔的，就是那天没去接她放学。」火光在他脸上跳动。",
-      "options": [
-        { "text": "「雾散了就去接她。」",
-          "results": [ { "weight": 100, "text": "老K愣了很久，突然笑了，眼睛亮得像换了个活人：「对，雾散了就去接她。到时候你得来喝满月酒——不对，升学酒！」那一晚你们聊到很晚。你多了一个真正的战友。",
-            "effects": { "sanity": 14, "setFlags": ["laok_deep"] } } ]
-        },
-        { "text": "安静地陪他坐一会儿",
-          "results": [ { "weight": 100, "text": "有些话不需要回应。火堆噼啪响着，两个人的影子靠得很近。",
-            "effects": { "sanity": 8, "setFlags": ["laok_deep"] } } ]
-        }
-      ]
-    },
-    {
-      "id": "evt_story_laok_plan", "title": "老K的计划", "type": "story",
-      "weight": 9, "once": true,
-      "conditions": { "flags": ["laok_ally", "laok_deep"], "dayMin": 11 },
-      "text": "「听我说，」老K摊开一张皱巴巴的手绘地图，「第13天有兽潮，硬拼是下策。我知道一条旧河道能绕到高地——但得提前两天开始准备木栅栏。信我一次？」",
-      "options": [
-        { "text": "「全听你的。」",
-          "results": [ { "weight": 75, "text": "你们连夜备料。兽潮当夜，栅栏后的你们听着外面的嘶吼声相视一笑——专业的事就该交给专业的人。",
-            "effects": { "sanity": 12, "setFlags": ["laok_plan_ready"], "gainItems": [ { "itemId": "mat_wood", "count": 2 } ] } },
-            { "weight": 25, "text": "准备途中老K被滚落的木头砸伤了腿！他咬牙笑着说：「不耽误……不耽误大事。」你把最后的绷带用在了他身上。",
-              "effects": { "loseItems": [ { "itemId": "med_bandage", "count": 1 } ], "setFlags": ["laok_hurt"] } } ]
-        },
-        { "text": "「还是按我的办法来。」",
-          "results": [ { "weight": 100, "text": "老K没争辩，只是默默收起了地图。那晚之后他话少了很多。也许向导也有向导的骄傲。",
-            "effects": { "sanity": -4 } } ]
-        }
-      ]
-    },
-    {
-      "id": "evt_story_eye_of_mist", "title": "迷雾之眼", "type": "story",
-      "weight": 0, "once": true,
-      "conditions": { "flags": [] },
+      "id": "evt_story_eye_of_mist",
+      "title": "迷雾之眼",
+      "type": "story",
+      "weight": 0,
+      "once": true,
+      "conditions": {
+        "flags": []
+      },
       "text": "三块结晶在石台上悬浮起来，缓缓咬合成一只眼睛的形状。浓雾以石台为圆心向四面八方退开——你看见了天空、远山、以及雾下真实的世界。一只巨大的、由纯粹光构成的瞳孔在你面前缓缓睁开。",
       "options": [
-        { "text": "直视它",
+        {
+          "text": "直视它",
           "requires": {},
           "results": [
-            { "weight": 100, "text": "瞳孔里没有审判，只有注视——像整个世界第一次认真看见了你。无数信息涌入脑海：雾的来历、游戏的规则、回家的路。当你再睁开眼时，掌心多了一枚发光的印记。救援直升机会找到你的。它必须找到你。",
-              "effects": { "endingId": "E05" } }
+            {
+              "weight": 100,
+              "text": "瞳孔里没有审判，只有注视——像整个世界第一次认真看见了你。无数信息涌入脑海：雾的来历、游戏的规则、回家的路。当你再睁开眼时，掌心多了一枚发光的印记。救援直升机会找到你的。它必须找到你。",
+              "effects": {
+                "endingId": "E05"
+              }
+            }
           ]
         },
-        { "text": "闭上眼，转身逃走",
+        {
+          "text": "闭上眼，转身逃走",
           "results": [
-            { "weight": 100, "text": "身后传来一声悠长的叹息。等你回头，一切如初：石台空着，结晶碎了，雾合拢了。有些门只开一次。",
-              "effects": { "sanity": -15 } }
+            {
+              "weight": 100,
+              "text": "身后传来一声悠长的叹息。等你回头，一切如初：石台空着，结晶碎了，雾合拢了。有些门只开一次。",
+              "effects": {
+                "sanity": -15
+              }
+            }
           ]
         }
       ]
     },
     {
-      "id": "evt_echo_woman_gift", "title": "门外的野花", "type": "story",
-      "weight": 6, "once": true,
-      "conditions": { "flags": ["helped_crying_woman"], "dayMin": 7 },
+      "id": "evt_echo_woman_gift",
+      "title": "门外的野花",
+      "type": "story",
+      "weight": 6,
+      "once": true,
+      "conditions": {
+        "flags": [
+          "helped_crying_woman"
+        ],
+        "dayMin": 7
+      },
       "text": "清晨开门，门槛上放着一小捆草药，压着张字条：「上次多谢你的毯子。我往南走了。你也保重。——一个被你救过的人」",
       "options": [
-        { "text": "收下这份心意",
-          "results": [ { "weight": 100, "text": "抗生素和一壶净水。原来善意在迷雾里是会流动的。",
-            "effects": { "sanity": 14, "gainItems": [ { "itemId": "med_antibiotic", "count": 1 }, { "itemId": "water_clean", "count": 1 } ] } } ]
+        {
+          "text": "收下这份心意",
+          "results": [
+            {
+              "weight": 100,
+              "text": "抗生素和一壶净水。原来善意在迷雾里是会流动的。",
+              "effects": {
+                "sanity": 14,
+                "gainItems": [
+                  {
+                    "itemId": "med_antibiotic",
+                    "count": 1
+                  },
+                  {
+                    "itemId": "water_clean",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "id": "evt_echo_looter_revenge", "title": "铁管人的复仇", "type": "story",
-      "weight": 7, "once": true,
-      "conditions": { "flags": ["hostile_met"], "notFlags": ["looter_done"], "dayMin": 5 },
+      "id": "evt_echo_looter_revenge",
+      "title": "铁管人的复仇",
+      "type": "story",
+      "weight": 7,
+      "once": true,
+      "conditions": {
+        "flags": [
+          "hostile_met"
+        ],
+        "notFlags": [
+          "looter_done"
+        ],
+        "dayMin": 5
+      },
       "text": "黄昏归途，一道黑影从废墟后闪出堵住去路——是超市那个铁管男。「找到你了。」他活动着手腕，眼神阴沉。",
       "options": [
-        { "text": "抄家伙干他",
+        {
+          "text": "抄家伙干他",
           "results": [
-            { "weight": 55, "text": "几回合交锋后他丢下铁管跑了。你捡起他的「武器」，顺手搜了他的口袋。",
-              "effects": { "hp": -8, "gainItems": [ { "itemId": "mat_scrap_metal", "count": 1 }, { "itemId": "food_canned", "count": 1 } ], "setFlags": ["looter_done"] } },
-            { "weight": 45, "text": "你败了。他抢走一个罐头，撂下狠话消失在雾里。",
-              "effects": { "hp": -12, "loseItems": [ { "itemId": "food_canned", "count": 1 } ], "sanity": -6, "setFlags": ["looter_done"] } }
+            {
+              "weight": 55,
+              "text": "几回合交锋后他丢下铁管跑了。你捡起他的「武器」，顺手搜了他的口袋。",
+              "effects": {
+                "hp": -8,
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 1
+                  },
+                  {
+                    "itemId": "food_canned",
+                    "count": 1
+                  }
+                ],
+                "setFlags": [
+                  "looter_done"
+                ]
+              }
+            },
+            {
+              "weight": 45,
+              "text": "你败了。他抢走一个罐头，撂下狠话消失在雾里。",
+              "effects": {
+                "hp": -12,
+                "loseItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 1
+                  }
+                ],
+                "sanity": -6,
+                "setFlags": [
+                  "looter_done"
+                ]
+              }
+            }
           ]
         },
-        { "text": "递上一个罐头赔罪",
-          "requires": { "items": [ { "itemId": "food_canned", "count": 1 } ] },
-          "results": [ { "weight": 100, "text": "他盯着罐头看了半天，忽然泄了气似的接过去：「……算了。那天是我先动的手。」恩怨两清。",
-            "effects": { "loseItems": [ { "itemId": "food_canned", "count": 1 } ], "sanity": 5, "setFlags": ["looter_done"] } } ]
+        {
+          "text": "递上一个罐头赔罪",
+          "requires": {
+            "items": [
+              {
+                "itemId": "food_canned",
+                "count": 1
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 100,
+              "text": "他盯着罐头看了半天，忽然泄了气似的接过去：「……算了。那天是我先动的手。」恩怨两清。",
+              "effects": {
+                "loseItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 1
+                  }
+                ],
+                "sanity": 5,
+                "setFlags": [
+                  "looter_done"
+                ]
+              }
+            }
+          ]
         },
-        { "text": "转身就跑",
-          "results": [ { "weight": 100, "text": "你在废墟间七拐八绕甩掉了追踪。但从此每次外出都感觉背后有视线。",
-            "effects": { "hp": -5, "sanity": -8, "setFlags": ["looter_done"] } } ]
+        {
+          "text": "转身就跑",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你在废墟间七拐八绕甩掉了追踪。但从此每次外出都感觉背后有视线。",
+              "effects": {
+                "hp": -5,
+                "sanity": -8,
+                "setFlags": [
+                  "looter_done"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "id": "evt_echo_rats_gift", "title": "鼠群的谢礼", "type": "story",
-      "weight": 5, "once": true,
-      "conditions": { "flags": ["rat_king_pact"], "dayMin": 9 },
+      "id": "evt_echo_rats_gift",
+      "title": "鼠群的谢礼",
+      "type": "story",
+      "weight": 5,
+      "once": true,
+      "conditions": {
+        "flags": [
+          "rat_king_pact"
+        ],
+        "dayMin": 9
+      },
       "text": "清晨，门口整整齐齐摆着一样东西——白毛鼠王带着两只小鼠蹲在三步外看着你。它把那东西往前拱了拱。",
       "options": [
-        { "text": "收下",
-          "results": [ { "weight": 100, "text": "是一个无线电零件！上面还有细小的齿印。「……你们从哪翻出来的？」鼠王满意地眯起眼，带着手下钻进墙缝。你和鼠邦签订了永久和平条约。",
-            "effects": { "sanity": 12, "gainItems": [ { "itemId": "key_radio_parts", "count": 1 } ], "chatInject": "link_gift" } } ]
+        {
+          "text": "收下",
+          "results": [
+            {
+              "weight": 100,
+              "text": "是一个无线电零件！上面还有细小的齿印。「……你们从哪翻出来的？」鼠王满意地眯起眼，带着手下钻进墙缝。你和鼠邦签订了永久和平条约。",
+              "effects": {
+                "sanity": 12,
+                "gainItems": [
+                  {
+                    "itemId": "key_radio_parts",
+                    "count": 1
+                  }
+                ],
+                "chatInject": "link_gift"
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "id": "evt_story_shipwreck_gate", "title": "沉船湾之门", "type": "story",
-      "weight": 6, "once": true,
-      "conditions": { "items": [ { "itemId": "key_map_fragment", "count": 3 } ], "dayMin": 8 },
+      "id": "evt_story_shipwreck_gate",
+      "title": "沉船湾之门",
+      "type": "story",
+      "weight": 6,
+      "once": true,
+      "conditions": {
+        "items": [
+          {
+            "itemId": "key_map_fragment",
+            "count": 3
+          }
+        ],
+        "dayMin": 8
+      },
       "text": "三块地图碎片严丝合缝地拼在一起，指向浓雾深处的一线海崖。你循着指引穿过最后一道雾墙——眼前豁然开朗：一艘搁浅的巨轮斜插在月牙形的海湾里，船身斑驳，却完好得不可思议。",
       "options": [
-        { "text": "登上沉船探索",
+        {
+          "text": "登上沉船探索",
           "results": [
-            { "weight": 100, "text": "船长室里，航海日志停在穿越那一天。而保险柜里静静躺着：信号枪、药品、罐头山——还有一台崭新的卫星电话。你在甲板上燃起信号堆，这一次，烟柱笔直得像一根通天柱。（隐藏结局）",
-              "effects": { "endingId": "E04", "gainItems": [ { "itemId": "key_signal_gun", "count": 1 }, { "itemId": "food_canned", "count": 2 } ] } }
+            {
+              "weight": 100,
+              "text": "船长室里，航海日志停在穿越那一天。而保险柜里静静躺着：信号枪、药品、罐头山——还有一台崭新的卫星电话。你在甲板上燃起信号堆，这一次，烟柱笔直得像一根通天柱。（隐藏结局）",
+              "effects": {
+                "endingId": "E04",
+                "gainItems": [
+                  {
+                    "itemId": "key_signal_gun",
+                    "count": 1
+                  },
+                  {
+                    "itemId": "food_canned",
+                    "count": 2
+                  }
+                ]
+              }
+            }
           ]
         }
       ]

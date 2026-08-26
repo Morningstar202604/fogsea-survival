@@ -1,4 +1,5 @@
 import type { ItemStack } from './ItemDefs';
+import type { SkillCategory } from './SkillDefs';
 
 export type StatKey = 'hp' | 'hunger' | 'thirst' | 'sanity';
 export type EventType = 'daily' | 'crisis' | 'explore' | 'night' | 'story';
@@ -21,6 +22,11 @@ export interface EffectPayload {
     unlockLocation?: string;
     companionJoin?: boolean;                   // 随从入队（老K线）
     chatInject?: string;         // 触发世界频道插播指定池
+    relNpc?: string;                           // 好感度目标 NPC（laok/kid/doc/ratking）
+    relDelta?: number;                         // 好感度增减
+    morality?: number;                         // 道德值增减（救人+ 抢劫-）
+    fogPressure?: number;                      // 雾压增减（深入浓雾/招惹未知 +）
+    apSpend?: number;                          // 场景玩法钩子：直接消耗行动点
 }
 
 export interface ResultBranch extends EffectPayload {
@@ -28,12 +34,20 @@ export interface ResultBranch extends EffectPayload {
     text: string;
 }
 
+export interface RelCond { npc: string; min: number; }
+
 export interface EventOption {
     text: string;
     requires?: {
         items?: ItemStack[];
         talent?: string;                       // 天赋专属选项
         stats?: Partial<Record<StatKey, StatCond>>;
+        flags?: string[];                      // 场景/剧情链门槛
+        notFlags?: string[];
+        rel?: RelCond;                         // 好感度门槛
+        shelterMin?: number;                   // 庇护所等级门槛
+        apLeft?: number;                       // 行动点门槛
+        skillLevel?: Partial<Record<SkillCategory, number>>; // 技能线门槛
     };
     results: ResultBranch[];
 }
@@ -49,6 +63,7 @@ export interface EventConditions {
     disasterActive?: string;                   // 仅在天灾期间
     statuses?: string[];                       // 必须带有的状态
     notStatuses?: string[];                    // 不能带有的状态
+    companionAlive?: boolean;                  // 随从（老K）在场
 }
 
 export interface EventDef {

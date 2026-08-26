@@ -8,6 +8,8 @@ import { AudioManager } from '../core/AudioManager';
 import { TimeSystem } from '../systems/TimeSystem';
 import type { MorningReport } from '../systems/TimeSystem';
 import { EventEngine } from '../systems/EventEngine';
+import { SceneSystem } from '../systems/SceneSystem';
+import { SkillSystem } from '../systems/SkillSystem';
 import type { EventDef } from '../data/EventDefs';
 import { InventorySystem } from '../systems/InventorySystem';
 import { CraftSystem } from '../systems/CraftSystem';
@@ -484,6 +486,7 @@ export class GameApp {
             const yields = ctx.rng ? '' : '';
             this.appendLog(`【探索·${def.name}】${ev ? '似乎有什么在等你……' : '收获入包。'}`);
             void yields;
+            SkillSystem.grantForAction(ctx, 'explore');
             if (ev) this.presentEvent(ev, () => this.afterAction());
             else this.afterAction();
         });
@@ -492,6 +495,7 @@ export class GameApp {
 
     private doRest(): void {
         TimeSystem.rest(GameManager.I.ctx!);
+        SkillSystem.grantForAction(GameManager.I.ctx!, 'sleep');
         this.appendLog('【休息】你在火堆边打了个盹，精神好了一些。');
         this.refreshHUD(); this.enableActions(true);
         this.afterAction();
@@ -601,6 +605,9 @@ export class GameApp {
             const afterStory = () => {
                 this.refreshHUD(); this.enableActions(true);
             };
+            // —— v0.6 场景（多拍剧本）优先于零散剧情事件 ——
+            const sc = m.sceneId ? SceneSystem.activeNode(GameManager.I.ctx!) : null;
+            if (sc) { this.appendLog('【剧情】一段新的故事开始了……'); this.presentEvent(sc, afterStory); return; }
             if (m.storyEventId) {
                 const sev = GameManager.I.cfg!.events.find(e => e.id === m.storyEventId);
                 if (sev) { this.presentEvent(sev, afterStory); return; }
@@ -638,11 +645,7 @@ export class GameApp {
             ev.options.forEach((opt, i) => {
                 const ok = EventEngine.optionAvailable(gm.ctx!, opt);
                 let text = opt.text;
-                if (!ok && opt.requires?.items?.length) text += `（缺材料）`;
-                if (!ok && opt.requires?.talent) {
-                    const tn = gm.cfg!.talents.find(t => t.id === opt.requires!.talent)?.name;
-                    text += `（需要天赋：${tn}）`;
-                }
+                if (!ok) text += `（${EventEngine.optionLockedReason(gm.ctx!, opt)}）`;
                 const b = button(optsBox, text, 590, 74, () => {
                     this.tw.skip();
                     const branch = EventEngine.resolveOption(gm.ctx!, ev, i);
@@ -656,10 +659,8 @@ export class GameApp {
                         if (deadEnd) { this.finishWithEnding(deadEnd, false); return; }
                         const sudden = TimeSystem.checkSuddenDeath(gm.ctx!);
                         if (sudden) { this.finishWithEnding(sudden, false); return; }
-                        if (branch.nextEvent) {
-                            const next = gm.cfg!.events.find(e => e.id === branch.nextEvent);
-                            if (next) { this.presentEvent(next, onDone, modal); return; }
-                        }
+                        const next = SceneSystem.followUp(gm.ctx!, ev, branch);
+                        if (next) { this.presentEvent(next, onDone, modal); return; }
                         GameManager.I.persist();
                         onDone();
                     };

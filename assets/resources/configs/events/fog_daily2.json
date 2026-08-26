@@ -1,0 +1,646 @@
+{
+  "events": [
+    {
+      "id": "evt_d_stray_cat",
+      "title": "流浪猫",
+      "type": "daily",
+      "weight": 9,
+      "cooldownDays": 3,
+      "text": "一只瘦骨嶙峋的三花猫蹲在你的柴堆上，用一种'本喵考察过了，这里能活'的眼神看着你。",
+      "options": [
+        {
+          "text": "分它一点吃的",
+          "requires": {
+            "items": [
+              {
+                "itemId": "food_berry",
+                "count": 1
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 100,
+              "text": "它吃得很慢很斯文，吃完在你门口蹭了蹭。从此你的屋檐下多了一位编外居民。",
+              "effects": {
+                "loseItems": [
+                  {
+                    "itemId": "food_berry",
+                    "count": 1
+                  }
+                ],
+                "sanity": 8,
+                "relNpc": "ratking",
+                "relDelta": 5
+              }
+            }
+          ]
+        },
+        {
+          "text": "装作没看见",
+          "results": [
+            {
+              "weight": 70,
+              "text": "它盯了你三秒，跳下柴堆走了。尾巴尖甩了甩，像在说'行吧'。",
+              "effects": {
+                "sanity": -1
+              }
+            },
+            {
+              "weight": 30,
+              "text": "当晚你听见它在屋顶上叫了一整夜。声音像小孩哭。",
+              "effects": {
+                "sanity": -4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_postman",
+      "title": "雾中邮差",
+      "type": "daily",
+      "weight": 6,
+      "once": true,
+      "text": "一个背着巨大邮包的人影从雾里走出来，制服笔挺，皮鞋锃亮。'您的信。'他把一封空信封递给你，然后转身离开。",
+      "options": [
+        {
+          "text": "追上去问是谁寄的",
+          "results": [
+            {
+              "weight": 50,
+              "text": "'寄件人是未来的您。'他没有回头，'他说这封信很重要——所以是空的，内容要您自己写。'",
+              "effects": {
+                "sanity": 10,
+                "setFlags": [
+                  "postman_met"
+                ]
+              }
+            },
+            {
+              "weight": 50,
+              "text": "你追进了雾里，直到看不见任何东西。回家后你在信封内衬摸到一行凸起的字：'别回头。'",
+              "effects": {
+                "sanity": -6,
+                "setFlags": [
+                  "postman_met"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "收下信封不追问",
+          "results": [
+            {
+              "weight": 100,
+              "text": "有些问题不适合问穿制服的人。你把空信封压在枕头下。",
+              "effects": {
+                "sanity": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_mirrors",
+      "title": "镜子里的自己",
+      "type": "daily",
+      "weight": 7,
+      "cooldownDays": 4,
+      "conditions": {
+        "stats": {
+          "sanity": {
+            "op": "<=",
+            "value": 45
+          }
+        }
+      },
+      "text": "你在碎裂的后视镜前洗手。水声停了以后，镜子里的你还保持着洗手的动作。",
+      "options": [
+        {
+          "text": "直视它",
+          "results": [
+            {
+              "weight": 50,
+              "text": "你们对峙了很久。最后它先眨了眼——然后你发现自己一直闭着眼。",
+              "effects": {
+                "sanity": -8
+              }
+            },
+            {
+              "weight": 50,
+              "text": "你冲它做了个鬼脸。它做了一个更丑的。不知为何你想笑，恐惧就这样散了。",
+              "effects": {
+                "sanity": 5
+              }
+            }
+          ]
+        },
+        {
+          "text": "用布把镜子蒙上",
+          "results": [
+            {
+              "weight": 100,
+              "text": "眼不见为净。但你知道它在布后面看着你吃饭、睡觉、呼吸。",
+              "effects": {
+                "sanity": -3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_rainbow",
+      "title": "雨后的彩虹",
+      "type": "daily",
+      "weight": 6,
+      "cooldownDays": 6,
+      "conditions": {
+        "weathers": [
+          "sunny"
+        ]
+      },
+      "text": "两场浓雾之间居然出现了彩虹，一头扎进雾海深处，像通往另一个世界的桥。",
+      "options": [
+        {
+          "text": "对着彩虹发一会呆",
+          "results": [
+            {
+              "weight": 100,
+              "text": "七种颜色在灰白世界里亮得刺眼。你想起小时候也这样看过天。",
+              "effects": {
+                "sanity": 10
+              }
+            }
+          ]
+        },
+        {
+          "text": "朝彩虹尽头走一段",
+          "results": [
+            {
+              "weight": 55,
+              "text": "当然没有宝藏。但你采到了一大捧被雨水催开的野花，插在窗边的罐头瓶里。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "herb_green",
+                    "count": 1
+                  }
+                ],
+                "sanity": 6
+              }
+            },
+            {
+              "weight": 45,
+              "text": "你越走越远，回头的路标全被雾吞了。凭记忆摸索了两小时才回来，又累又饿。",
+              "effects": {
+                "hunger": -10,
+                "thirst": -10,
+                "sanity": -3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_sneeze",
+      "title": "连打喷嚏",
+      "type": "daily",
+      "weight": 8,
+      "conditions": {
+        "statuses": [
+          "sick"
+        ]
+      },
+      "text": "今天喷嚏打个不停，鼻音重得像另一个人在说话。",
+      "options": [
+        {
+          "text": "多喝热水硬扛",
+          "results": [
+            {
+              "weight": 60,
+              "text": "热流滚过喉咙，好受了一点。",
+              "effects": {
+                "thirst": 8
+              }
+            },
+            {
+              "weight": 40,
+              "text": "热水从鼻子里呛了出来。狼狈，没用。",
+              "effects": {
+                "sanity": -2
+              }
+            }
+          ]
+        },
+        {
+          "text": "吃点好的增强抵抗力",
+          "requires": {
+            "items": [
+              {
+                "itemId": "food_canned",
+                "count": 1
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 80,
+              "text": "一整罐罐头下肚，身体有了打仗的本钱。",
+              "effects": {
+                "loseItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 1
+                  }
+                ],
+                "hunger": 30,
+                "hp": 5
+              }
+            },
+            {
+              "weight": 20,
+              "text": "吃完就吐了。病中肠胃根本受不了油腻。",
+              "effects": {
+                "loseItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 1
+                  }
+                ],
+                "hp": -3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_ants",
+      "title": "蚂蚁搬家",
+      "type": "daily",
+      "weight": 7,
+      "cooldownDays": 5,
+      "text": "门前的蚂蚁排成一条黑线，衔着白色卵粒向高处迁移。老话讲，这是大雨的预告。",
+      "options": [
+        {
+          "text": "相信蚂蚁，加固屋顶",
+          "results": [
+            {
+              "weight": 75,
+              "text": "你抢在大雨前补好了漏点。夜里雨声如鼓，屋里滴雨未落。",
+              "effects": {
+                "setFlags": [
+                  "roof_fixed"
+                ],
+                "sanity": 4
+              }
+            },
+            {
+              "weight": 25,
+              "text": "白忙一场，一夜无雨。但至少劳动让人睡得香。",
+              "effects": {
+                "hp": 3
+              }
+            }
+          ]
+        },
+        {
+          "text": "观察蚁群路线找它们的粮仓",
+          "results": [
+            {
+              "weight": 50,
+              "text": "顺藤摸瓜挖出一小堆草籽。炒一炒能顶一顿。",
+              "effects": {
+                "hunger": 10,
+                "gainItems": [
+                  {
+                    "itemId": "herb_green",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 50,
+              "text": "你趴在地上看了半小时，膝盖印都留在了地上。什么也没捞着。",
+              "effects": {
+                "sanity": -1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_radio_static",
+      "title": "收音机的杂音",
+      "type": "daily",
+      "weight": 8,
+      "cooldownDays": 2,
+      "conditions": {
+        "flags": [
+          "radio_owner"
+        ]
+      },
+      "text": "深夜没开机，收音机却自己响起细弱的电流声，像有人隔着频段在犹豫要不要说话。",
+      "options": [
+        {
+          "text": "凑近听清楚",
+          "results": [
+            {
+              "weight": 50,
+              "text": "'……第七区的幸存者请注意……'断断续续的坐标信息！你抄了下来。",
+              "effects": {
+                "sanity": 6,
+                "setFlags": [
+                  "rescue_hint"
+                ]
+              }
+            },
+            {
+              "weight": 50,
+              "text": "杂音里渐渐分辨出一段哼唱——是哄孩子睡觉的调子。你默默听了很久。",
+              "effects": {
+                "sanity": 4
+              }
+            }
+          ]
+        },
+        {
+          "text": "拔掉电池",
+          "results": [
+            {
+              "weight": 100,
+              "text": "有些频道不该通。你把电池收进铁盒，压在箱底。",
+              "effects": {
+                "sanity": -2,
+                "setFlags": [
+                  "radio_silenced"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_old_news",
+      "title": "旧报纸",
+      "type": "daily",
+      "weight": 8,
+      "cooldownDays": 3,
+      "text": "风把一张旧报纸糊在你的窗户上，日期正是迷雾降临那天。头版标题只有半截：'全球性浓雾……请市民勿要……'",
+      "options": [
+        {
+          "text": "读完每一个字",
+          "results": [
+            {
+              "weight": 55,
+              "text": "后半截被人撕走了，撕口很整齐——是故意不让你看的。",
+              "effects": {
+                "sanity": -4
+              }
+            },
+            {
+              "weight": 45,
+              "text": "角落里有一则寻人启事：寻找走失老人，特征：会说梦话，内容为天气预报。",
+              "effects": {
+                "sanity": 3
+              }
+            }
+          ]
+        },
+        {
+          "text": "留着引火",
+          "results": [
+            {
+              "weight": 100,
+              "text": "纸是好纸，火是真火。过去的事就该烧掉取暖。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_charcoal",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_dandelion",
+      "title": "蒲公英",
+      "type": "daily",
+      "weight": 7,
+      "cooldownDays": 4,
+      "text": "墙角钻出一株蒲公英，绒球完好无损。在这个连灰尘都带着湿气的世界里，它干净得不像话。",
+      "options": [
+        {
+          "text": "吹散它许个愿",
+          "results": [
+            {
+              "weight": 60,
+              "text": "种子乘着无风的空气飞出很远很远。你许的愿是'明天也想看见太阳'。",
+              "effects": {
+                "sanity": 6
+              }
+            },
+            {
+              "weight": 40,
+              "text": "你一吹，绒毛全粘在了自己脸上。愿望没许成，倒把自己逗笑了。",
+              "effects": {
+                "sanity": 8
+              }
+            }
+          ]
+        },
+        {
+          "text": "连根移栽到窗台",
+          "results": [
+            {
+              "weight": 100,
+              "text": "罐头盒、溪泥、蒲公英。你的窗台有了第一个住客。",
+              "effects": {
+                "sanity": 4,
+                "setFlags": [
+                  "window_garden"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_caravan",
+      "title": "商队叫卖",
+      "type": "daily",
+      "weight": 6,
+      "cooldownDays": 4,
+      "text": "远处传来铃铛声和拖长的叫卖：'盐——火柴——针线——拿粮食来换嘞——'一支小商队正沿着雾墙边缘移动。",
+      "options": [
+        {
+          "text": "拿物资去换盐",
+          "requires": {
+            "items": [
+              {
+                "itemId": "mat_wood",
+                "count": 3
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 70,
+              "text": "三捆木柴换了小半袋粗盐。商人临走多塞给你一颗水果糖：'看你面善。'",
+              "effects": {
+                "loseItems": [
+                  {
+                    "itemId": "mat_wood",
+                    "count": 3
+                  }
+                ],
+                "gainItems": [
+                  {
+                    "itemId": "salt",
+                    "count": 2
+                  }
+                ],
+                "sanity": 4
+              }
+            },
+            {
+              "weight": 30,
+              "text": "交易到一半起了雾风，商队突然加速离开，你追出去百米无功而返。",
+              "effects": {
+                "sanity": -3
+              }
+            }
+          ]
+        },
+        {
+          "text": "躲在屋里观察他们",
+          "results": [
+            {
+              "weight": 60,
+              "text": "商队共五人两车。他们经过你家时敲了敲门：'有人吗？我们不留货。'你没应。",
+              "effects": {
+                "setFlags": [
+                  "caravan_passed"
+                ],
+                "sanity": -2
+              }
+            },
+            {
+              "weight": 40,
+              "text": "你注意到队尾的人走路姿势很怪，像是脚不沾地。铃声远了以后，你才发现自己在发抖。",
+              "effects": {
+                "sanity": -8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_photo_memory",
+      "title": "旧照片的记忆",
+      "type": "daily",
+      "weight": 6,
+      "once": true,
+      "conditions": {
+        "items": [
+          {
+            "itemId": "key_old_photo",
+            "count": 1
+          }
+        ]
+      },
+      "text": "你又拿出那张旧照片。这次你没有看背面，而是盯着正面的海滩看了很久很久。",
+      "options": [
+        {
+          "text": "回忆和老K的相识",
+          "results": [
+            {
+              "weight": 100,
+              "text": "照片上的年轻人笑得一嘴白牙。那时候谁都以为明天会更好。你想给他讲讲后来发生的事。",
+              "effects": {
+                "relNpc": "laok",
+                "relDelta": 8,
+                "sanity": 3
+              }
+            }
+          ]
+        },
+        {
+          "text": "把照片朝下扣在桌上",
+          "results": [
+            {
+              "weight": 100,
+              "text": "有些记忆需要扣一会儿，等心里那块地翻松了再翻开看。",
+              "effects": {
+                "sanity": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_d_fogbell",
+      "title": "雾里的钟声",
+      "type": "daily",
+      "weight": 5,
+      "cooldownDays": 6,
+      "dayMin": 6,
+      "text": "正午十二点整，浓雾深处传来了钟声。一下，一下，不多不少敲了十二下。这个世界没有钟楼。",
+      "options": [
+        {
+          "text": "跟着数完整",
+          "results": [
+            {
+              "weight": 65,
+              "text": "十二下，分毫不差。数完的瞬间你莫名安心：至少还有什么东西在守时。",
+              "effects": {
+                "sanity": 6
+              }
+            },
+            {
+              "weight": 35,
+              "text": "第十二下之后，隔了很久，又有极轻的第十三下。你假装没听见。",
+              "effects": {
+                "sanity": -8
+              }
+            }
+          ]
+        },
+        {
+          "text": "捂住耳朵干活",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你劈了一下午柴。斧头声和钟声混在一起，反而踏实。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_wood",
+                    "count": 1
+                  }
+                ],
+                "sanity": 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

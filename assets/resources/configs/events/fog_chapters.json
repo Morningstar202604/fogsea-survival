@@ -1,0 +1,263 @@
+{
+  "events": [
+    {
+      "id": "evt_ch1_market",
+      "title": "第一章 · 雾市开张",
+      "type": "story",
+      "weight": 0,
+      "text": "第三天夜里，世界频道的画风突变。刷屏的求救和哭嚎退下去了，取而代之的是一行行报价：'木柴换罐头''盐换布''童叟无欺'。\n有人开始做生意了。在末世里，这比任何救援信号都让人安心——说明还有人打算活下去。",
+      "options": [
+        {
+          "text": "明天去看看行情",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你把可交易物资列了张清单。规则正在雾里重建，而你要成为规则的一部分，而不是猎物。",
+              "effects": {
+                "sanity": 6,
+                "setFlags": [
+                  "market_mindset"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "嗤之以鼻：都是投机分子",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你关掉频道。但半夜你还是忍不住又打开看了一遍行情——真香。",
+              "effects": {
+                "sanity": 2,
+                "setFlags": [
+                  "market_mindset",
+                  "market_skeptic"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ch2_breath",
+      "title": "第二章 · 雾的呼吸",
+      "type": "story",
+      "weight": 0,
+      "dayMin": 4,
+      "text": "连续三晚，你都注意到同一件事：浓雾会在深夜十一点整变薄一线，凌晨三点再涨回来。\n涨、落、涨、落——像某种庞大生物的呼吸。你不是唯一发现的人，频道里有人管它叫'换气'。",
+      "options": [
+        {
+          "text": "记录规律（换气时外出更安全？）",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你在墙上画满了时间表。如果雾有呼吸，它就有心跳；有心跳，就有弱点。",
+              "effects": {
+                "sanity": 5,
+                "setFlags": [
+                  "breath_known"
+                ],
+                "fogPressure": 2
+              }
+            }
+          ]
+        },
+        {
+          "text": "别研究它，装作没看见",
+          "results": [
+            {
+              "weight": 60,
+              "text": "有些规律知道了反而睡不着。你把这一页从日记里撕掉了。",
+              "effects": {
+                "sanity": -3
+              }
+            },
+            {
+              "weight": 40,
+              "text": "但规律自己找上门来：那晚你失眠，亲眼看见雾的'落潮'里，有什么东西跟着一起退了出去。",
+              "effects": {
+                "sanity": -8,
+                "setFlags": [
+                  "saw_retreat"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ch3_silence",
+      "title": "第三章 · 沉默的大多数",
+      "type": "story",
+      "weight": 0,
+      "dayMin": 7,
+      "text": "世界频道的在线人数从四万七千跌到了九千。\n没有人组织告别，那些头像就那样一个个灰下去。今晚，一个叫'等风来'的账号发了最后一条消息：'我妈做的面。好想吃。'\n然后他也灰了。",
+      "options": [
+        {
+          "text": "为陌生人们守一夜灵",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你在窗台点了一排小火苗，替所有再也没上线的人。火光很小，但足够证明：有人记得他们来过。",
+              "effects": {
+                "sanity": 10,
+                "morality": 5,
+                "setFlags": [
+                  "mourned_strangers"
+                ],
+                "loseItems": [
+                  {
+                    "itemId": "mat_wood",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "麻木地划过名单",
+          "results": [
+            {
+              "weight": 70,
+              "text": "你已经学会了不去数死亡。这是活下来的本事之一——也是最疼的那一种。",
+              "effects": {
+                "sanity": -4,
+                "setFlags": [
+                  "numb_witness"
+                ]
+              }
+            },
+            {
+              "weight": 30,
+              "text": "划到一个熟悉的名字时你的手指停住了：'隔壁老王'。他昨天还在跟你讨论腌萝卜配方。",
+              "effects": {
+                "sanity": -9,
+                "addStatus": [
+                  "panic"
+                ],
+                "setFlags": [
+                  "numb_witness"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ch4_whisper",
+      "title": "第四章 · 名字",
+      "type": "story",
+      "weight": 0,
+      "dayMin": 10,
+      "text": "入夜后，雾贴着窗户喊你的名字。\n第一声是奶奶的嗓音，第二声是初中同桌的，第三声——是你自己的，但你此刻明明坐在屋里。",
+      "options": [
+        {
+          "text": "回应：我在这里",
+          "results": [
+            {
+              "weight": 50,
+              "text": "'找到了。'无数声音同时松了口气，然后温柔下来。整夜，雾都安静地陪着你，像一场迟到多年的探亲。",
+              "effects": {
+                "sanity": 12,
+                "setFlags": [
+                  "answered_fog"
+                ],
+                "fogPressure": 4
+              }
+            },
+            {
+              "weight": 50,
+              "text": "'找到了。'语气瞬间变得饥饿。它们撞了一夜窗户，天亮才散。你在门后攥着菜刀坐到日出。",
+              "effects": {
+                "sanity": -14,
+                "addStatus": [
+                  "panic"
+                ],
+                "setFlags": [
+                  "answered_fog"
+                ],
+                "fogPressure": 6
+              }
+            }
+          ]
+        },
+        {
+          "text": "咬住舌头不出声",
+          "results": [
+            {
+              "weight": 65,
+              "text": "老规矩是对的：雾来了，别应声。名字被叫破之前，你还是你。",
+              "effects": {
+                "sanity": -5,
+                "setFlags": [
+                  "kept_name"
+                ]
+              }
+            },
+            {
+              "weight": 35,
+              "text": "它们换了策略，开始用记忆里的声音说话——说小时候的事，说只有你知道的承诺。你把耳朵压在胳膊下，听到了天亮。",
+              "effects": {
+                "sanity": -9,
+                "setFlags": [
+                  "kept_name"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ch5_final",
+      "title": "第五章 · 倒计时",
+      "type": "story",
+      "weight": 0,
+      "dayMin": 13,
+      "text": "所有频段同时响起，官方的声音带着电流的颤抖：\n'救援编队已进入大雾区边缘。重复：已进入。各幸存者保持信号畅通，准备撤离。'\n三天。倒计时开始了。频道里的九千人同时沸腾，然后陷入更深的沉默——每个人都在算同一道题：我，能等到吗？",
+      "options": [
+        {
+          "text": "清点家当，写完最后一篇日记",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你把日子掰开了过：什么能带走，什么必须留下，什么要留给后来的人。写完抬头，天边竟有一线极淡的金色。",
+              "effects": {
+                "sanity": 10,
+                "setFlags": [
+                  "final_prep"
+                ],
+                "morality": 2
+              }
+            }
+          ]
+        },
+        {
+          "text": "把消息告诉每一个还活着的人",
+          "requires": {
+            "items": []
+          },
+          "results": [
+            {
+              "weight": 100,
+              "text": "你敲遍了能敲的门，喊哑了嗓子。有人哭着道谢，有人已经听不懂人话了。但你把'三天'两个字，种进了每一双眼睛里。",
+              "effects": {
+                "hp": -4,
+                "sanity": 6,
+                "morality": 8,
+                "setFlags": [
+                  "final_herald"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

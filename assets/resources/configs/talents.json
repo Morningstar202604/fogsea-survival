@@ -19,6 +19,10 @@
     { "id": "T09", "name": "社牛",     "archetype": "社交流", "rarity": 3, "desc": "每3天收到世界频道网友私聊赠送的随机物资。",
       "hooks": [ { "type": "giftEveryNDays", "n": 3 } ] },
     { "id": "T10", "name": "第六感",   "archetype": "保命流", "rarity": 3, "desc": "进入高危地点或选择高危选项前会收到警告。",
-      "hooks": [ { "type": "dangerWarn" } ] }
+      "hooks": [ { "type": "dangerWarn" } ] },
+    { "id": "T11", "name": "渔夫",     "archetype": "资源流", "rarity": 3, "desc": "钓鱼成功率+25%，收获翻倍概率提升。水里有吃不完的东西。",
+      "hooks": [ { "type": "fishingBonus", "pct": 25 } ] },
+    { "id": "T12", "name": "妙手回春", "archetype": "医疗流", "rarity": 4, "desc": "生病与中毒的概率减半，医疗物品的效果提升50%。",
+      "hooks": [ { "type": "medicFactor", "factor": 1.5 } ] }
   ]
 }

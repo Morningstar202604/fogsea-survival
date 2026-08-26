@@ -29,6 +29,21 @@ const MIGRATIONS: Record<number, Migration> = {
                 (d.disasterNext as { dueDay: number }).dueDay === (d as { day?: number }).day;
         return d;
     },
+    // v2→v3：新增场景（多拍剧本）字段
+    2: (d) => {
+        d.scene = null;
+        d.scenesDone = [];
+        return d;
+    },
+    // v3→v4：新增技能树字段
+    3: (d) => {
+        d.skills = {
+            xp: { survival: 0, combat: 0, craft: 0, knowledge: 0, social: 0 },
+            inspiration: 0,
+            inspirationCharges: 0,
+        };
+        return d;
+    },
 };
 
 export class SaveManager {

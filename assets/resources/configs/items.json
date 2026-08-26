@@ -40,6 +40,22 @@
     { "id": "key_mist_crystal", "name": "迷雾结晶", "category": "key",   "stackable": true,  "maxStack": 3, "icon": "crystal-ball",   "desc": "在浓雾深处微微发光……" },
     { "id": "key_signal_gun",   "name": "信号枪",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "flare-gun",      "desc": "只有一发，但也许够了。" },
     { "id": "key_radio_parts",  "name": "无线电零件","category": "key",  "stackable": true,  "maxStack": 3, "icon": "radioactive",    "desc": "集齐三件可以组装无线电。" },
-    { "id": "key_old_photo",    "name": "旧照片",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "photo",          "desc": "背面写着：老K，勿念。" }
+    { "id": "key_old_photo",    "name": "旧照片",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "photo",          "desc": "背面写着：老K，勿念。" },
+    { "id": "book_novel",       "name": "旧小说",   "category": "tool",  "stackable": true,  "maxStack": 3, "icon": "book",           "desc": "页角卷起的长篇。夜里读它，能忘掉雾。", "use": { "sanity": 12 } },
+    { "id": "book_manual",      "name": "生存手册", "category": "tool",  "stackable": true,  "maxStack": 3, "icon": "notebook",       "desc": "图解版。睡前翻两页，梦里都踏实些。", "use": { "sanity": 8 } },
+    { "id": "herb_green",       "name": "苦艾草",   "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "plant-roots",    "desc": "溪谷边常见。苦味很冲，但能入药。" },
+    { "id": "med_herbal",       "name": "草药膏",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "ointment",       "desc": "土办法，有时比西药管用。", "use": { "hp": 8, "cureStatus": ["sick"] } },
+    { "id": "tea_herb",         "name": "草药茶",   "category": "water", "stackable": true,  "maxStack": 3, "icon": "tea-cup",        "desc": "热气裹着苦香，从喉咙一路暖到心口。", "use": { "thirst": 30, "sanity": 6 } },
+    { "id": "lux_choco",        "name": "巧克力",   "category": "food",  "stackable": true,  "maxStack": 3, "icon": "chocolate-bar",  "desc": "融化了一半。甜味在末世里近乎奢侈。", "use": { "hunger": 15, "sanity": 14 } },
+    { "id": "lux_cocoa",        "name": "热可可",   "category": "water", "stackable": true,  "maxStack": 3, "icon": "tea-cup",        "desc": "杯壁烫手，甜味熨帖。喝完连噩梦都绕道走。", "use": { "thirst": 25, "sanity": 18 } },
+    { "id": "coffee",           "name": "速溶咖啡", "category": "food",  "stackable": true,  "maxStack": 3, "icon": "coffee-mug",     "desc": "苦得清醒。守夜人的老朋友。", "use": { "sanity": 10 } },
+    { "id": "food_mushroom",    "name": "野蘑菇",   "category": "food",  "stackable": true,  "maxStack": 3, "icon": "mushroom",       "desc": "颜色越好看的越要命。", "use": { "hunger": 14, "riskPoisonPct": 40 } },
+    { "id": "food_roast_mush",  "name": "烤蘑菇",   "category": "food",  "stackable": true,  "maxStack": 3, "icon": "mushroom",       "desc": "火候到位就没有毒——大概。", "use": { "hunger": 22, "sanity": 3 } },
+    { "id": "food_dried_fish",  "name": "鱼干",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "fish-cooked",    "desc": "盐渍风干，能放很久的耐储粮。", "use": { "hunger": 25 } },
+    { "id": "salt",             "name": "盐",       "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "salt-shaker",    "desc": "末世硬通货之二。腌制与电解都靠它。" },
+    { "id": "tool_bow",         "name": "猎弓",     "category": "tool",  "stackable": false, "maxStack": 1, "icon": "bow",            "desc": "自制的弓。安静，且致命。", "use": null },
+    { "id": "key_battery",      "name": "干电池",   "category": "key",   "stackable": true,  "maxStack": 3, "icon": "battery",        "desc": "电台的粮食。也是手电的续命药。" },
+    { "id": "key_ledger",       "name": "破损账本", "category": "key",   "stackable": false, "maxStack": 1, "icon": "notebook",       "desc": "超市经理的账本。最后一页写着供货点名单。", "use": null },
+    { "id": "toy_bear",         "name": "布偶熊",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "teddy-bear",     "desc": "洗得发白的小熊。某个孩子的整个世界。", "use": { "sanity": 6 } }
   ]
 }

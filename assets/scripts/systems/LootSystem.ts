@@ -32,11 +32,69 @@ export class LootSystem {
     private static _cfgRef: unknown = null;
 
     /**
+     * 幸运值（0~40）：天气 + 庇护所 + 福星天赋 的合成。
+     * 作用于品质分布：gold/silver 概率按 (1+luck/100) 放大后归一化。
+     */
+    static luckOf(ctx: GameCtx): number {
+        let luck = 0;
+        if (ctx.run.weather === 'sunny') luck += 10;
+        else if (ctx.run.weather === 'fog_thick') luck -= 6;
+        luck += (ctx.run.shelterLevel - 1) * 3;
+        luck += ctx.talent.chestUpgradeChancePct * 0.75;   // T08：20% → +15
+        return Math.max(0, Math.round(luck));
+    }
+
+    /**
+     * 带幸运修正的品质判定（不改写 BASE_TIER_RATES，luck=0 时与基础分布一致）
+     */
+    static rollTierWithLuck(ctx: GameCtx): ChestTier {
+        const luck = this.luckOf(ctx);
+        if (luck <= 0) return this.rollTier(ctx);
+        const k = 1 + luck / 100;
+        const w: Record<ChestTier, number> = {
+            wood: BASE_TIER_RATES.wood,
+            copper: BASE_TIER_RATES.copper,
+            silver: BASE_TIER_RATES.silver * k,
+            gold: BASE_TIER_RATES.gold * k,
+        };
+        const total = w.wood + w.copper + w.silver + w.gold;
+        let roll = ctx.rng.next() * total;
+        for (const t of [...CHEST_TIERS].reverse()) {
+            roll -= w[t];
+            if (roll < 0) return t;
+        }
+        return 'wood';
+    }
+
+    /** 保底计数器（软保底 5 箱起 silver 渐涨，硬保底 9 箱必银、14 箱必金） */
+    private static pityTake(ctx: GameCtx): { soft: number; hardSilver: boolean; hardGold: boolean } {
+        const c = ctx.run.counters;
+        const pity = (c.pity ?? 0) + 1;
+        c.pity = pity;
+        return {
+            soft: Math.max(0, pity - 4),
+            hardSilver: pity >= 9,
+            hardGold: pity >= 14,
+        };
+    }
+
+    /**
      * 品质判定 → 抽取产出 → 天赋修正 → 入包
      * @param countMult 数量倍率（黄昏"再探一轮"的收益加成，作用于宝箱内所有物品）
      */
     static openChest(ctx: GameCtx, minTier?: ChestTier, countMult = 1): ChestOpenResult {
-        let tier = this.rollTier(ctx);
+        // —— 品质：幸运分布 × 软/硬保底 × 天赋升档 ——
+        const pity = this.pityTake(ctx);
+        let tier = this.rollTierWithLuck(ctx);
+        if (pity.hardGold) tier = 'gold';
+        else if (pity.hardSilver && CHEST_TIERS.indexOf(tier) < CHEST_TIERS.indexOf('silver')) {
+            tier = 'silver';
+        } else if (pity.soft > 0 && CHEST_TIERS.indexOf(tier) < CHEST_TIERS.indexOf('copper')
+            && ctx.rng.chance(pity.soft * 8)) {
+            tier = 'copper';   // 软保底：木箱逐步让位给铜箱
+        }
+        if (pity.hardGold || pity.hardSilver) ctx.run.counters.pity = 0;   // 触发即重置
+
         // T08 福星：整体上调一档
         let upgraded = false;
         if (ctx.talent.chestUpgradeChancePct > 0 && ctx.rng.chance(ctx.talent.chestUpgradeChancePct)) {

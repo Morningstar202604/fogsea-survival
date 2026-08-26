@@ -2,7 +2,7 @@ import type { ActiveStatus } from './StatusDefs';
 import type { ItemStack } from './ItemDefs';
 import type { StatKey } from './EventDefs';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 4;
 export const RUN_KEY = 'qs_run';
 export const GLOBAL_KEY = 'qs_global';
 
@@ -54,6 +54,14 @@ export interface RunState {
     companion: Companion | null;       // 随从（v2）
     tradesToday: TradeOffer[];         // 今日交易报价（v2）
     tradesAccepted: string[];          // 今日已接受报价 id（v2）
+    scene: { id: string; nodeId: string } | null;   // 活动场景（多拍剧本，v3）
+    scenesDone: string[];              // 已完结场景 id（v3）
+    /** 技能树状态（v4） */
+    skills?: {
+        xp: Record<string, number>;    // 5 条技能线的 XP
+        inspiration: number;           // 灵感点数
+        inspirationCharges: number;    // 灵感 buff 剩余次数
+    };
 }
 
 export interface GlobalProfile {

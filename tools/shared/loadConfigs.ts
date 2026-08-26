@@ -21,11 +21,14 @@ export function loadConfigsFromDisk(): AllConfigs {
     const disasters = CFG('disasters.json').disasters;
     const endings = CFG('endings.json').endings;
 
-    const eventFiles = ['fog_explore', 'fog_daily', 'fog_crisis', 'fog_night', 'fog_story'];
+    const eventFiles = ['fog_explore', 'fog_daily', 'fog_crisis', 'fog_night', 'fog_story',
+        'fog_explore2', 'fog_daily2', 'fog_crisis2', 'fog_night2', 'fog_story2', 'fog_chapters',
+        'fog_generated'];
     const events = eventFiles.flatMap(f => CFG(`events/${f}.json`).events);
     const chatPools = CFG('chat_pools.json').chatPools;
+    const scenes = CFG('scenes.json')?.scenes ?? [];
 
-    return { items, statuses, talents, recipes, locations, lootTables, disasters, endings, events, chatPools };
+    return { items, statuses, talents, recipes, locations, lootTables, disasters, endings, events, chatPools, scenes };
 }
 
 export function readGameFile(rel: string): string {

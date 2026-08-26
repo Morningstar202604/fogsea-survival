@@ -73,6 +73,20 @@ export class TalentRuntime {
             | { type: 'giftEveryNDays'; n: number } | undefined;
         return h ? h.n : null;
     }
+
+    /** T11 渔夫：钓鱼成功率加成（百分点） */
+    get fishingBonusPct(): number {
+        const h = this.hooks.find(h => h.type === 'fishingBonus') as
+            | { type: 'fishingBonus'; pct: number } | undefined;
+        return h?.pct ?? 0;
+    }
+
+    /** T12 妙手回春：医疗物品效果倍率 */
+    get medicFactor(): number {
+        const h = this.hooks.find(h => h.type === 'medicFactor') as
+            | { type: 'medicFactor'; factor: number } | undefined;
+        return h?.factor ?? 1;
+    }
 }
 
 export class TalentSystem {

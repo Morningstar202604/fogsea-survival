@@ -9,10 +9,12 @@ export type TalentHook =
     | { type: 'bagCapacityAdd'; n: number }          // T07 囤积者
     | { type: 'chestUpgradeChance'; pct: number }    // T08 福星
     | { type: 'giftEveryNDays'; n: number }          // T09 社牛
-    | { type: 'dangerWarn' };                        // T10 第六感
+    | { type: 'dangerWarn' }                         // T10 第六感
+    | { type: 'fishingBonus'; pct: number }          // T11 渔夫
+    | { type: 'medicFactor'; factor: number };       // T12 妙手回春
 
 export interface TalentDef {
-    id: string;              // T01 ~ T10
+    id: string;              // T01 ~ T12
     name: string;            // 【每日提示】
     archetype: string;       // 流派名：信息流
     rarity: number;          // 星级展示

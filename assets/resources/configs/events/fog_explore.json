@@ -694,7 +694,7 @@
         { "text": "和他搭伙",
           "results": [
             { "weight": 75, "text": "老K会修东西，还懂草药。他说等雾散了一起去找救援队。你多了个同伴。",
-              "effects": { "sanity": 12, "setFlags": ["laok_ally"], "companionJoin": true, "nextEvent": "evt_story_laok_gift" } },
+              "effects": { "sanity": 12, "setFlags": ["laok_ally"], "companionJoin": true }, "nextEvent": "scene:laok_s1_pact/pact" },
             { "weight": 25, "text": "当晚老K不见了，带走了你半个背包。照片还留在桌上。",
               "effects": { "loseItems": [ { "itemId": "food_canned", "count": 1 } ], "sanity": -10, "setFlags": ["laok_betrayed"] } }
           ]

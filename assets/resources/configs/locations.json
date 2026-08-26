@@ -41,6 +41,25 @@
       "riskRate": 0.70, "chestChance": 0.60, "requiresTool": "tool_torch",
       "baseYields": [ { "itemId": "key_mist_crystal", "count": 1 } ],
       "dangerLevel": 4
+    },
+    { "id": "radio_tower", "name": "无线电台", "unlockDay": 11, "cooldownDays": 2,
+      "initialStock": 6, "riskRate": 0.65, "chestChance": 0.55,
+      "baseYields": [
+        { "itemId": "key_battery", "count": 1 },
+        { "itemId": "key_radio_parts", "count": 1 },
+        { "itemId": "mat_scrap_metal", "count": 2 }
+      ],
+      "dangerLevel": 4
+    },
+    { "id": "shipwreck_bay", "name": "沉船湾", "unlockDay": 99, "cooldownDays": 2,
+      "initialStock": 10, "riskRate": 0.50, "chestChance": 0.65,
+      "baseYields": [
+        { "itemId": "food_canned", "count": 2 },
+        { "itemId": "water_clean", "count": 2 },
+        { "itemId": "salt", "count": 1 },
+        { "itemId": "key_map_fragment", "count": 1 }
+      ],
+      "dangerLevel": 3
     }
   ]
 }

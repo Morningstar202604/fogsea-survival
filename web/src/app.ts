@@ -7,6 +7,7 @@ import { TimeSystem } from '../../assets/scripts/systems/TimeSystem';
 import type { MorningReport } from '../../assets/scripts/systems/TimeSystem';
 import { EventEngine } from '../../assets/scripts/systems/EventEngine';
 import type { EventDef } from '../../assets/scripts/data/EventDefs';
+import type { ItemDef } from '../../assets/scripts/data/ItemDefs';
 import { InventorySystem } from '../../assets/scripts/systems/InventorySystem';
 import { CraftSystem } from '../../assets/scripts/systems/CraftSystem';
 import { ItemUsageSystem } from '../../assets/scripts/systems/ItemUsageSystem';
@@ -14,6 +15,13 @@ import { LocationSystem } from '../../assets/scripts/systems/LocationSystem';
 import { DisasterSystem } from '../../assets/scripts/systems/DisasterSystem';
 import { TradingSystem } from '../../assets/scripts/systems/TradingSystem';
 import { TalentSystem } from '../../assets/scripts/systems/TalentSystem';
+import { DailyActionSystem } from '../../assets/scripts/systems/DailyActionSystem';
+import { RelationshipSystem } from '../../assets/scripts/systems/RelationshipSystem';
+import type { NpcId } from '../../assets/scripts/systems/RelationshipSystem';
+import { ChapterSystem } from '../../assets/scripts/systems/ChapterSystem';
+import { SceneSystem } from '../../assets/scripts/systems/SceneSystem';
+import { SkillSystem } from '../../assets/scripts/systems/SkillSystem';
+import { EffectReporter } from '../../assets/scripts/systems/EffectReporter';
 import { COL, el, div, txt, btn, clear, setClickSfx } from './domkit';
 import { audio } from './audio';
 
@@ -39,6 +47,8 @@ export class AppDom {
     private channelListEl: HTMLElement | null = null;
     private giftLines: string[] = [];
     private hud: HudRefs = {};
+    /** 弹窗内部延时器：clearDialogs 时统一取消，防僵尸流程 */
+    private dlgTimers: number[] = [];
 
     constructor(root: HTMLElement) {
         this.screen = root.querySelector('#screen') as HTMLElement;
@@ -65,7 +75,11 @@ export class AppDom {
     }
 
     tick(dt: number): void {
-        if (this.twEl && this.tw.tick(dt, this.twSink)) this.twEl.textContent = this.twSink.string;
+        if (this.twEl) {
+            const active = this.tw.tick(dt, this.twSink);
+            // done 的收尾拍也要落盘，否则最后一个字永远不上屏
+            if (active || this.tw.done) this.twEl.textContent = this.twSink.string;
+        }
         const gm = GameManager.I;
         if (gm.chat && gm.ctx) gm.chat.tick(dt);
     }
@@ -76,7 +90,12 @@ export class AppDom {
     }
 
     private clearScreens(): void { clear(this.screen); }
+    private scheduleDlg(fn: () => void, ms: number): void {
+        this.dlgTimers.push(window.setTimeout(fn, ms));
+    }
     private clearDialogs(): void {
+        for (const t of this.dlgTimers) clearTimeout(t);
+        this.dlgTimers = [];
         clear(this.dialogLayer);
         this.dialogLayer.classList.remove('show');
         this.bindTw(null);
@@ -115,6 +134,7 @@ export class AppDom {
 
     // ================= 天赋抽取 =================
     private showTalentDraw(): void {
+        this.clearScreens();
         this.clearDialogs();
         const scr = div('screen', this.screen);
         txt('命运三选一', scr, 'title').style.fontSize = '30px';
@@ -222,9 +242,12 @@ export class AppDom {
             this.hud.stats.textContent =
                 `❤️${bar(s.hp)}${s.hp}\n🍞${bar(s.hunger)}${s.hunger}\n💧${bar(s.thirst)}${s.thirst}\n🧠${bar(s.sanity)}${s.sanity}`;
         const shelterName = ['', '破木屋', '加固木屋', '石砌居所'][ctx.run.shelterLevel];
-        if (this.hud.dayInfo)
+        if (this.hud.dayInfo) {
+            const totalLv = ctx.run.skills ? SkillSystem.totalLevel(ctx) : 0;
+            const insp = (ctx.run.skills?.inspirationCharges ?? 0) > 0 ? ' ✨' : '';
             this.hud.dayInfo.textContent =
-                `第${ctx.run.day}天 ${WEATHER_NAME[ctx.run.weather] ?? ctx.run.weather}  🏠${shelterName}  🎒${InventorySystem.usedSlots(ctx)}/${InventorySystem.capacity(ctx)}`;
+                `第${ctx.run.day}天 ${WEATHER_NAME[ctx.run.weather] ?? ctx.run.weather}  🏠${shelterName}  🎒${InventorySystem.usedSlots(ctx)}/${InventorySystem.capacity(ctx)}  ⭐${totalLv}${insp}`;
+        }
 
         const dn = DisasterSystem.isActiveToday(ctx);
         if (this.hud.disaster) {
@@ -277,8 +300,62 @@ export class AppDom {
             { disabled: ctx.run.apLeft <= 0, small: true });
         btn(box, '背包', () => this.openInventory(), { small: true });
         btn(box, '📋 情报', () => this.openIntel(), { small: true });
+        btn(box, '⭐ 技能', () => this.openSkills(), { small: true });
         btn(box, '🔁 交易', () => this.openTrade(), { small: true });
         btn(box, '💬 频道', () => this.openWorldChannel(), { small: true });
+        // —— v0.4 每日行动 ——
+        const act = (label: string, fn: () => void, disabled = false): void => {
+            btn(box, label, fn, { small: true, disabled });
+        };
+        if (InventorySystem.count(ctx, 'tool_fishing_rod') > 0) {
+            act('🎣 钓鱼', () => this.doDailyAction(() => DailyActionSystem.fish(ctx)), ctx.run.apLeft <= 0);
+        }
+        if (InventorySystem.count(ctx, 'tool_bow') > 0) {
+            act('🏹 打猎', () => this.doDailyAction(() => DailyActionSystem.hunt(ctx)), ctx.run.apLeft <= 0);
+        }
+        act('🌿 采药', () => this.doDailyAction(() => DailyActionSystem.gatherHerbs(ctx)));
+        if (ctx.run.facilities.includes('trap')) {
+            act('🪤 查陷阱', () => this.doDailyAction(() => DailyActionSystem.checkTrap(ctx)), ctx.run.apLeft <= 0);
+        }
+        act('🧵 编织', () => this.doDailyAction(() => DailyActionSystem.weaveRope(ctx)));
+        // —— v0.7 技能解锁：侦察需知识 Lv1，深度侦察需侦察兵特性 ——
+        if (SkillSystem.level(ctx, 'knowledge') >= 1) {
+            act('🚶 侦察', () => this.doDailyAction(() => DailyActionSystem.scout(ctx)), ctx.run.apLeft <= 0);
+            if (SkillSystem.featureUnlocked(ctx, 'map_reveal')) {
+                act('🔍 深度侦察', () => this.doDailyAction(() => DailyActionSystem.scoutDeep(ctx)), ctx.run.apLeft <= 0);
+            }
+        } else {
+            const b = btn(box, '🚶 侦察 🔒', () => this.openSkills(), { small: true });
+            txt('知识Lv1', b, 'tag').style.color = COL.dim;
+        }
+        if (ctx.run.flags.includes('kid_met')) {
+            act('🍚 留饭', () => this.doDailyAction(() => DailyActionSystem.leaveFoodForKid(ctx)));
+        }
+        if (ctx.run.companion || ctx.run.flags.includes('laok_ally')) {
+            act('♟ 下棋', () => this.doDailyAction(() => DailyActionSystem.playChessWithLaok(ctx)));
+        }
+        const feastable = ['food_raw_meat', 'food_raw_fish', 'food_mushroom']
+            .filter(id => InventorySystem.count(ctx, id) > 0).length >= 2;
+        if (feastable && SkillSystem.level(ctx, 'craft') >= 2) {
+            act('🍳 盛宴', () => this.doDailyAction(() => DailyActionSystem.cookFeast(ctx)), ctx.run.apLeft <= 0);
+        }
+        // v0.7 精致料理：烹饪师特性解锁
+        if (ctx.run.facilities.includes('campfire') && SkillSystem.featureUnlocked(ctx, 'cook_quality_2')) {
+            const fineable = ['food_raw_meat', 'food_raw_fish', 'food_mushroom']
+                .some(id => InventorySystem.count(ctx, id) > 0);
+            if (fineable) {
+                act('🍲 精致料理', () => this.doDailyAction(() => DailyActionSystem.cookFine(ctx)), ctx.run.apLeft <= 0);
+            }
+        }
+        act('💪 锻炼', () => this.doDailyAction(() => DailyActionSystem.exercise(ctx)));
+        act('🧘 冥想', () => this.doDailyAction(() => DailyActionSystem.meditate(ctx)));
+        act('📔 日记', () => this.doDailyAction(() => DailyActionSystem.journal(ctx)));
+        if (ctx.run.facilities.includes('radio')) {
+            act('📻 广播', () => this.doDailyAction(() => DailyActionSystem.listenRadio(ctx)));
+        }
+        if (ctx.run.facilities.includes('campfire') && InventorySystem.count(ctx, 'mat_wood') > 0) {
+            act('🔥 添柴', () => this.doDailyAction(() => DailyActionSystem.stokeFire(ctx)));
+        }
         btn(box, '⚙', () => this.openSettings(true), { small: true });
         if (ctx.run.companion) {
             const c = ctx.run.companion;
@@ -297,6 +374,34 @@ export class AppDom {
 
     private busy = false;
 
+    /** 执行一次每日行动：刷新 HUD 并把结果写进日志 */
+    private doDailyAction(fn: () => { ok: boolean; msg: string }): void {
+        const before = EffectReporter.snap(GameManager.I.ctx!);
+        const r = fn();
+        if (r.ok) {
+            const diff = EffectReporter.report(GameManager.I.ctx!, before);
+            this.appendLog(r.msg + (diff ? `\n▸ ${diff}` : ''));
+            // 根据行动消息推断 actionId 并授予技能 XP
+            const actionMap: [string, string][] = [
+                ['钓鱼', 'fish'], ['打猎', 'hunt'], ['采药', 'gatherHerbs'],
+                ['查陷阱', 'checkTrap'], ['编织', 'weaveRope'], ['高效编织', 'weaveRope'],
+                ['侦察', 'scout'], ['深度侦察', 'scout'], ['留饭', 'leaveFood'],
+                ['下棋', 'playChess'], ['盛宴', 'cookFeast'], ['精致料理', 'cookFine'],
+                ['锻炼', 'exercise'], ['冥想', 'meditate'], ['日记', 'journal'],
+                ['广播', 'listenRadio'], ['添柴', 'stokeFire'],
+            ];
+            for (const [kw, actId] of actionMap) {
+                if (r.msg.includes(kw)) { SkillSystem.grantForAction(GameManager.I.ctx!, actId); break; }
+            }
+        } else {
+            this.appendLog(r.msg);
+        }
+        GameManager.I.persist();
+        this.refreshHUD();
+        this.enableActions(true);
+        this.checkDeath();
+    }
+
     private doExplore(locId: string): void {
         const gm = GameManager.I;
         const ctx = gm.ctx!;
@@ -306,6 +411,7 @@ export class AppDom {
             this.refreshHUD(); this.enableActions(true);
             const def = LocationSystem.getDef(ctx, locId);
             this.appendLog(`【探索·${def.name}】${ev ? '似乎有什么在等你……' : '收获入包。'}`);
+            SkillSystem.grantForAction(ctx, 'explore');
             if (ev) this.presentEvent(ev, () => this.afterAction());
             else this.afterAction();
         });
@@ -314,6 +420,7 @@ export class AppDom {
 
     private doRest(): void {
         TimeSystem.rest(GameManager.I.ctx!);
+        SkillSystem.grantForAction(GameManager.I.ctx!, 'sleep');
         this.appendLog('【休息】你在火堆边打了个盹，精神好了一些。');
         this.refreshHUD(); this.enableActions(true);
         this.afterAction();
@@ -354,10 +461,33 @@ export class AppDom {
             row.style.flexDirection = 'row';
             btn(row, '再探一轮（收益+50% 危险↑）',
                 () => { this.clearDialogs(); this.duskBonusExploreThenNight(); }, { kind: 'danger' });
-            btn(row, '回家睡觉', () => { this.clearDialogs(); this.nightSequence({}); });
+            btn(row, '回家睡觉', () => { this.clearDialogs(); this.pickNightPosture(); });
         } else {
             this.clearDialogs();
+            this.pickNightPosture();
+        }
+    }
+
+    /** 夜间姿态选择：安睡 / 守夜 / 读书（v0.4） */
+    private pickNightPosture(): void {
+        const gm = GameManager.I;
+        const ctx = gm.ctx!;
+        const hasBook = InventorySystem.count(ctx, 'book_novel') > 0
+            || InventorySystem.count(ctx, 'book_manual') > 0;
+        const dlg = this.dialog('今晚怎么过？', { center: true });
+        const box = div('opts', dlg);
+        btn(box, '😴 安睡（恢复最佳，可能睡出充沛）', () => { this.clearDialogs(); this.nightSequence({}); });
+        btn(box, '👁 守夜（恶性事件大减，精神-）', () => {
+            this.clearDialogs();
+            ctx.run.flags.push('posture_watch');
             this.nightSequence({});
+        }, { kind: 'danger', small: true });
+        if (hasBook) {
+            btn(box, '📖 读书入眠（精神+10，但睡得浅）', () => {
+                this.clearDialogs();
+                ctx.run.flags.push('posture_read');
+                this.nightSequence({});
+            }, { small: true });
         }
     }
 
@@ -378,6 +508,7 @@ export class AppDom {
     private nightSequence(deathHint: { duringNightEvent?: boolean }): void {
         const gm = GameManager.I;
         const ctx = gm.ctx!;
+        if (ctx.run.phase === 'night') return; // 重入防护：夜晚结算链只允许一条
         this.enableActions(false);
         const night = TimeSystem.beginNight(ctx);
 
@@ -400,7 +531,7 @@ export class AppDom {
                 proceed(deathHint);
             });
         } else {
-            setTimeout(() => proceed(deathHint), 900);
+            this.scheduleDlg(() => proceed(deathHint), 900);
         }
     }
 
@@ -416,11 +547,14 @@ export class AppDom {
             lines.push(`【世界频道】网友私聊送来了：${gname}×1`);
         }
         this.appendLog(lines.join('\n'));
+        this.refreshHUD();   // 晨间弹窗期间 HUD 立即可见（天数/天气/状态）
         GameManager.I.persist();
 
         const afterStory = (): void => {
             this.refreshHUD(); this.enableActions(true);
         };
+        // —— v0.6 场景（多拍剧本）：锚点之后、日常之前 ——
+        const afterScene = (): void => afterStory();
         const afterDaily = (): void => {
             if (m.storyEventId) {
                 const sev = GameManager.I.cfg!.events.find(e => e.id === m.storyEventId);
@@ -428,10 +562,24 @@ export class AppDom {
             }
             afterStory();
         };
-        if (m.dailyEventId) {
-            const ev = GameManager.I.cfg!.events.find(e => e.id === m.dailyEventId)!;
-            this.presentEvent(ev, afterDaily);
-        } else afterDaily();
+        const afterAnchor = (): void => {
+            if (m.sceneId) {
+                const sc = SceneSystem.activeNode(GameManager.I.ctx!);
+                if (sc) { this.appendLog('【剧情】一段新的故事开始了……'); this.presentEvent(sc, afterScene); return; }
+            }
+            if (m.dailyEventId) {
+                const ev = GameManager.I.cfg!.events.find(e => e.id === m.dailyEventId)!;
+                this.presentEvent(ev, afterDaily);
+            } else afterDaily();
+        };
+        // —— v0.5 章节锚点大事件优先（必发，节奏骨架）——
+        if (m.anchorEventId) {
+            const ch = ChapterSystem.current(GameManager.I.ctx!);
+            this.appendLog(`【${ch.name}】新的篇章开始了。`);
+            const anchor = GameManager.I.cfg!.events.find(e => e.id === m.anchorEventId);
+            if (anchor) { this.presentEvent(anchor, afterAnchor); return; }
+        }
+        afterAnchor();
     }
 
     // ================= 事件弹窗 =================
@@ -448,6 +596,12 @@ export class AppDom {
         const body = txt('', dlg, 'evt-body');
         this.bindTw(body);
         this.tw.set(ev.text);
+        let shownText = ev.text;      // 当前应显示的完整文本（问题或分支结果）
+        let chosen = false;
+        body.addEventListener('click', () => {
+            this.tw.skip();
+            body.textContent = this.twSink.string = shownText;
+        });
 
         const optsBox = div('opts', dlg);
         const showOptions = (): void => {
@@ -455,14 +609,25 @@ export class AppDom {
             ev.options.forEach((opt, i) => {
                 const ok = EventEngine.optionAvailable(gm.ctx!, opt);
                 let text = opt.text;
-                if (!ok && opt.requires?.items?.length) text += '（缺材料）';
-                if (!ok && opt.requires?.talent) {
-                    const tn = gm.cfg!.talents.find(t => t.id === opt.requires!.talent)?.name;
-                    text += `（需要天赋：${tn}）`;
-                }
+                if (!ok) text += `（${EventEngine.optionLockedReason(gm.ctx!, opt)}）`;
                 btn(optsBox, text, () => {
+                    if (chosen) return;   // 防连点双结算
+                    chosen = true;
+                    const beforeFx = EffectReporter.snap(gm.ctx!);
                     const branch = EventEngine.resolveOption(gm.ctx!, ev, i);
+                    shownText = branch.text;   // 跳字目标切换为结果文本
                     clear(optsBox);
+                    // —— 效果回执行：让每个选择都看得见后果 ——
+                    const fxLine = div('dlg-sub', dlg);
+                    const fxText = EffectReporter.report(gm.ctx!, beforeFx);
+                    if (fxText) {
+                        fxLine.textContent = `▸ ${fxText}`;
+                        fxLine.style.color = COL.accent;
+                    } else {
+                        fxLine.textContent = '▸ （没有产生直接变化）';
+                        fxLine.style.color = COL.dim;
+                    }
+                    dlg.insertBefore(fxLine, optsBox);
                     this.bindTw(body);
                     this.tw.set(branch.text);
                     const afterResult = (): void => {
@@ -473,22 +638,16 @@ export class AppDom {
                         if (deadEnd) { this.finishWithEnding(deadEnd); return; }
                         const sudden = TimeSystem.checkSuddenDeath(gm.ctx!);
                         if (sudden) { this.finishWithEnding(sudden); return; }
-                        if (branch.nextEvent) {
-                            const next = gm.cfg!.events.find(e => e.id === branch.nextEvent);
-                            if (next) { this.presentEvent(next, onDone); return; }
-                        }
+                        const next = SceneSystem.followUp(gm.ctx!, ev, branch);
+                        if (next) { this.presentEvent(next, onDone); return; }
                         GameManager.I.persist();
                         onDone();
                     };
-                    setTimeout(afterResult, Math.min(3500, 350 + branch.text.length * 35));
+                    this.scheduleDlg(afterResult, Math.min(3500, 350 + branch.text.length * 35));
                 }, { disabled: !ok });
             });
         };
-        setTimeout(showOptions, Math.min(2500, 300 + ev.text.length * 30));
-        body.addEventListener('click', () => {
-            this.tw.skip();
-            body.textContent = this.twSink.string = ev.text;
-        });
+        this.scheduleDlg(showOptions, Math.min(2500, 300 + ev.text.length * 30));
     }
 
     // ================= 设置 =================
@@ -569,18 +728,42 @@ export class AppDom {
             const row = div(chk.ok ? 'rowcard' : 'rowcard off', list);
             const info = div('info', row);
             txt(r.name, info, 'name');
-            txt(`材料：${cost}`, info, 'sub');
+            txt(`材料：${cost} ｜ ${r.desc}`, info, 'sub');
             btn(row, chk.ok ? '制作' : (chk.reason ?? '—'), () => {
+                const before = EffectReporter.snap(ctx);
+                let made = false;
+                let quality: 'normal' | 'fine' | 'master' = 'normal';
                 try {
-                    CraftSystem.craft(ctx, r.id);
+                    quality = CraftSystem.craft(ctx, r.id).quality;
                     TimeSystem.spendAp(ctx, 1);
-                    this.appendLog(`【制作】${r.name} 完成！`);
+                    made = true;
                 } catch { /* 条件不满足时静默 */ }
+                if (made) {
+                    const diff = EffectReporter.report(ctx, before);
+                    const qTag = quality === 'master' ? ' ✨大师品质！' : quality === 'fine' ? ' ⭐精良' : '';
+                    this.appendLog(`【制作·${r.name}】${diff || '完成。'}${qTag}`);
+                }
                 GameManager.I.persist(); this.refreshHUD();
                 this.openCraft();
             }, { disabled: !chk.ok, small: true });
         }
         btn(dlg, '关闭', () => { this.clearDialogs(); this.enableActions(true); });
+    }
+
+    /** 把 ItemDef.use 翻译成人话 */
+    private static useHint(u: NonNullable<ItemDef['use']>): string {
+        const parts: string[] = [];
+        if (u.hunger) parts.push(`饱食${u.hunger > 0 ? '+' : ''}${u.hunger}`);
+        if (u.thirst) parts.push(`饮水${u.thirst > 0 ? '+' : ''}${u.thirst}`);
+        if (u.hp) parts.push(`生命${u.hp > 0 ? '+' : ''}${u.hp}`);
+        if (u.sanity) parts.push(`精神${u.sanity > 0 ? '+' : ''}${u.sanity}`);
+        if (u.cureStatus?.length) {
+            void u;
+            parts.push(`治疗${u.cureStatus.length}种状态`);
+        }
+        if (u.riskSickPct) parts.push(`⚠生病${u.riskSickPct}%`);
+        if (u.riskPoisonPct) parts.push(`⚠中毒${u.riskPoisonPct}%`);
+        return parts.join(' ');
     }
 
     private openInventory(): void {
@@ -594,15 +777,23 @@ export class AppDom {
             const row = div('rowcard', list);
             const info = div('info', row);
             txt(`${def.name} ×${slot.count}`, info, 'name');
+            if (def.use) txt(AppDom.useHint(def.use), info, 'sub');
+            else if (def.desc) txt(def.desc, info, 'sub');
             if (def.use) {
                 btn(row, '使用', () => {
-                    ItemUsageSystem.use(ctx, slot.itemId);
+                    const before = EffectReporter.snap(ctx);
+                    const ok = ItemUsageSystem.use(ctx, slot.itemId);
+                    if (ok) {
+                        const diff = EffectReporter.report(ctx, before);
+                        this.appendLog(`【使用·${def.name}】${diff || '没有产生变化。'}`);
+                    }
                     GameManager.I.persist(); this.refreshHUD();
                     this.openInventory();
                 }, { small: true });
             }
             btn(row, '丢弃', () => {
                 InventorySystem.remove(ctx, slot.itemId, 1);
+                this.appendLog(`【丢弃】${def.name}×1`);
                 GameManager.I.persist(); this.refreshHUD();
                 this.openInventory();
             }, { small: true, kind: 'ghost' });
@@ -658,6 +849,78 @@ export class AppDom {
             lx.style.color = col2;
         }
 
+        // —— v0.4 关系 / 长线进度 ——
+        txt('—— 人与故事 ——', list, 'dlg-sub');
+        const relLine = (npc: NpcId, name: string): void => {
+            const v = RelationshipSystem.get(ctx, npc);
+            if (npc === 'rescue' && v <= 0) return;
+            const tier = RelationshipSystem.tier(ctx, npc);
+            const label = { stranger: '陌生', friendly: '相识', trusted: '信赖', bonded: '羁绊' }[tier];
+            const rx = txt(`🤝 ${name}：${'♥'.repeat(Math.ceil(v / 20))} ${label}`, list, 'msgline');
+            rx.style.color = v >= 55 ? COL.good : v >= 30 ? COL.accent : COL.dim;
+        };
+        relLine('laok', '老K');
+        relLine('kid', '朵朵');
+        relLine('doc', '老医生');
+        relLine('ratking', '鼠王');
+        const jr = ctx.run.counters.journal ?? 0;
+        const rp = ctx.run.counters.rescueProgress ?? 0;
+        txt(`📔 日记 ${jr} 篇 · 📻 救援进度 ${rp}`, list, 'msgline');
+
+        btn(dlg, '关闭', () => { this.clearDialogs(); this.enableActions(true); });
+    }
+
+    // ================= 技能面板（v0.7）=================
+    private openSkills(): void {
+        const gm = GameManager.I;
+        const ctx = gm.ctx!;
+        const dlg = this.dialog('⭐ 生存技能');
+        const list = div('listwrap', dlg);
+
+        if (!ctx.run.skills) SkillSystem.initSkills(ctx);
+        const sk = ctx.run.skills!;
+
+        // 灵感状态
+        const insp = sk.inspirationCharges > 0
+            ? `✨ 灵感燃烧中（剩 ${sk.inspirationCharges} 次制作加成）`
+            : sk.inspiration > 0
+                ? `💡 灵感 ×${sk.inspiration}（下次制作/烹饪时点燃）`
+                : '💤 灵感沉寂（写日记/冥想有概率获得）';
+        const inspLine = txt(insp, list, 'msgline');
+        inspLine.style.color = sk.inspirationCharges > 0 ? COL.accent : COL.dim;
+
+        // 五条技能线
+        const CATS: [string, string, string][] = [
+            ['survival', '🏕 生存', '探索·钓鱼·采药·冥想'],
+            ['combat', '⚔ 战斗', '打猎·锻炼·陷阱'],
+            ['craft', '🔧 制作', '制作·编织·烹饪'],
+            ['knowledge', '📖 知识', '侦察·广播·日记'],
+            ['social', '🤝 社交', '交易·下棋·留饭'],
+        ];
+        const nextUnlock: Record<string, string[]> = {
+            survival: ['Lv1 采集者：草药+1', 'Lv2 探路者：探索冷却-1', 'Lv3 隐藏采集点'],
+            combat: ['Lv1 猎手：弓伤+15%', 'Lv2 格斗家：受伤减免', 'Lv3 战术家：兽潮布阵'],
+            craft: ['Lv1 建造者：材料-15%｜精致料理', 'Lv2 盛宴解锁', 'Lv3 大师品质'],
+            knowledge: ['Lv1 解锁侦察', 'Lv2 地图揭示：深度侦察', 'Lv3 威胁预判'],
+            social: ['Lv1 商人：交易折扣', 'Lv2 外交官：好感+50%', 'Lv3 领袖：士气鼓舞'],
+        };
+        for (const [cat, name, src] of CATS) {
+            const lv = SkillSystem.level(ctx, cat as never);
+            const xp = SkillSystem.xp(ctx, cat as never);
+            const toNext = SkillSystem.xpToNext(ctx, cat as never);
+            const line = div('', list);
+            line.style.margin = '6px 0';
+            const bar = '█'.repeat(lv >= 10 ? 10 : Math.floor((xp % 100) / 10)) +
+                        '░'.repeat(lv >= 10 ? 0 : 10 - Math.floor((xp % 100) / 10));
+            txt(`${name} Lv.${lv}`, line, 'msgline').style.color =
+                lv >= 5 ? COL.purple : lv >= 2 ? COL.blue : COL.text;
+            txt(`   ${bar} ${lv >= 10 ? 'MAX' : `${xp % 100}/100`}`, line).style.color = COL.dim;
+            txt(`   来源：${src}`, line).style.fontSize = '11px';
+            txt(`   ${toNext > 0 ? `距下级还需 ${toNext} 经验 · 下级解锁：${nextUnlock[cat][Math.min(2, lv)]}` : '本线已臻化境'}`,
+                line).style.fontSize = '11px';
+            txt('', line);
+        }
+
         btn(dlg, '关闭', () => { this.clearDialogs(); this.enableActions(true); });
     }
 
@@ -678,14 +941,25 @@ export class AppDom {
             txt(`出 ${giveName}×${offer.give.count}  ⇄  得 ${getName}×${offer.get.count}`,
                 info, 'name');
             btn(row, done ? '已成交' : '成交', () => {
-                TradingSystem.accept(ctx, offer.id);
-                this.appendLog(`【交易】与「${offer.nick}」完成了一笔交易。`);
+                const before = EffectReporter.snap(ctx);
+                if (TradingSystem.accept(ctx, offer.id)) {
+                    const diff = EffectReporter.report(ctx, before);
+                    this.appendLog(`【交易】与「${offer.nick}」成交 ▸ ${diff}`);
+                }
                 GameManager.I.persist(); this.refreshHUD();
                 this.openTrade();
             }, { disabled: !can, small: true });
         }
         txt('报价好坏全凭眼光。明天会来一批新卖家。', list, 'dlg-sub');
-        btn(dlg, '关闭', () => { this.clearDialogs(); this.enableActions(true); });
+        const rowB = div('opts', dlg);
+        rowB.style.flexDirection = 'row';
+        btn(rowB, '🔥 议价（每日1次）', () => {
+            const r = TradingSystem.haggleBest(ctx);
+            this.appendLog(r.msg);
+            GameManager.I.persist();
+            this.openTrade();
+        }, { small: true });
+        btn(rowB, '关闭', () => { this.clearDialogs(); this.enableActions(true); });
     }
 
     // ================= 世界频道（全屏） =================

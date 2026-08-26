@@ -27,7 +27,11 @@ export class ItemUsageSystem {
         if (u.hp) StatsSystem.apply(ctx, 'hp', u.hp);
         if (u.hunger) StatsSystem.apply(ctx, 'hunger', u.hunger);
         if (u.thirst) StatsSystem.apply(ctx, 'thirst', u.thirst);
-        if (u.sanity) StatsSystem.apply(ctx, 'sanity', u.sanity);
+        if (u.sanity) {
+            // T12 妙手回春：医疗类物品的增益效果乘以医者系数
+            const mult = def.category === 'med' ? ctx.talent.medicFactor : 1;
+            StatsSystem.apply(ctx, 'sanity', Math.round(u.sanity * mult));
+        }
         if (u.cureStatus) for (const s of u.cureStatus) StatusEffectSystem.remove(ctx, s);
 
         if (!filtered) {

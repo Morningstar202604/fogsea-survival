@@ -1,0 +1,2144 @@
+{
+  "events": [
+    {
+      "id": "evt_ex_mailbox",
+      "title": "雾中邮筒",
+      "type": "explore",
+      "pool": [
+        "fog_edge"
+      ],
+      "weight": 10,
+      "cooldownDays": 4,
+      "text": "迷雾边缘立着一只绿色邮筒，铁皮锈得厉害，投递口却被人擦得发亮。里面塞满了寄不出去的信。",
+      "options": [
+        {
+          "text": "取走有价值的邮票和信纸",
+          "results": [
+            {
+              "weight": 60,
+              "text": "你抽出一沓信纸和几枚纪念邮票。物资归你，故事留给邮筒。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 1
+                  }
+                ],
+                "sanity": 2
+              }
+            },
+            {
+              "weight": 40,
+              "text": "最底下一封信的收件人写着你的名字。你没敢拆，塞回了深处。",
+              "effects": {
+                "sanity": -8,
+                "setFlags": [
+                  "mail_seen"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "把一封写给自己家人的信念出来",
+          "requires": {
+            "items": []
+          },
+          "results": [
+            {
+              "weight": 100,
+              "text": "你借着邮筒盖写了一封短信投进去。做完这一切，胸口那块石头轻了一点。",
+              "effects": {
+                "sanity": 10
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_kite",
+      "title": "半截风筝",
+      "type": "explore",
+      "pool": [
+        "fog_edge"
+      ],
+      "weight": 9,
+      "text": "树杈上挂着半截风筝，骨架完好，蒙皮撕了一半。线上还系着一个迷你金属扣。",
+      "options": [
+        {
+          "text": "拆下骨架和线",
+          "results": [
+            {
+              "weight": 70,
+              "text": "竹篾和结实的线都是好材料。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_rope",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 30,
+              "text": "拆的时候线轴崩开，划伤了手背。",
+              "effects": {
+                "hp": -3,
+                "gainItems": [
+                  {
+                    "itemId": "mat_rope",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "把风筝放起来",
+          "results": [
+            {
+              "weight": 55,
+              "text": "风筝在浓雾里飞得很高，看不见了。你盯着线的方向笑了很久。",
+              "effects": {
+                "sanity": 8
+              }
+            },
+            {
+              "weight": 45,
+              "text": "线放尽时，另一头传来极轻的一下回拉——像有什么把它接住了。",
+              "effects": {
+                "sanity": -6
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_footprint",
+      "title": "陌生脚印",
+      "type": "explore",
+      "pool": [
+        "fog_edge"
+      ],
+      "weight": 8,
+      "cooldownDays": 3,
+      "text": "泥地上一串脚印，赤足，间距很大，从雾里来又回雾里去。脚印中心被烧出一个个焦黑的小坑。",
+      "options": [
+        {
+          "text": "沿脚印追一段",
+          "results": [
+            {
+              "weight": 45,
+              "text": "脚印尽头是一小堆还温热的灰烬，里面埋着半罐没开封的罐头。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 55,
+              "text": "你跟丢了。回头时发现自己的来时路上多出一行新的赤足印。",
+              "effects": {
+                "sanity": -10,
+                "addStatus": [
+                  "panic"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "绕开，别惹麻烦",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你退回小路。有些好奇心会要命。",
+              "effects": {
+                "sanity": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_birch_carve",
+      "title": "白桦刻字",
+      "type": "explore",
+      "pool": [
+        "birch_forest"
+      ],
+      "weight": 10,
+      "text": "一棵白桦树上刻满名字和日期，最深的一行是：'等雾散了就回家'。刻痕很新。",
+      "options": [
+        {
+          "text": "在下面也刻一个名字",
+          "results": [
+            {
+              "weight": 65,
+              "text": "你刻下自己的名字。像是在对这个世界说：我还在。",
+              "effects": {
+                "sanity": 6
+              }
+            },
+            {
+              "weight": 35,
+              "text": "刻到一半，树皮渗出的汁液是暗红色的。你换了棵树刻完了后半截。",
+              "effects": {
+                "sanity": -4
+              }
+            }
+          ]
+        },
+        {
+          "text": "检查刻痕附近有没有藏物",
+          "results": [
+            {
+              "weight": 50,
+              "text": "'回家'下方三指处有个油布包：几颗盐和一小卷绳。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "salt",
+                    "count": 2
+                  },
+                  {
+                    "itemId": "mat_rope",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 50,
+              "text": "只有一枚生锈的铁盒，空空如也。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_beehive",
+      "title": "野蜂巢",
+      "type": "explore",
+      "pool": [
+        "birch_forest"
+      ],
+      "weight": 9,
+      "cooldownDays": 5,
+      "text": "低矮的枝桠上吊着一个野蜂巢，蜂群在冷雾里不太活跃。巢里应该有蜜。",
+      "options": [
+        {
+          "text": "用火把熏蜂取蜜",
+          "requires": {
+            "items": [
+              {
+                "itemId": "tool_torch",
+                "count": 1
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 85,
+              "text": "浓烟驱散蜂群。你收获了大块蜜脾，甜到发昏。",
+              "effects": {
+                "sanity": 12,
+                "hunger": 15,
+                "loseItems": [
+                  {
+                    "itemId": "tool_torch",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 15,
+              "text": "还是有几只倔蜂追着你蛰。脸肿了一天，但蜜是真甜。",
+              "effects": {
+                "hunger": 15,
+                "hp": -4,
+                "addStatus": [
+                  "injured"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "直接伸手掏",
+          "results": [
+            {
+              "weight": 35,
+              "text": "手快有！掏出一块蜜脾撒腿就跑。",
+              "effects": {
+                "hunger": 12,
+                "sanity": 4
+              }
+            },
+            {
+              "weight": 65,
+              "text": "蜂群瞬间炸营。你顶着满头包逃出白桦林。",
+              "effects": {
+                "hp": -8,
+                "sanity": -6,
+                "addStatus": [
+                  "injured"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_mushroom_ring",
+      "title": "蘑菇圈",
+      "type": "explore",
+      "pool": [
+        "birch_forest"
+      ],
+      "weight": 10,
+      "cooldownDays": 3,
+      "text": "林间空地上长着一圈整齐的蘑菇，圆得像用圆规画出来的。老人们说这种圈进不得。",
+      "options": [
+        {
+          "text": "采外圈的",
+          "results": [
+            {
+              "weight": 75,
+              "text": "外圈是无毒的杨树菇，今晚加餐。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_mushroom",
+                    "count": 2
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 25,
+              "text": "采着采着你发现自己站在圈子正中央——不记得走过来的。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_mushroom",
+                    "count": 2
+                  }
+                ],
+                "sanity": -8
+              }
+            }
+          ]
+        },
+        {
+          "text": "采内圈的（更肥嫩）",
+          "results": [
+            {
+              "weight": 45,
+              "text": "内圈菌肉厚实，赚了。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_mushroom",
+                    "count": 3
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 55,
+              "text": "这些颜色艳得不正常。当晚你上吐下泻。",
+              "effects": {
+                "addStatus": [
+                  "poisoned"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "绕开这个鬼地方",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你退出去时数了数，圈里一共站着几个影子——你不敢确认是不是零。",
+              "effects": {
+                "sanity": -3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_birdcage",
+      "title": "吊着的鸟笼",
+      "type": "explore",
+      "pool": [
+        "birch_forest"
+      ],
+      "weight": 8,
+      "text": "一只黄铜鸟笼挂在枝头，笼门开着，里面却铺着新鲜草叶——像是有人最近还在喂。",
+      "options": [
+        {
+          "text": "取走铜笼",
+          "results": [
+            {
+              "weight": 80,
+              "text": "黄铜是好东西，能换能熔。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 2
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 20,
+              "text": "提起来才发现笼底压着一撮羽毛和一张字条：'它先走了'。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 2
+                  }
+                ],
+                "sanity": -4
+              }
+            }
+          ]
+        },
+        {
+          "text": "留下食物再走",
+          "requires": {
+            "items": [
+              {
+                "itemId": "food_berry",
+                "count": 1
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 100,
+              "text": "你在笼边摆了几颗浆果。第二天路过时，浆果不见了，笼门关上了。",
+              "effects": {
+                "loseItems": [
+                  {
+                    "itemId": "food_berry",
+                    "count": 1
+                  }
+                ],
+                "sanity": 6
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_freezer",
+      "title": "冷藏柜深处",
+      "type": "explore",
+      "pool": [
+        "supermarket"
+      ],
+      "weight": 11,
+      "cooldownDays": 2,
+      "text": "超市断电已久，但最里侧一台冷藏柜的柜门反常地关着，上面压着重物。拉开的瞬间寒气扑面。",
+      "options": [
+        {
+          "text": "忍着恶臭翻到底",
+          "results": [
+            {
+              "weight": 60,
+              "text": "冻了三个月的速冻水饺和牛肉粒。煮开就没问题！",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_biscuit",
+                    "count": 2
+                  },
+                  {
+                    "itemId": "food_raw_meat",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 40,
+              "text": "翻出一袋冻豆子和一股挥之不去的腐味。你在货架间干呕了十分钟。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_biscuit",
+                    "count": 1
+                  }
+                ],
+                "sanity": -6
+              }
+            }
+          ]
+        },
+        {
+          "text": "只拿柜顶的东西就走",
+          "results": [
+            {
+              "weight": 100,
+              "text": "柜顶塞着两提卫生纸和一把塑料勺。聊胜于无。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_shelffall",
+      "title": "货架塌方",
+      "type": "explore",
+      "pool": [
+        "supermarket"
+      ],
+      "weight": 9,
+      "cooldownDays": 2,
+      "text": "一声呻吟般的金属扭曲声——头顶整排货架正朝你倾塌下来。",
+      "options": [
+        {
+          "text": "向侧前方扑滚",
+          "results": [
+            {
+              "weight": 70,
+              "text": "货架砸在你身后半米。扬尘里你顺手摸了两件货。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 1
+                  }
+                ],
+                "sanity": -4
+              }
+            },
+            {
+              "weight": 30,
+              "text": "还是被边缘扫中肩膀。疼，但命在。",
+              "effects": {
+                "hp": -10,
+                "addStatus": [
+                  "injured"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "撑住货架争取时间",
+          "requires": {
+            "stats": {
+              "hp": {
+                "op": ">=",
+                "value": 50
+              }
+            }
+          },
+          "results": [
+            {
+              "weight": 60,
+              "text": "你硬生生扛住倾斜的角钢，倒身抽出三罐头。力量就是物资。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 3
+                  }
+                ],
+                "hp": -5
+              }
+            },
+            {
+              "weight": 40,
+              "text": "角钢太沉，你被压住小腿挣了很久才脱身。",
+              "effects": {
+                "hp": -14,
+                "addStatus": [
+                  "injured"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_office",
+      "title": "经理办公室",
+      "type": "explore",
+      "pool": [
+        "supermarket"
+      ],
+      "weight": 7,
+      "once": true,
+      "text": "办公室的门虚掩着。桌上一本破损账本压着一份供货点名单，抽屉没锁。",
+      "options": [
+        {
+          "text": "带走账本仔细研究",
+          "results": [
+            {
+              "weight": 100,
+              "text": "账本最后一页用红笔圈了几处'应急库房'。其中一处，似乎就在……沉船方向？",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "key_ledger",
+                    "count": 1
+                  }
+                ],
+                "setFlags": [
+                  "ledger_read"
+                ],
+                "unlockLocation": "shipwreck_bay",
+                "sanity": 4
+              }
+            }
+          ]
+        },
+        {
+          "text": "只翻抽屉",
+          "results": [
+            {
+              "weight": 70,
+              "text": "半瓶止痛药和一块融化又凝固的巧克力。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "med_painkiller",
+                    "count": 1
+                  },
+                  {
+                    "itemId": "lux_choco",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 30,
+              "text": "抽屉夹层弹出一封辞呈，日期是迷雾降临前一天。他到底走成了没有？",
+              "effects": {
+                "sanity": -3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_sample",
+      "title": "试吃摊",
+      "type": "explore",
+      "pool": [
+        "supermarket"
+      ],
+      "weight": 8,
+      "cooldownDays": 4,
+      "text": "促销试吃摊的小桌居然还立着，牙签筒、纸杯一应俱全，仿佛昨夜还有人营业。",
+      "options": [
+        {
+          "text": "打扫战场，能吃的都收走",
+          "results": [
+            {
+              "weight": 65,
+              "text": "几包未拆封的饼干和小面包。过期三天，问题不大。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_black_bread",
+                    "count": 2
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 35,
+              "text": "拆开的一包肉脯上爬满白色小蠕虫。你连牙签筒都没敢碰。",
+              "effects": {
+                "sanity": -7
+              }
+            }
+          ]
+        },
+        {
+          "text": "坐在摊位后扮一回店员",
+          "results": [
+            {
+              "weight": 55,
+              "text": "你对空气喊了一声'试吃啦'。回音散去时，你听见很远处有个孩子笑了一下。",
+              "effects": {
+                "sanity": 5
+              }
+            },
+            {
+              "weight": 45,
+              "text": "你笑着笑着就哭了，哭了很久才想起来自己为什么笑。",
+              "effects": {
+                "sanity": 8,
+                "hp": -2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_cartgrave",
+      "title": "购物车坟场",
+      "type": "explore",
+      "pool": [
+        "supermarket"
+      ],
+      "weight": 8,
+      "text": "几十辆购物车在停车场叠成一座歪斜的高塔，风穿过车轮缝发出呜咽般的声音。",
+      "options": [
+        {
+          "text": "攀上去拆车筐",
+          "results": [
+            {
+              "weight": 60,
+              "text": "拆下的金属网格是万能建材。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 2
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 40,
+              "text": "车塔在你脚下移位滑动！你摔下来时被车筐刮了个满怀。",
+              "effects": {
+                "hp": -8,
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "逐辆翻车内遗落物",
+          "results": [
+            {
+              "weight": 55,
+              "text": "第三辆车里躺着婴儿提篮，篮底垫着一件完好的毛衣和半包奶粉。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 2
+                  }
+                ],
+                "sanity": -3
+              }
+            },
+            {
+              "weight": 45,
+              "text": "除了硬币什么都没有。你收集了一把硬币——万一世界恢复了呢。",
+              "effects": {
+                "sanity": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_creek_glitter",
+      "title": "溪底反光",
+      "type": "explore",
+      "pool": [
+        "creek_valley"
+      ],
+      "weight": 11,
+      "cooldownDays": 2,
+      "text": "浅滩的水底有什么东西在阳光下闪闪发亮。水凉得刺骨。",
+      "options": [
+        {
+          "text": "脱鞋下水摸",
+          "results": [
+            {
+              "weight": 55,
+              "text": "是一枚掉落的银戒指和一把沉底的螺丝刀。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 1
+                  }
+                ],
+                "sanity": 3
+              }
+            },
+            {
+              "weight": 45,
+              "text": "摸了半天只捞起一把淤泥——以及泥里一只惨白的、不属于任何活人的手模型。",
+              "effects": {
+                "sanity": -9
+              }
+            }
+          ]
+        },
+        {
+          "text": "用鱼竿试探深度顺便钓鱼",
+          "requires": {
+            "items": [
+              {
+                "itemId": "tool_fishing_rod",
+                "count": 1
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 70,
+              "text": "挂底的钩拽上来一串小鱼。一举两得。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_raw_fish",
+                    "count": 2
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 30,
+              "text": "钓上来一只湿透的旧怀表，指针停在 4:44。",
+              "effects": {
+                "sanity": -6
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_creek_foam",
+      "title": "上游的泡沫",
+      "type": "explore",
+      "pool": [
+        "creek_valley"
+      ],
+      "weight": 9,
+      "cooldownDays": 3,
+      "text": "溪水上游漂来成片白色泡沫，带着若有若无的甜味。水质明显不对劲。",
+      "options": [
+        {
+          "text": "取样观察",
+          "results": [
+            {
+              "weight": 60,
+              "text": "泡沫是上游某处倾倒的洗涤剂残留，无毒。你放心地在下游灌了水。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "water_dirty",
+                    "count": 2
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 40,
+              "text": "甜味来源不明。你决定连下游的水都暂时不喝了——谨慎总没错。",
+              "effects": {
+                "setFlags": [
+                  "creek_suspect"
+                ],
+                "sanity": -2
+              }
+            }
+          ]
+        },
+        {
+          "text": "逆流而上查源头",
+          "results": [
+            {
+              "weight": 45,
+              "text": "源头是一辆翻倒的清洁车。你在驾驶室里找到一瓶未开封苏打水。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "water_clean",
+                    "count": 1
+                  },
+                  {
+                    "itemId": "lux_choco",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 55,
+              "text": "你看到泡沫尽头泡着一个人形轮廓。你没有靠近的勇气，狂奔而回。",
+              "effects": {
+                "sanity": -12,
+                "addStatus": [
+                  "panic"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_wet_prints",
+      "title": "湿脚印",
+      "type": "explore",
+      "pool": [
+        "creek_valley"
+      ],
+      "weight": 8,
+      "text": "溪边的鹅卵石上有两行刚踩出来的湿脚印，一行大一行小，并排走向密林。",
+      "options": [
+        {
+          "text": "跟着脚印走",
+          "results": [
+            {
+              "weight": 50,
+              "text": "脚印尽头是一件晾在树枝上的小孩外套，口袋里有半块饼干。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_biscuit",
+                    "count": 1
+                  }
+                ],
+                "sanity": -4
+              }
+            },
+            {
+              "weight": 50,
+              "text": "你听到林子深处有大人和孩子的笑声，此起彼伏。可这座村子早就没人了。",
+              "effects": {
+                "sanity": -10
+              }
+            }
+          ]
+        },
+        {
+          "text": "折返，今天不再靠近水边",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你回到岸上晒太阳。安全感的味道和阳光一样。",
+              "effects": {
+                "sanity": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_village_well",
+      "title": "井边的桶",
+      "type": "explore",
+      "pool": [
+        "abandoned_village"
+      ],
+      "weight": 10,
+      "cooldownDays": 3,
+      "text": "村口的辘轳井边放着两只铁桶，井绳绷得笔直——桶好像还在井里，很沉。",
+      "options": [
+        {
+          "text": "摇辘轳拉上来",
+          "results": [
+            {
+              "weight": 60,
+              "text": "满满一桶井水，冰凉甘冽。另一桶里是有人存好的腌菜。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "water_clean",
+                    "count": 2
+                  },
+                  {
+                    "itemId": "food_mushroom",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 40,
+              "text": "第二只桶出水时，你在桶底看到了一只睁着的眼睛——是画上去的，画得很逼真。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "water_clean",
+                    "count": 1
+                  }
+                ],
+                "sanity": -8
+              }
+            }
+          ]
+        },
+        {
+          "text": "往井里丢块石头听听回声",
+          "results": [
+            {
+              "weight": 70,
+              "text": "很久很久才有水声。这井深得不像话。",
+              "effects": {
+                "sanity": 0
+              }
+            },
+            {
+              "weight": 30,
+              "text": "石头落地前，井底传来了敲击回应——三短，三长，三短。",
+              "effects": {
+                "setFlags": [
+                  "well_sos"
+                ],
+                "sanity": -10
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_clothesline",
+      "title": "晒衣绳上的衣服",
+      "type": "explore",
+      "pool": [
+        "abandoned_village"
+      ],
+      "weight": 9,
+      "text": "两户人家之间的晒衣绳还晾着几件衣服，被雨水洗得发白，却叠得整整齐齐地别着夹子。",
+      "options": [
+        {
+          "text": "全部收走",
+          "results": [
+            {
+              "weight": 65,
+              "text": "布料就是资源。你朝空屋子道了声谢。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 3
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 35,
+              "text": "收到最后一件，你发现每件衣服的口袋里都装着一张全家福。你把它们原样放了回去。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 1
+                  }
+                ],
+                "sanity": 4
+              }
+            }
+          ]
+        },
+        {
+          "text": "只拿一双靴子",
+          "results": [
+            {
+              "weight": 80,
+              "text": "一双合脚的胶靴。走远路再也不磨脚了。",
+              "effects": {
+                "hp": 3
+              }
+            },
+            {
+              "weight": 20,
+              "text": "靴子里盘着一条正在蜕皮的蛇。你和它互相吓了一大跳。",
+              "effects": {
+                "sanity": -6,
+                "hp": -2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_granary",
+      "title": "粮仓地窖",
+      "type": "explore",
+      "pool": [
+        "abandoned_village"
+      ],
+      "weight": 8,
+      "cooldownDays": 4,
+      "text": "村仓的地窖门用木杠闩着，缝隙里飘出发霉谷物和另一种说不清的味道。",
+      "options": [
+        {
+          "text": "撬开门杠下去",
+          "results": [
+            {
+              "weight": 60,
+              "text": "半窖受潮但还能吃的陈麦，还有一缸密封完好的腌萝卜。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_black_bread",
+                    "count": 2
+                  },
+                  {
+                    "itemId": "food_mushroom",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 40,
+              "text": "窖里的陈粮早被什么东西搬空了，只剩墙角堆着整齐的骨头。家畜的——你反复告诉自己。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_black_bread",
+                    "count": 1
+                  }
+                ],
+                "sanity": -8
+              }
+            }
+          ]
+        },
+        {
+          "text": "在门口撒一圈石灰粉再来",
+          "requires": {
+            "items": []
+          },
+          "results": [
+            {
+              "weight": 100,
+              "text": "没有石灰，你用灶灰代替。至少蛇虫不爱跨过灰线。下去快取快撤。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_mushroom",
+                    "count": 2
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_slogan",
+      "title": "墙上的标语",
+      "type": "explore",
+      "pool": [
+        "abandoned_village"
+      ],
+      "weight": 7,
+      "text": "土墙上用红漆刷着大字：'守好家门，等待救援'。漆迹下隐约还有一层更旧的字。",
+      "options": [
+        {
+          "text": "辨认下面那层旧字",
+          "results": [
+            {
+              "weight": 55,
+              "text": "旧标语写着：'雾来了，别应声。'两代人守的是同一个村子的规矩。",
+              "effects": {
+                "sanity": -2,
+                "setFlags": [
+                  "know_rule"
+                ]
+              }
+            },
+            {
+              "weight": 45,
+              "text": "旧字被新漆彻底盖死，什么都认不出来。这份沉默比字更瘆人。",
+              "effects": {
+                "sanity": -5
+              }
+            }
+          ]
+        },
+        {
+          "text": "补上一句自己的话",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你蘸着锅底灰在旁边写：'第__天，我还活着。'写完数字的那一栏，你填得很用力。",
+              "effects": {
+                "sanity": 7
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_minelamp",
+      "title": "矿灯遗物",
+      "type": "explore",
+      "pool": [
+        "mine"
+      ],
+      "weight": 10,
+      "text": "矿洞口的工具架上排着几盏老式矿灯，其中一盏竟然还能亮，光柱稳稳打在前方黑暗里。",
+      "options": [
+        {
+          "text": "带走能亮的矿灯",
+          "results": [
+            {
+              "weight": 70,
+              "text": "灯壳结实，电池还有余量。夜里多一分光就多一分胆。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "key_battery",
+                    "count": 1
+                  }
+                ],
+                "sanity": 4
+              }
+            },
+            {
+              "weight": 30,
+              "text": "灯亮了三步路就熄了。你摸黑撞上工具架，头上挨了一下。",
+              "effects": {
+                "hp": -5
+              }
+            }
+          ]
+        },
+        {
+          "text": "把所有电池都拆走",
+          "results": [
+            {
+              "weight": 100,
+              "text": "大小电池七拼八凑凑出五节。电台和手电都有救了。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "key_battery",
+                    "count": 2
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_cart_push",
+      "title": "塌方前的推车",
+      "type": "explore",
+      "pool": [
+        "mine"
+      ],
+      "weight": 9,
+      "cooldownDays": 3,
+      "text": "巷道深处停着一辆装满矿石的推车，轨道向前延伸进一片死寂的黑。头顶不时落下碎石。",
+      "options": [
+        {
+          "text": "推着车深入",
+          "results": [
+            {
+              "weight": 55,
+              "text": "推车挡落了塌方的碎石，你捡回两条命外加满满一车好石头。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_stone",
+                    "count": 4
+                  },
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 45,
+              "text": "轨道尽头是断崖。你刹不住车，连人带车冲进黑暗——醒来时躺在洞口，浑身是伤。",
+              "effects": {
+                "hp": -16,
+                "addStatus": [
+                  "injured"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "只在巷道口捡漏",
+          "results": [
+            {
+              "weight": 100,
+              "text": "散落的矿石和一只工牌。你把工牌立在洞口，算是某种纪念。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_stone",
+                    "count": 2
+                  }
+                ],
+                "sanity": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_water_sound",
+      "title": "深处的水声",
+      "type": "explore",
+      "pool": [
+        "mine"
+      ],
+      "weight": 8,
+      "text": "黑暗尽头传来规律的滴水声，还有一丝流动的风——矿洞深处可能有暗河和出口。",
+      "options": [
+        {
+          "text": "循声探进去",
+          "requires": {
+            "items": [
+              {
+                "itemId": "tool_flashlight",
+                "count": 1
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 65,
+              "text": "暗河！你灌满所有容器，还在河滩上捡到一颗被打磨过的发光晶体。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "water_clean",
+                    "count": 3
+                  },
+                  {
+                    "itemId": "key_mist_crystal",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 35,
+              "text": "暗河边坐着一圈'矿工'，背对着你，一动不动。你踮着脚退出去了，水也没敢灌。",
+              "effects": {
+                "sanity": -14
+              }
+            }
+          ]
+        },
+        {
+          "text": "记下位置改日再来",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你用石块在巷道壁上做了个箭头记号。有备而来总比莽撞强。",
+              "effects": {
+                "sanity": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_miner_note",
+      "title": "矿工留言",
+      "type": "explore",
+      "pool": [
+        "mine"
+      ],
+      "weight": 8,
+      "once": true,
+      "text": "休息室的黑板上是潦草的粉笔字：'别挖穿东壁。雾从那边进来。我们错了。'",
+      "options": [
+        {
+          "text": "按留言所说避开东壁采西巷",
+          "results": [
+            {
+              "weight": 75,
+              "text": "西巷平安无事，你还发现前人藏起的一小袋盐。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "salt",
+                    "count": 2
+                  },
+                  {
+                    "itemId": "mat_stone",
+                    "count": 2
+                  }
+                ],
+                "setFlags": [
+                  "heeded_warning"
+                ],
+                "sanity": 3
+              }
+            },
+            {
+              "weight": 25,
+              "text": "西巷塌了半边。留言的人大概也没料到。你抄近路狼狈撤出。",
+              "effects": {
+                "hp": -6
+              }
+            }
+          ]
+        },
+        {
+          "text": "偏要看看东壁后面是什么",
+          "results": [
+            {
+              "weight": 30,
+              "text": "东壁裂隙里吹出浓稠的白雾，雾里有一面镜子。镜子里你没有脸。你跑得比任何时候都快。",
+              "effects": {
+                "sanity": -13,
+                "addStatus": [
+                  "panic"
+                ]
+              }
+            },
+            {
+              "weight": 70,
+              "text": "东壁后是一条被雾灌满的死巷，你抢在塌方前退出，顺走了架上的铁镐头。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 2
+                  }
+                ],
+                "sanity": -8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_crystal_cluster",
+      "title": "结晶簇",
+      "type": "explore",
+      "pool": [
+        "deep_fog"
+      ],
+      "weight": 11,
+      "text": "岩壁上生长着一片迷雾结晶，每一颗都在以心跳般的频率明明灭灭。你数了数，频率和你完全同步。",
+      "options": [
+        {
+          "text": "敲下最大的一颗",
+          "results": [
+            {
+              "weight": 65,
+              "text": "结晶入手温热，光随之熄灭。掌心像捂着一颗小小的太阳。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "key_mist_crystal",
+                    "count": 1
+                  }
+                ],
+                "setFlags": [
+                  "crystal_taken"
+                ],
+                "sanity": 5
+              }
+            },
+            {
+              "weight": 35,
+              "text": "结晶碎裂的瞬间，整片雾安静下来——所有的虫鸣、风声，全没了。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "key_mist_crystal",
+                    "count": 1
+                  }
+                ],
+                "sanity": -10,
+                "setFlags": [
+                  "fog_silent"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "只是看着它们呼吸",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你们对视了很久。离开时，有一瞬间你觉得它们在替你保守某个秘密。",
+              "effects": {
+                "sanity": 6
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_whisperer",
+      "title": "雾中低语者",
+      "type": "explore",
+      "pool": [
+        "deep_fog"
+      ],
+      "weight": 9,
+      "cooldownDays": 4,
+      "text": "一个由雾构成的人形坐在岩石上，对着掌心絮絮低语。它的声音像很多人在同时说话。",
+      "options": [
+        {
+          "text": "凑近听它在说什么",
+          "results": [
+            {
+              "weight": 50,
+              "text": "它在重复你三天前说过的一句话，一字不差。然后它转头看你，用你自己的声音说：'该回家了。'",
+              "effects": {
+                "sanity": -12,
+                "addStatus": [
+                  "panic"
+                ]
+              }
+            },
+            {
+              "weight": 50,
+              "text": "它在念一份长长的名单。最后一个名字念出来时，你浑身冰凉——那是你认识的人。",
+              "effects": {
+                "sanity": -10,
+                "setFlags": [
+                  "heard_list"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "保持距离绕过去",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你贴着岩壁挪了过去。低语声在你身后停了很久，又缓缓继续。",
+              "effects": {
+                "sanity": -4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_glow_hand",
+      "title": "发光的手印",
+      "type": "explore",
+      "pool": [
+        "deep_fog"
+      ],
+      "weight": 8,
+      "text": "雾气凝结的岩面上印着一个巨大的五指手印，指尖泛着微光。尺寸不是人类能达到的比例。",
+      "options": [
+        {
+          "text": "把手掌覆上去比对",
+          "results": [
+            {
+              "weight": 40,
+              "text": "你的手印与它完美重叠——只是小了一号。岩面下传来一声悠长的叹息。",
+              "effects": {
+                "sanity": 0,
+                "setFlags": [
+                  "hand_matched"
+                ]
+              }
+            },
+            {
+              "weight": 60,
+              "text": "触感意外地温暖。光芒顺着手臂爬上来，你看见雾的另一面：无数木屋的灯火。幻象消失了，但你记得那份暖意。",
+              "effects": {
+                "sanity": 15
+              }
+            }
+          ]
+        },
+        {
+          "text": "拓下手印图案",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你用炭粉拓了一份手印。也许哪天能用得上——或者只是留个念想。",
+              "effects": {
+                "setFlags": [
+                  "hand_rubbing"
+                ],
+                "sanity": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_faceless",
+      "title": "无面人影",
+      "type": "explore",
+      "pool": [
+        "deep_fog"
+      ],
+      "weight": 7,
+      "cooldownDays": 5,
+      "text": "十步之外站着一个穿雨衣的身影。它没有脸，却让你确凿地感觉到它在看你。",
+      "options": [
+        {
+          "text": "挥手打招呼",
+          "results": [
+            {
+              "weight": 50,
+              "text": "它缓缓抬起手，用一模一样的动作向你挥了挥，然后转身走进雾里。不知为何你想哭。",
+              "effects": {
+                "sanity": -6,
+                "setFlags": [
+                  "waved_back"
+                ]
+              }
+            },
+            {
+              "weight": 50,
+              "text": "它开始模仿你每一个动作，越来越快，直到你们的动作重叠成一个。",
+              "effects": {
+                "sanity": -15,
+                "addStatus": [
+                  "panic"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "举起武器对峙",
+          "requires": {
+            "items": []
+          },
+          "results": [
+            {
+              "weight": 100,
+              "text": "你握紧手里的东西。人影静止片刻，慢慢后退，融进白色里。勇气有时候就是武器。",
+              "effects": {
+                "sanity": 5
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_generator",
+      "title": "机房发电机",
+      "type": "explore",
+      "pool": [
+        "radio_tower"
+      ],
+      "weight": 11,
+      "text": "塔底的配电房里躺着一台柴油发电机。油箱见底，但机身保养得很好——最近有人在维护它。",
+      "options": [
+        {
+          "text": "搜刮机油和零件",
+          "results": [
+            {
+              "weight": 70,
+              "text": "滤芯、皮带、半桶柴油。机械师看了都会流口水。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_scrap_metal",
+                    "count": 2
+                  },
+                  {
+                    "itemId": "key_battery",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 30,
+              "text": "你刚拧下一颗螺栓，整层楼道的灯忽然全亮了——发电机自启了。你夺门而出。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "key_battery",
+                    "count": 1
+                  }
+                ],
+                "sanity": -6
+              }
+            }
+          ]
+        },
+        {
+          "text": "试着发动它给电台供电",
+          "requires": {
+            "items": [
+              {
+                "itemId": "key_battery",
+                "count": 1
+              }
+            ]
+          },
+          "results": [
+            {
+              "weight": 60,
+              "text": "轰鸣声中，整套天线阵列缓缓转向东南方。它收到了什么指令。",
+              "effects": {
+                "loseItems": [
+                  {
+                    "itemId": "key_battery",
+                    "count": 1
+                  }
+                ],
+                "setFlags": [
+                  "tower_aligned"
+                ],
+                "sanity": 6
+              }
+            },
+            {
+              "weight": 40,
+              "text": "发动机咳了几声就熄火了。但你注意到电表读数跳过一格——电从哪来的？",
+              "effects": {
+                "loseItems": [
+                  {
+                    "itemId": "key_battery",
+                    "count": 1
+                  }
+                ],
+                "sanity": -4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_dutylog",
+      "title": "值班日志",
+      "type": "explore",
+      "pool": [
+        "radio_tower"
+      ],
+      "weight": 10,
+      "once": true,
+      "text": "值班台上摊着日志本。最后一页的字迹潦草：'D-3。他们回复了。不是救援频道。别回话。千万别回话。'",
+      "options": [
+        {
+          "text": "按日志警告执行静默",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你把发射机保险丝拔了揣兜里。有些信号，不听比听活得久。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "key_battery",
+                    "count": 1
+                  }
+                ],
+                "setFlags": [
+                  "kept_silent"
+                ],
+                "sanity": 3
+              }
+            }
+          ]
+        },
+        {
+          "text": "好奇害死猫：按下回话键",
+          "results": [
+            {
+              "weight": 35,
+              "text": "电流声里传来清晰的回答：'收到。坚持住。'是个温暖的女声。你选择相信。",
+              "effects": {
+                "setFlags": [
+                  "answered_call",
+                  "rescue_hint"
+                ],
+                "sanity": 10
+              }
+            },
+            {
+              "weight": 65,
+              "text": "回答你的声音逐字复读了你的话，然后开始复读你此刻的心跳声。你扯断了电源线。",
+              "effects": {
+                "sanity": -12,
+                "addStatus": [
+                  "panic"
+                ],
+                "setFlags": [
+                  "answered_call"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_flag_antenna",
+      "title": "天线上的旗",
+      "type": "explore",
+      "pool": [
+        "radio_tower"
+      ],
+      "weight": 8,
+      "text": "百米天线的拉索上缠着一面褪色旗帜，旗面画着一个笑脸——有人爬上去挂的，为了给幸存者指路。",
+      "options": [
+        {
+          "text": "爬上去取旗",
+          "results": [
+            {
+              "weight": 65,
+              "text": "布料结实防水，正好做屋顶补丁。旗杆顶端的视野让你看清了雾海的全貌。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 2
+                  }
+                ],
+                "sanity": 6
+              }
+            },
+            {
+              "weight": 35,
+              "text": "爬到一半，固定索松了。你抱着旗杆滑下来的姿势要多狼狈有多狼狈。",
+              "effects": {
+                "hp": -8,
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "text": "在旗下埋个时间胶囊",
+          "results": [
+            {
+              "weight": 100,
+              "text": "你埋下一张字条和一枚硬币。如果有一天有人找到它，请告诉他：这里有人认真地活过。",
+              "effects": {
+                "sanity": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_flooded_hull",
+      "title": "船舱进水",
+      "type": "explore",
+      "pool": [
+        "shipwreck_bay"
+      ],
+      "weight": 11,
+      "text": "搁浅的渔船半个船身浸在海湾里，舱室随潮汐一起一伏，发出鲸息般的声响。",
+      "options": [
+        {
+          "text": "趁退潮钻进货舱",
+          "results": [
+            {
+              "weight": 60,
+              "text": "货舱里码着没泡水的物资箱：罐头、淡水、还有一大袋盐。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 2
+                  },
+                  {
+                    "itemId": "salt",
+                    "count": 2
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 40,
+              "text": "潮水回来得比你预计的快。你抱着抢到的箱子从舱口游了出来。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_canned",
+                    "count": 1
+                  }
+                ],
+                "hp": -4,
+                "sanity": -4
+              }
+            }
+          ]
+        },
+        {
+          "text": "搜船长室",
+          "results": [
+            {
+              "weight": 55,
+              "text": "航海日志与一把黄铜钥匙。日志提到'湾北的集装箱是老周的'。",
+              "effects": {
+                "setFlags": [
+                  "captain_log"
+                ],
+                "sanity": 2
+              }
+            },
+            {
+              "weight": 45,
+              "text": "船长室墙上钉着一张全家福，相框擦得一尘不染——这艘船上不止你一个人来过。",
+              "effects": {
+                "sanity": -6
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_chartroom",
+      "title": "海图室",
+      "type": "explore",
+      "pool": [
+        "shipwreck_bay"
+      ],
+      "weight": 9,
+      "text": "海图桌上摊开着海湾全域图，有人用红铅笔标注了七处叉叉，其中一个画了圈。",
+      "options": [
+        {
+          "text": "研究标记点",
+          "results": [
+            {
+              "weight": 65,
+              "text": "画圈的叉对应一处补给暗仓。按图索骥，你在礁石缝里摸出防水盒。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "med_first_aid",
+                    "count": 1
+                  },
+                  {
+                    "itemId": "water_clean",
+                    "count": 2
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 35,
+              "text": "七个叉连起来是一个箭头，指向陆地深处。指向哪里，图上没有画完。",
+              "effects": {
+                "setFlags": [
+                  "map_arrow"
+                ],
+                "sanity": -3
+              }
+            }
+          ]
+        },
+        {
+          "text": "揭走整张海图当加固布",
+          "results": [
+            {
+              "weight": 100,
+              "text": "厚实的海图纸防潮性能一流。至于秘密嘛，已经糊在屋顶上了。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 2
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_drift_bottle",
+      "title": "漂流瓶",
+      "type": "explore",
+      "pool": [
+        "shipwreck_bay"
+      ],
+      "weight": 8,
+      "cooldownDays": 3,
+      "text": "浪花把一只玻璃漂流瓶推到你脚边。软木塞封得很紧，瓶身裹着防潮油布——这是认真准备的。",
+      "options": [
+        {
+          "text": "打开看信",
+          "results": [
+            {
+              "weight": 55,
+              "text": "'如果你捡到这瓶，说明湾里还能走。别信穿救生衣的。'落款日期是上周。",
+              "effects": {
+                "setFlags": [
+                  "bottle_warn"
+                ],
+                "sanity": -5
+              }
+            },
+            {
+              "weight": 45,
+              "text": "'今天是我们女儿的五岁生日。蛋糕她爸做了三次都塌了。'信纸上有泪痕晕开的地图。",
+              "effects": {
+                "sanity": 6
+              }
+            }
+          ]
+        },
+        {
+          "text": "留着瓶子装淡水",
+          "results": [
+            {
+              "weight": 100,
+              "text": "玻璃瓶是储水神器。信你原样塞了回去——有些话属于大海。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "water_clean",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt_ex_container",
+      "title": "锈蚀的集装箱",
+      "type": "explore",
+      "pool": [
+        "shipwreck_bay"
+      ],
+      "weight": 9,
+      "cooldownDays": 2,
+      "text": "半埋进沙里的集装箱，门轴锈死，但侧面被人切割过一个仅容一人通过的方洞。",
+      "options": [
+        {
+          "text": "钻进去",
+          "results": [
+            {
+              "weight": 60,
+              "text": "箱内堆着压缩干粮和成捆帆布。你在黑暗里撞翻了什么，随后听见抓挠声从货物深处逼近。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "food_biscuit",
+                    "count": 2
+                  }
+                ],
+                "sanity": -8
+              }
+            },
+            {
+              "weight": 40,
+              "text": "箱子里用粉笔画满了正字计数，角落蜷着一床叠好的毯子。有人在这里等过很久很久。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 2
+                  }
+                ],
+                "sanity": -4
+              }
+            }
+          ]
+        },
+        {
+          "text": "先扔块石头探动静",
+          "results": [
+            {
+              "weight": 75,
+              "text": "石头滚了半天停下，没有动静。你安心地搬空了门口的帆布捆。",
+              "effects": {
+                "gainItems": [
+                  {
+                    "itemId": "mat_cloth",
+                    "count": 2
+                  },
+                  {
+                    "itemId": "salt",
+                    "count": 1
+                  }
+                ]
+              }
+            },
+            {
+              "weight": 25,
+              "text": "石头扔进去，里面传来石头回应——准确地扔回了你脚边。力度刚刚好。",
+              "effects": {
+                "sanity": -12
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

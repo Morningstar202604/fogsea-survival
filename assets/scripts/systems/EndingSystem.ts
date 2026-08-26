@@ -40,6 +40,12 @@ export class EndingSystem {
                  !run.flags.includes('laok_betrayed') &&
                  !run.flags.includes('laok_gone'));
             if (laokWith) return 'E06';                           // 同行者
+            // 隐藏：守望者的日记 —— 长期记录 + 救援进度 + 收音机
+            if ((run.counters.journal ?? 0) >= 10 &&
+                (run.counters.rescueProgress ?? 0) >= 2 &&
+                run.facilities.includes('radio')) return 'E13';
+            // 隐藏：不散的篝火 —— 与小女孩线建立深厚羁绊
+            if (run.flags.includes('kid_saved')) return 'E14';
             if (run.flags.includes('radio_done') || run.facilities.includes('radio')) return 'E01';
             if (run.flags.includes('flare_used')) return 'E02';   // 信号弹
             if (run.facilities.includes('signal_pile')) return 'E03';
