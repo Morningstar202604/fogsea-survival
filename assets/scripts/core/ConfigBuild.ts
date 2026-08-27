@@ -18,7 +18,7 @@ export const CONFIG_PATHS = {
 const EVENT_FILES = ['events/fog_explore', 'events/fog_daily', 'events/fog_crisis',
     'events/fog_night', 'events/fog_story', 'events/fog_explore2', 'events/fog_daily2',
     'events/fog_crisis2', 'events/fog_night2', 'events/fog_story2', 'events/fog_chapters',
-    'events/fog_generated'];
+    'events/fog_generated', 'events/fog_versions', 'events/fog_neighbors', 'events/fog_regions_explore'];
 
 const ROOT_KEYS = {
     items: 'items', statuses: 'statuses', talents: 'talents', recipes: 'recipes',

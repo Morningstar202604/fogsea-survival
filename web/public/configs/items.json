@@ -1,61 +1,755 @@
 {
   "items": [
-    { "id": "food_berry",       "name": "浆果",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "berries",        "desc": "酸涩但能果腹。", "use": { "hunger": 12 } },
-    { "id": "food_black_bread", "name": "黑面包",   "category": "food",  "stackable": true,  "maxStack": 3, "icon": "bread",          "desc": "又干又硬，但顶饱。", "use": { "hunger": 20 } },
-    { "id": "food_biscuit",     "name": "压缩饼干", "category": "food",  "stackable": true,  "maxStack": 3, "icon": "cookies",        "desc": "应急口粮的标准答案。", "use": { "hunger": 25 } },
-    { "id": "food_canned",      "name": "罐头",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "canned-food",    "desc": "迷雾里的硬通货。", "use": { "hunger": 40, "sanity": 2 } },
-    { "id": "food_raw_meat",    "name": "生肉",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "meat",           "desc": "最好别生吃。", "use": { "hunger": 20, "riskPoisonPct": 35 } },
-    { "id": "food_cooked_meat", "name": "烤肉",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "ham-shank",      "desc": "油脂的香气是最好的安慰剂。", "use": { "hunger": 45, "sanity": 5 } },
-    { "id": "food_raw_fish",    "name": "生鱼",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "fish",           "desc": "腥味很重。", "use": { "hunger": 18, "riskSickPct": 25 } },
-    { "id": "food_cooked_fish", "name": "烤鱼",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "fish-cooked",    "desc": "热腾腾的一餐。", "use": { "hunger": 40, "sanity": 8 } },
-
-    { "id": "water_dirty",      "name": "脏水",     "category": "water", "stackable": true,  "maxStack": 3, "icon": "water-bottle",   "desc": "喝了可能闹肚子，但渴起来没得选。", "use": { "thirst": 22, "riskSickPct": 35 } },
-    { "id": "water_clean",      "name": "净水",     "category": "water", "stackable": true,  "maxStack": 3, "icon": "glass-shot",     "desc": "清澈冰凉。", "use": { "thirst": 40 } },
-    { "id": "water_boiled",     "name": "开水",     "category": "water", "stackable": true,  "maxStack": 3, "icon": "tea-cup",        "desc": "煮沸过的安心。", "use": { "thirst": 45, "sanity": 2 } },
-
-    { "id": "med_bandage",      "name": "绷带",     "category": "med",   "stackable": true,  "maxStack": 3, "icon": "bandage-roll",   "desc": "处理外伤的基本功。", "use": { "cureStatus": ["injured"] } },
-    { "id": "med_antibiotic",   "name": "抗生素",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "pills",          "desc": "消炎救命。", "use": { "cureStatus": ["sick"] } },
-    { "id": "med_detox",        "name": "解毒剂",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "poison-bottle",  "desc": "误食毒物后的最后机会。", "use": { "cureStatus": ["poisoned"] } },
-    { "id": "med_painkiller",   "name": "止痛药",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "pill-drop",      "desc": "缓解疼痛。", "use": { "hp": 15 } },
-    { "id": "med_first_aid",    "name": "急救包",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "health-potion",  "desc": "全套急救用品。", "use": { "hp": 40, "cureStatus": ["injured"] } },
-    { "id": "med_sedative",     "name": "镇静剂",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "dripping-tube",  "desc": "让你在噩梦中也能睡着。", "use": { "sanity": 30 } },
-    { "id": "med_ointment",     "name": "药膏",     "category": "med",   "stackable": true,  "maxStack": 3, "icon": "ointment",       "desc": "对付灼伤有奇效。", "use": { "hp": 10, "cureStatus": ["acid_burn"] } },
-
-    { "id": "mat_wood",         "name": "木材",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "wood-beam",      "desc": "万能材料。" },
-    { "id": "mat_stone",        "name": "石料",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "stone-pile",     "desc": "建筑基石。" },
-    { "id": "mat_rope",         "name": "绳索",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "rope-coil",      "desc": "捆扎一切。" },
-    { "id": "mat_cloth",        "name": "布料",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "fabric-roll",    "desc": "撕开的衣物与床单。" },
-    { "id": "mat_scrap_metal",  "name": "金属件",   "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "gears",          "desc": "生锈但结实。" },
-    { "id": "mat_charcoal",     "name": "木炭",     "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "charcoal",       "desc": "净水装置的核心滤材。" },
-
-    { "id": "tool_stone_axe",   "name": "石斧",     "category": "tool",  "stackable": false, "maxStack": 1, "icon": "stone-axe",      "desc": "伐木产量翻倍，也能当武器。", "use": null },
-    { "id": "tool_iron_axe",    "name": "铁斧",     "category": "tool",  "stackable": false, "maxStack": 1, "icon": "axe",            "desc": "比石斧好用得多。", "use": null },
-    { "id": "tool_fishing_rod", "name": "鱼竿",     "category": "tool",  "stackable": false, "maxStack": 1, "icon": "fishing-pole",   "desc": "溪谷钓鱼的前提。", "use": null },
-    { "id": "tool_lighter",     "name": "打火机",   "category": "tool",  "stackable": false, "maxStack": 1, "icon": "lighter",        "desc": "文明的余烬。", "use": null },
-    { "id": "tool_torch",       "name": "火把",     "category": "tool",  "stackable": true,  "maxStack": 3, "icon": "torch",          "desc": "深入浓雾的必备品。", "use": null },
-    { "id": "tool_flashlight",  "name": "手电筒",   "category": "tool",  "stackable": false, "maxStack": 1, "icon": "flashlight",     "desc": "黑夜里的勇气。", "use": null },
-    { "id": "tool_radio",       "name": "收音机",   "category": "tool",  "stackable": false, "maxStack": 1, "icon": "radio-tower",    "desc": "每晚播报天气与救援进度。", "use": null },
-
-    { "id": "key_map_fragment", "name": "地图碎片", "category": "key",   "stackable": true,  "maxStack": 3, "icon": "map",            "desc": "集齐三块可拼出沉船湾的位置。" },
-    { "id": "key_mist_crystal", "name": "迷雾结晶", "category": "key",   "stackable": true,  "maxStack": 3, "icon": "crystal-ball",   "desc": "在浓雾深处微微发光……" },
-    { "id": "key_signal_gun",   "name": "信号枪",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "flare-gun",      "desc": "只有一发，但也许够了。" },
-    { "id": "key_radio_parts",  "name": "无线电零件","category": "key",  "stackable": true,  "maxStack": 3, "icon": "radioactive",    "desc": "集齐三件可以组装无线电。" },
-    { "id": "key_old_photo",    "name": "旧照片",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "photo",          "desc": "背面写着：老K，勿念。" },
-    { "id": "book_novel",       "name": "旧小说",   "category": "tool",  "stackable": true,  "maxStack": 3, "icon": "book",           "desc": "页角卷起的长篇。夜里读它，能忘掉雾。", "use": { "sanity": 12 } },
-    { "id": "book_manual",      "name": "生存手册", "category": "tool",  "stackable": true,  "maxStack": 3, "icon": "notebook",       "desc": "图解版。睡前翻两页，梦里都踏实些。", "use": { "sanity": 8 } },
-    { "id": "herb_green",       "name": "苦艾草",   "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "plant-roots",    "desc": "溪谷边常见。苦味很冲，但能入药。" },
-    { "id": "med_herbal",       "name": "草药膏",   "category": "med",   "stackable": true,  "maxStack": 3, "icon": "ointment",       "desc": "土办法，有时比西药管用。", "use": { "hp": 8, "cureStatus": ["sick"] } },
-    { "id": "tea_herb",         "name": "草药茶",   "category": "water", "stackable": true,  "maxStack": 3, "icon": "tea-cup",        "desc": "热气裹着苦香，从喉咙一路暖到心口。", "use": { "thirst": 30, "sanity": 6 } },
-    { "id": "lux_choco",        "name": "巧克力",   "category": "food",  "stackable": true,  "maxStack": 3, "icon": "chocolate-bar",  "desc": "融化了一半。甜味在末世里近乎奢侈。", "use": { "hunger": 15, "sanity": 14 } },
-    { "id": "lux_cocoa",        "name": "热可可",   "category": "water", "stackable": true,  "maxStack": 3, "icon": "tea-cup",        "desc": "杯壁烫手，甜味熨帖。喝完连噩梦都绕道走。", "use": { "thirst": 25, "sanity": 18 } },
-    { "id": "coffee",           "name": "速溶咖啡", "category": "food",  "stackable": true,  "maxStack": 3, "icon": "coffee-mug",     "desc": "苦得清醒。守夜人的老朋友。", "use": { "sanity": 10 } },
-    { "id": "food_mushroom",    "name": "野蘑菇",   "category": "food",  "stackable": true,  "maxStack": 3, "icon": "mushroom",       "desc": "颜色越好看的越要命。", "use": { "hunger": 14, "riskPoisonPct": 40 } },
-    { "id": "food_roast_mush",  "name": "烤蘑菇",   "category": "food",  "stackable": true,  "maxStack": 3, "icon": "mushroom",       "desc": "火候到位就没有毒——大概。", "use": { "hunger": 22, "sanity": 3 } },
-    { "id": "food_dried_fish",  "name": "鱼干",     "category": "food",  "stackable": true,  "maxStack": 3, "icon": "fish-cooked",    "desc": "盐渍风干，能放很久的耐储粮。", "use": { "hunger": 25 } },
-    { "id": "salt",             "name": "盐",       "category": "mat",   "stackable": true,  "maxStack": 3, "icon": "salt-shaker",    "desc": "末世硬通货之二。腌制与电解都靠它。" },
-    { "id": "tool_bow",         "name": "猎弓",     "category": "tool",  "stackable": false, "maxStack": 1, "icon": "bow",            "desc": "自制的弓。安静，且致命。", "use": null },
-    { "id": "key_battery",      "name": "干电池",   "category": "key",   "stackable": true,  "maxStack": 3, "icon": "battery",        "desc": "电台的粮食。也是手电的续命药。" },
-    { "id": "key_ledger",       "name": "破损账本", "category": "key",   "stackable": false, "maxStack": 1, "icon": "notebook",       "desc": "超市经理的账本。最后一页写着供货点名单。", "use": null },
-    { "id": "toy_bear",         "name": "布偶熊",   "category": "key",   "stackable": false, "maxStack": 1, "icon": "teddy-bear",     "desc": "洗得发白的小熊。某个孩子的整个世界。", "use": { "sanity": 6 } }
+    {
+      "id": "food_berry",
+      "name": "浆果",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "berries",
+      "desc": "酸涩但能果腹。",
+      "use": {
+        "hunger": 12
+      }
+    },
+    {
+      "id": "food_black_bread",
+      "name": "黑面包",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "bread",
+      "desc": "又干又硬，但顶饱。",
+      "use": {
+        "hunger": 20
+      }
+    },
+    {
+      "id": "food_biscuit",
+      "name": "压缩饼干",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "cookies",
+      "desc": "应急口粮的标准答案。",
+      "use": {
+        "hunger": 25
+      }
+    },
+    {
+      "id": "food_canned",
+      "name": "罐头",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "canned-food",
+      "desc": "迷雾里的硬通货。",
+      "use": {
+        "hunger": 40,
+        "sanity": 2
+      }
+    },
+    {
+      "id": "food_raw_meat",
+      "name": "生肉",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "meat",
+      "desc": "最好别生吃。",
+      "use": {
+        "hunger": 20,
+        "riskPoisonPct": 35
+      }
+    },
+    {
+      "id": "food_cooked_meat",
+      "name": "烤肉",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "ham-shank",
+      "desc": "油脂的香气是最好的安慰剂。",
+      "use": {
+        "hunger": 45,
+        "sanity": 5
+      }
+    },
+    {
+      "id": "food_raw_fish",
+      "name": "生鱼",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "fish",
+      "desc": "腥味很重。",
+      "use": {
+        "hunger": 18,
+        "riskSickPct": 25
+      }
+    },
+    {
+      "id": "food_cooked_fish",
+      "name": "烤鱼",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "fish-cooked",
+      "desc": "热腾腾的一餐。",
+      "use": {
+        "hunger": 40,
+        "sanity": 8
+      }
+    },
+    {
+      "id": "water_dirty",
+      "name": "脏水",
+      "category": "water",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "water-bottle",
+      "desc": "喝了可能闹肚子，但渴起来没得选。",
+      "use": {
+        "thirst": 22,
+        "riskSickPct": 35
+      }
+    },
+    {
+      "id": "water_clean",
+      "name": "净水",
+      "category": "water",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "glass-shot",
+      "desc": "清澈冰凉。",
+      "use": {
+        "thirst": 40
+      }
+    },
+    {
+      "id": "water_boiled",
+      "name": "开水",
+      "category": "water",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "tea-cup",
+      "desc": "煮沸过的安心。",
+      "use": {
+        "thirst": 45,
+        "sanity": 2
+      }
+    },
+    {
+      "id": "med_bandage",
+      "name": "绷带",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "bandage-roll",
+      "desc": "处理外伤的基本功。",
+      "use": {
+        "cureStatus": [
+          "injured"
+        ]
+      }
+    },
+    {
+      "id": "med_antibiotic",
+      "name": "抗生素",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "pills",
+      "desc": "消炎救命。",
+      "use": {
+        "cureStatus": [
+          "sick"
+        ]
+      }
+    },
+    {
+      "id": "med_detox",
+      "name": "解毒剂",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "poison-bottle",
+      "desc": "误食毒物后的最后机会。",
+      "use": {
+        "cureStatus": [
+          "poisoned"
+        ]
+      }
+    },
+    {
+      "id": "med_painkiller",
+      "name": "止痛药",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "pill-drop",
+      "desc": "缓解疼痛。",
+      "use": {
+        "hp": 15
+      }
+    },
+    {
+      "id": "med_first_aid",
+      "name": "急救包",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "health-potion",
+      "desc": "全套急救用品。",
+      "use": {
+        "hp": 40,
+        "cureStatus": [
+          "injured"
+        ]
+      }
+    },
+    {
+      "id": "med_sedative",
+      "name": "镇静剂",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "dripping-tube",
+      "desc": "让你在噩梦中也能睡着。",
+      "use": {
+        "sanity": 30
+      }
+    },
+    {
+      "id": "med_ointment",
+      "name": "药膏",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "ointment",
+      "desc": "对付灼伤有奇效。",
+      "use": {
+        "hp": 10,
+        "cureStatus": [
+          "acid_burn"
+        ]
+      }
+    },
+    {
+      "id": "mat_wood",
+      "name": "木材",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "wood-beam",
+      "desc": "万能材料。"
+    },
+    {
+      "id": "mat_stone",
+      "name": "石料",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "stone-pile",
+      "desc": "建筑基石。"
+    },
+    {
+      "id": "mat_rope",
+      "name": "绳索",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "rope-coil",
+      "desc": "捆扎一切。"
+    },
+    {
+      "id": "mat_cloth",
+      "name": "布料",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "fabric-roll",
+      "desc": "撕开的衣物与床单。"
+    },
+    {
+      "id": "mat_scrap_metal",
+      "name": "金属件",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "gears",
+      "desc": "生锈但结实。"
+    },
+    {
+      "id": "mat_charcoal",
+      "name": "木炭",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "charcoal",
+      "desc": "净水装置的核心滤材。"
+    },
+    {
+      "id": "tool_stone_axe",
+      "name": "石斧",
+      "category": "tool",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "stone-axe",
+      "desc": "伐木产量翻倍，也能当武器。",
+      "use": null
+    },
+    {
+      "id": "tool_iron_axe",
+      "name": "铁斧",
+      "category": "tool",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "axe",
+      "desc": "比石斧好用得多。",
+      "use": null
+    },
+    {
+      "id": "tool_fishing_rod",
+      "name": "鱼竿",
+      "category": "tool",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "fishing-pole",
+      "desc": "溪谷钓鱼的前提。",
+      "use": null
+    },
+    {
+      "id": "tool_lighter",
+      "name": "打火机",
+      "category": "tool",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "lighter",
+      "desc": "文明的余烬。",
+      "use": null
+    },
+    {
+      "id": "tool_torch",
+      "name": "火把",
+      "category": "tool",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "torch",
+      "desc": "深入浓雾的必备品。",
+      "use": null
+    },
+    {
+      "id": "tool_flashlight",
+      "name": "手电筒",
+      "category": "tool",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "flashlight",
+      "desc": "黑夜里的勇气。",
+      "use": null
+    },
+    {
+      "id": "tool_radio",
+      "name": "收音机",
+      "category": "tool",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "radio-tower",
+      "desc": "每晚播报天气与救援进度。",
+      "use": null
+    },
+    {
+      "id": "key_map_fragment",
+      "name": "地图碎片",
+      "category": "key",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "map",
+      "desc": "集齐三块可拼出沉船湾的位置。"
+    },
+    {
+      "id": "key_mist_crystal",
+      "name": "迷雾结晶",
+      "category": "key",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "crystal-ball",
+      "desc": "在浓雾深处微微发光……"
+    },
+    {
+      "id": "key_signal_gun",
+      "name": "信号枪",
+      "category": "key",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "flare-gun",
+      "desc": "只有一发，但也许够了。"
+    },
+    {
+      "id": "key_radio_parts",
+      "name": "无线电零件",
+      "category": "key",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "radioactive",
+      "desc": "集齐三件可以组装无线电。"
+    },
+    {
+      "id": "key_old_photo",
+      "name": "旧照片",
+      "category": "key",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "photo",
+      "desc": "背面写着：老K，勿念。"
+    },
+    {
+      "id": "book_novel",
+      "name": "旧小说",
+      "category": "tool",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "book",
+      "desc": "页角卷起的长篇。夜里读它，能忘掉雾。",
+      "use": {
+        "sanity": 12
+      }
+    },
+    {
+      "id": "book_manual",
+      "name": "生存手册",
+      "category": "tool",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "notebook",
+      "desc": "图解版。睡前翻两页，梦里都踏实些。",
+      "use": {
+        "sanity": 8
+      }
+    },
+    {
+      "id": "herb_green",
+      "name": "苦艾草",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "plant-roots",
+      "desc": "溪谷边常见。苦味很冲，但能入药。"
+    },
+    {
+      "id": "med_herbal",
+      "name": "草药膏",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "ointment",
+      "desc": "土办法，有时比西药管用。",
+      "use": {
+        "hp": 8,
+        "cureStatus": [
+          "sick"
+        ]
+      }
+    },
+    {
+      "id": "tea_herb",
+      "name": "草药茶",
+      "category": "water",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "tea-cup",
+      "desc": "热气裹着苦香，从喉咙一路暖到心口。",
+      "use": {
+        "thirst": 30,
+        "sanity": 6
+      }
+    },
+    {
+      "id": "lux_choco",
+      "name": "巧克力",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "chocolate-bar",
+      "desc": "融化了一半。甜味在末世里近乎奢侈。",
+      "use": {
+        "hunger": 15,
+        "sanity": 14
+      }
+    },
+    {
+      "id": "lux_cocoa",
+      "name": "热可可",
+      "category": "water",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "tea-cup",
+      "desc": "杯壁烫手，甜味熨帖。喝完连噩梦都绕道走。",
+      "use": {
+        "thirst": 25,
+        "sanity": 18
+      }
+    },
+    {
+      "id": "coffee",
+      "name": "速溶咖啡",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "coffee-mug",
+      "desc": "苦得清醒。守夜人的老朋友。",
+      "use": {
+        "sanity": 10
+      }
+    },
+    {
+      "id": "food_mushroom",
+      "name": "野蘑菇",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "mushroom",
+      "desc": "颜色越好看的越要命。",
+      "use": {
+        "hunger": 14,
+        "riskPoisonPct": 40
+      }
+    },
+    {
+      "id": "food_roast_mush",
+      "name": "烤蘑菇",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "mushroom",
+      "desc": "火候到位就没有毒——大概。",
+      "use": {
+        "hunger": 22,
+        "sanity": 3
+      }
+    },
+    {
+      "id": "food_dried_fish",
+      "name": "鱼干",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "fish-cooked",
+      "desc": "盐渍风干，能放很久的耐储粮。",
+      "use": {
+        "hunger": 25
+      }
+    },
+    {
+      "id": "salt",
+      "name": "盐",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "salt-shaker",
+      "desc": "末世硬通货之二。腌制与电解都靠它。"
+    },
+    {
+      "id": "tool_bow",
+      "name": "猎弓",
+      "category": "tool",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "bow",
+      "desc": "自制的弓。安静，且致命。",
+      "use": null
+    },
+    {
+      "id": "key_battery",
+      "name": "干电池",
+      "category": "key",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "battery",
+      "desc": "电台的粮食。也是手电的续命药。"
+    },
+    {
+      "id": "key_ledger",
+      "name": "破损账本",
+      "category": "key",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "notebook",
+      "desc": "超市经理的账本。最后一页写着供货点名单。",
+      "use": null
+    },
+    {
+      "id": "toy_bear",
+      "name": "布偶熊",
+      "category": "key",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "teddy-bear",
+      "desc": "洗得发白的小熊。某个孩子的整个世界。",
+      "use": {
+        "sanity": 6
+      }
+    },
+    {
+      "id": "tool_crystal_torch",
+      "name": "晶石提灯",
+      "category": "tool",
+      "stackable": true,
+      "maxStack": 2,
+      "icon": "crystal_lamp",
+      "desc": "以雾中结晶制成的提灯，散发冷蓝色微光。迷雾中的低语似乎对它有所忌惮。",
+      "use": {
+        "sanity": 12
+      }
+    },
+    {
+      "id": "lux_teddy",
+      "name": "缺耳朵的布熊",
+      "category": "lux",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "teddy_bear",
+      "desc": "一只缺了左耳朵的旧布熊，塞过棉花，闻起来还有洗衣粉的味道。",
+      "use": {
+        "sanity": 8
+      }
+    },
+    {
+      "id": "food_jerky",
+      "name": "肉干",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "ham-shank",
+      "desc": "盐渍风干，越嚼越香。耐储粮的另一种答案。",
+      "use": { "hunger": 30, "sanity": 2 }
+    },
+    {
+      "id": "food_canned_fruit",
+      "name": "水果罐头",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "canned-food",
+      "desc": "糖水里的橘瓣。甜得有点不真实。",
+      "use": { "hunger": 28, "sanity": 3 }
+    },
+    {
+      "id": "food_hot_soup",
+      "name": "热汤",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "tea-cup",
+      "desc": "咕嘟冒泡的一锅。喝下去从胃暖到指尖。",
+      "use": { "hunger": 25, "sanity": 6 }
+    },
+    {
+      "id": "drink_mint_tea",
+      "name": "薄荷茶",
+      "category": "water",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "tea-cup",
+      "desc": "清凉窜过鼻腔，头疼一下子散了。",
+      "use": { "thirst": 28, "sanity": 8 }
+    },
+    {
+      "id": "food_honey",
+      "name": "蜂蜜",
+      "category": "food",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "glass-shot",
+      "desc": "琥珀色的甜。抹在粥上能多活一天的好心情。",
+      "use": { "hunger": 18, "sanity": 4 }
+    },
+    {
+      "id": "med_pain_patch",
+      "name": "镇痛贴",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "bandage-roll",
+      "desc": "贴上一片，钝痛像潮水一样退下去。",
+      "use": { "hp": 20 }
+    },
+    {
+      "id": "med_vitamin",
+      "name": "维生素片",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "pills",
+      "desc": "瓶底所剩无几。续命的微小底气。",
+      "use": { "hp": 5, "sanity": 4 }
+    },
+    {
+      "id": "med_stimulant",
+      "name": "兴奋剂",
+      "category": "med",
+      "stackable": true,
+      "maxStack": 2,
+      "icon": "pill-drop",
+      "desc": "一针下去眼皮打架的困意被强行摁住。别多用。",
+      "use": { "hp": 10, "sanity": 12 }
+    },
+    {
+      "id": "drink_coconut",
+      "name": "椰子水",
+      "category": "water",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "water-bottle",
+      "desc": "天然的电解质。中暑后的第一口救命水。",
+      "use": { "thirst": 35, "sanity": 2 }
+    },
+    {
+      "id": "lux_old_record",
+      "name": "老唱片",
+      "category": "lux",
+      "stackable": false,
+      "maxStack": 1,
+      "icon": "radio-tower",
+      "desc": "倒放机芯还能转。沙沙的爵士里，末世退到门外。",
+      "use": { "sanity": 10 }
+    },
+    {
+      "id": "mat_bone",
+      "name": "兽骨",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "stone-pile",
+      "desc": "洗干净的腿骨。磨针、刻符、当筹码都行。"
+    },
+    {
+      "id": "mat_feather",
+      "name": "羽毛",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "plant-roots",
+      "desc": "谁的翅羽落在泥里。轻得不像能救命的东西。"
+    },
+    {
+      "id": "mat_glass",
+      "name": "玻璃片",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "glass-shot",
+      "desc": "锋利的边缘。当刀、当镜、当陷阱都好使。"
+    },
+    {
+      "id": "mat_wild_onion",
+      "name": "野葱",
+      "category": "mat",
+      "stackable": true,
+      "maxStack": 3,
+      "icon": "plant-roots",
+      "desc": "墙根下冒头的野葱。提味，也能驱点虫。"
+    }
   ]
 }

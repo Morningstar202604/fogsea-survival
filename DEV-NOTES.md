@@ -1,5 +1,12 @@
 # 开发环境备忘（DEV NOTES）
 
+## 版本策略（2026-08-27 起）
+
+- **统一小版本体系 v0.1.x**：自 v0.1.0 起，所有迭代均视为小版本，递增补丁号（v0.1.0 → v0.1.1 → …）。
+- 历史 v0.2 ~ v0.7.1 的全部功能（数学层 / 章节 / 技能树 / 场景剧本 / 事件十倍扩容等）已归并为 **v0.1.0 起点**，不再使用 0.2 / 0.3 … 这类里程碑式跳号。
+- `VERSION` / `README` / `DEV-NOTES` 三处版本号以本策略为准，对外发布前务必一致。
+- Cocos 端（GameApp.ts）冻结在 v0.3.x 快照，出货管线走 Web dist → Capacitor；追平前勿从 Cocos 出包。
+
 ## 首次用 Cocos Creator 打开本项目
 
 1. 打开 **Cocos Dashboard** → 项目 → 导入 → 选择 `D:\github\quanmin-survival`（引擎版本选 **3.8.x**）
@@ -23,6 +30,28 @@ npx tsc -p tsconfig.game.json            # 全工程类型检查（含 cc 类型
 ```
 
 ## 变更日志
+
+### v0.1.0 版本重置（2026-08-27）
+- 版本号体系重置：历史 v0.2~v0.7.1 全部功能归并为 v0.1.x 小版本系列起点，当前全部功能 = v0.1.0。
+- `VERSION` 0.5.0 → 0.1.0；`README` 状态段 v0.3.3 → v0.1.0 并反映真实功能（22 天赋 / 118+204 事件 / 14 结局 / 技能树 / 场景剧本）；三处版本号对齐。
+- 真实功能基线（归并后）：动态世界 · 数学层（保底/动态权重/好感/体温/燃料）· 五章章节系统 · 世界状态（道德值/雾压）· 程序化内容引擎（204 探索事件）· 场景剧本引擎（朵朵线+老K线 8 幕 29 拍）· 5 线技能树（15 节点）· 渐进解锁 · 场景选择 234 选项。
+
+### v0.1.1 物品/配方/天赋扩容（2026-08-27）
+> 内容素材层扩充，全部复用既有合法键，零假实现、零新增 hook 类型、零代码改动。
+1. **物品 +14**（68 个）：肉干 / 水果罐头 / 热汤 / 薄荷茶 / 蜂蜜 / 镇痛贴 / 维生素片 / 兴奋剂 / 椰子水 / 老唱片（10 消耗品）+ 兽骨 / 羽毛 / 玻璃片 / 野葱（4 材料）。全部使用合法 `use` 键（hunger/thirst/sanity/hp/cureStatus），图标复用既有有效名避免破图。
+2. **配方 +8**（33 个）：风干肉干 / 蜜渍果 / 煮热汤 / 薄荷茶 / 镇痛贴 / 维生素片 / 兴奋剂 / 布绳。产物均为既有或本批新增物品，前置设施仅 campfire（已有对应配方），无新设施 id。
+3. **天赋 +10**（T13–T22，22 个）：拾荒者 / 神枪手 / 仓鼠症 / 夜行猫 / 锦鲤 / 渔老大 / 仁心 / 苦行僧 / 交际花 / 鹰眼。**全部复用既有 12 种 hook 类型**（lootMult / nightRisk / dirty / medic / combat / bag / chest / gift / warn / fishing / hint / craftReduce），消费逻辑已存在于 TalentRuntime，自动进入抽卡池，单天赋模型下真实生效。
+4. **三真源同步**：`assets/resources/configs/` 改后同步至 `web/dist/configs/` 与 `web/android/app/src/main/assets/public/configs/`（消除 web/dist 缺失 craft_crystal_lamp 的历史快照差异），确保 Web 运行时与 APK 出包均消费新内容。
+5. 回归：tools vitest 55/55（无回归）· 双端 tsc 0 错误 · web vitest 冒烟通过 · 模拟器双指标达标 · ConfigSchema 校验三处配置 0 issue。
+
+### v0.1.2 剧本线扩容：救援线 + 结晶真相线（2026-08-27）
+> 场景剧本引擎新增两条 8 幕 29 拍角色剧本，全部复用既有合法 EffectPayload 字段与已注册 NPC/物品/结局，零代码改动、零假实现。
+
+1. **救援线 rescue_s1_wreck ~ rescue_s8_leave（8 幕）**：遇险船员（rescue NPC）从沉船湾获救 → 以零件助建 radio → 推进原生 rescueProgress 系统 → 解锁 E13「守望者的日记」隐藏结局。靠 flag 链（rescue_met→rescue_talked→rescue_radio_help→…）串联，dayMin 错开保证顺序；effects 全部走合法字段，赠 key_radio_parts 助建 radio 设施。
+2. **结晶真相线 crystal_s1_vein ~ crystal_s8_truth（8 幕）**：由 laok/doc 揭示迷雾结晶真相 → 赠 key_mist_crystal（maxStack=3，契合 E05「迷雾之眼」三块收集）→ 衔接 E05 隐藏结局。文本密度对标网文，含 flag 长链与多分支。
+3. **三真源同步**：`assets/resources/configs/scenes.json` 改后 cp 同步至 `web/dist/configs/scenes.json` 与 `web/android/app/src/main/assets/public/configs/scenes.json`，场景总数 28→44（id 重复 0）。
+4. **零假实现核查**：rescue NPC 已在 RelationshipSystem 初始化好感（rescue:0）；key_mist_crystal maxStack=3 与 E05 触发事件（fog_story.json）一致；craft_radio 产出 radio 设施；两条线纯 JSON 真实现，无新增代码/hook。
+5. 回归：tools vitest **58/58**（新增 verify_scenes.test 全量 ConfigSchema 0 issue + 救援/结晶线各 8 幕 + entry 节点存在；修正 scenes.test 过时假设 day6 morningStart 不再返回 null）· 双端 tsc 0 错误 · web vitest 3/3 · 模拟器死亡率 56.1% / 好结局率 43.9%（40~60% 双达标）· ConfigSchema 全量 0 issue。
 
 ### v0.2 动态世界（六大系统）
 1. **地点枯竭**：每地有存量（12/14/10/12/8/8/6），搜刮见底无产出，UI/情报板显示余量

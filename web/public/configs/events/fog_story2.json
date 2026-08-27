@@ -282,7 +282,10 @@
                 "relNpc": "doc",
                 "relDelta": 15,
                 "sanity": 4
-              }
+              },
+              "setFlags": [
+                "doc_met"
+              ]
             },
             {
               "weight": 15,
@@ -298,7 +301,10 @@
                 "relNpc": "doc",
                 "relDelta": 10,
                 "sanity": 8
-              }
+              },
+              "setFlags": [
+                "doc_met"
+              ]
             }
           ]
         },
@@ -332,7 +338,10 @@
                 "relNpc": "doc",
                 "relDelta": 12,
                 "sanity": 8
-              }
+              },
+              "setFlags": [
+                "doc_met"
+              ]
             }
           ]
         },
@@ -346,7 +355,10 @@
                 "relNpc": "doc",
                 "relDelta": 6,
                 "sanity": 5
-              }
+              },
+              "setFlags": [
+                "doc_met"
+              ]
             }
           ]
         }
@@ -402,7 +414,12 @@
                   "ratking_gift"
                 ],
                 "sanity": 8
-              }
+              },
+              "setFlags": [
+                "ratking_met"
+              ],
+              "relNpc": "ratking",
+              "relDelta": 10
             }
           ]
         },
@@ -425,7 +442,12 @@
                   "ratking_gift"
                 ],
                 "sanity": -3
-              }
+              },
+              "setFlags": [
+                "ratking_met"
+              ],
+              "relNpc": "ratking",
+              "relDelta": 10
             }
           ]
         }

@@ -53,7 +53,9 @@ describe('SceneSystem 调度', () => {
     it('被赶走（kid_repelled）后整条线封锁', () => {
         const ctx = makeCtx();
         ctx.run.day = 6;
-        ctx.run.flags.push('kid_repelled');
+        // 新增救援线(rescue_s1, day>=4) 与结晶线(crystal_s1, day>=5) 不与 kid_repelled 冲突，
+        // 故同时排除它们以验证「朵朵线封锁后无其他就绪场景」的原始语义。
+        ctx.run.flags.push('kid_repelled', 'rescue_lost', 'crystal_met');
         expect(SceneSystem.morningStart(ctx)).toBeNull();
     });
 
