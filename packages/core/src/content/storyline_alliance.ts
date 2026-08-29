@@ -1,0 +1,489 @@
+/**
+ * v2.0 主线剧情 - 联盟线
+ * 
+ * 剧情简介：加入或创建幸存者联盟，在乱世中建立秩序。
+ * 通过外交、贸易、战争等手段，成为迷雾世界的统治者或守护者。
+ */
+
+import type { StorylineDef, SceneNode, EndingDef } from '../types.js';
+
+export const ALLIANCE_ENDINGS: Record<string, EndingDef> = {
+  alliance_leader: {
+    id: 'alliance_leader',
+    title: '联盟领袖',
+    desc: '你成功统一了周边的幸存者社区，建立了强大的联盟。在你的领导下，人类在迷雾世界中重新站稳了脚跟。你是新秩序的缔造者。',
+    category: 'good',
+  },
+  tyrant_ruler: {
+    id: 'tyrant_ruler',
+    title: '暴君统治',
+    desc: '你用铁腕手段统治了所有幸存者。虽然秩序建立了，但这是建立在恐惧之上的和平。人们敬畏你，但没有人爱你...',
+    category: 'bad',
+  },
+  democratic_union: {
+    id: 'democratic_union',
+    title: '民主联邦',
+    desc: '你建立了一个平等的幸存者联邦，每个社区都有发言权。虽然决策效率不高，但这是最可持续的治理方式。',
+    category: 'true',
+  },
+};
+
+export const ALLIANCE_SCENES: Record<string, SceneNode> = {
+  alliance_invitation: {
+    id: 'alliance_invitation',
+    text: `【第${'{day}'}天】
+
+你的基地已经初具规模，这引起了附近幸存者的注意。
+
+一天，一个自称"老陈"的中年男人来到你的基地。他身后跟着十几个武装人员，但都保持着安全距离，表示没有恶意。
+
+"朋友，我是'曙光联盟'的外交官。我们注意到你的基地建设得很好，想邀请你加入我们的联盟。"
+
+老陈递给你一份羊皮卷，上面写着联盟的章程：
+
+【曙光联盟章程】
+- 成员互助：共享资源、情报、防御
+- 集体决策：重大事项投票决定
+- 贡献制度：按贡献分配资源
+- 共同防御：一方有难，八方支援
+
+"目前我们有5个社区，共200多人。如果你加入，将获得：
+1. 联盟商店访问权限（特殊物品）
+2. 军事保护（兽潮时支援）
+3. 贸易优惠（手续费减半）
+
+当然，也需要履行义务：
+1. 每月缴纳10%资源税
+2. 参与集体防御
+3. 遵守联盟法律"
+
+你怎么选择？`,
+    choices: [
+      {
+        id: 'join_alliance',
+        text: '同意加入联盟',
+        hint: '获得支持但失去部分自主权',
+        effects: [
+          { kind: 'flag', flag: 'joined_alliance', flagValue: true },
+          { kind: 'item', item: 'alliance_badge', amount: 1 },
+          { kind: 'resource', resource: 'food', delta: 50 },
+          { kind: 'jump', target: 'alliance_member_life' },
+        ],
+        next: 'alliance_member_life',
+        result: '"欢迎加入曙光联盟！从今天起，我们就是战友了。"',
+      },
+      {
+        id: 'negotiate_terms',
+        text: '谈判更好的条件',
+        hint: '需要魅力/智力检定',
+        effects: [
+          {
+            kind: 'roll',
+            difficulty: 55,
+            onFail: 'negotiation_fail',
+            onSuccess: 'negotiation_success',
+            successEffects: [
+              { kind: 'flag', flag: 'better_terms', flagValue: true },
+            ],
+          },
+        ],
+        next: 'negotiation_success',
+        result: '"我觉得这个条件还需要再谈谈..."',
+      },
+      {
+        id: 'decline_join',
+        text: '拒绝加入，保持独立',
+        hint: '自由但孤立',
+        effects: [
+          { kind: 'flag', flag: 'declined_alliance', flagValue: true },
+          { kind: 'jump', target: 'independent_path' },
+        ],
+        next: 'independent_path',
+        result: '"谢谢好意，但我更喜欢独自发展。"',
+      },
+      {
+        id: 'propose_new_alliance',
+        text: '提议创建新联盟',
+        hint: '你有野心成为领袖',
+        effects: [
+          { kind: 'flag', flag: 'propose_own_alliance', flagValue: true },
+          { kind: 'jump', target: 'found_new_alliance' },
+        ],
+        next: 'found_new_alliance',
+        result: '"不如我们一起创建一个新的联盟？"',
+      },
+    ],
+  },
+
+  alliance_member_life: {
+    id: 'alliance_member_life',
+    text: `加入联盟后，你的生活发生了很大变化。
+
+【解锁功能】
+- 联盟频道：与其他成员实时通讯
+- 联盟商店：用联盟积分兑换特殊物品
+- 任务板：接取联盟发布的集体任务
+- 军事支援：遭遇强敌时可请求援助
+
+第一周，你就体验到了联盟的好处：
+
+1. 从联盟商店购买了高级武器图纸
+2. 完成了一个采集任务，获得100联盟积分
+3. 在一次野兽袭击中获得了邻近社区的支援
+
+但也有一些不便：
+- 每月要缴纳资源税
+- 需要参加联盟会议
+- 某些决策与你意见不合
+
+现在联盟面临一个重要抉择：是否接纳一个新社区"黑鹰团"。但这个社区名声不好，有人怀疑他们是强盗出身。
+
+联盟将举行投票，你的意见很重要。`,
+    choices: [
+      {
+        id: 'vote_accept',
+        text: '投票赞成接纳',
+        hint: '扩大联盟但可能有风险',
+        effects: [
+          { kind: 'flag', flag: 'voted_accept_blackhawk', flagValue: true },
+          { kind: 'jump', target: 'blackhawk_crisis' },
+        ],
+        next: 'blackhawk_crisis',
+        result: '你认为应该给他们一个改过自新的机会。',
+      },
+      {
+        id: 'vote_reject',
+        text: '投票反对接纳',
+        hint: '保持联盟纯洁性',
+        effects: [
+          { kind: 'flag', flag: 'voted_reject_blackhawk', flagValue: true },
+          { kind: 'jump', target: 'blackhawk_retaliation' },
+        ],
+        next: 'blackhawk_retaliation',
+        result: '你认为不应该冒险接纳可疑的社区。',
+      },
+    ],
+  },
+
+  blackhawk_crisis: {
+    id: 'blackhawk_crisis',
+    text: `联盟投票以微弱优势通过了接纳黑鹰团的决议。
+
+起初一切正常，黑鹰团表现得非常配合。但一个月后，问题出现了：
+
+1. 多个社区报告物资被盗
+2. 有目击者看到黑鹰团成员在夜间秘密集会
+3. 联盟仓库的一批武器不翼而飞
+
+证据指向黑鹰团，但他们矢口否认，并指责是有人栽赃陷害。
+
+联盟内部产生了分裂：
+- 强硬派要求立即驱逐黑鹰团，必要时武力解决
+- 温和派主张继续调查，避免冲突升级
+- 中立派观望事态发展
+
+作为联盟的重要成员，你需要做出选择。`,
+    choices: [
+      {
+        id: 'support_hardline',
+        text: '支持强硬派，准备武力清剿',
+        hint: '可能引发内战',
+        effects: [
+          { kind: 'flag', flag: 'support_hardline', flagValue: true },
+          { kind: 'jump', target: 'alliance_civil_war' },
+        ],
+        next: 'alliance_civil_war',
+        result: '你认为必须果断行动，清除害群之马。',
+      },
+      {
+        id: 'investigate_truth',
+        text: '暗中调查真相',
+        hint: '需要潜行/侦查技能',
+        effects: [
+          {
+            kind: 'roll',
+            difficulty: 60,
+            onFail: 'investigation_fail',
+            onSuccess: 'discover_conspiracy',
+            successEffects: [
+              { kind: 'flag', flag: 'know_truth', flagValue: true },
+            ],
+          },
+        ],
+        next: 'discover_conspiracy',
+        result: '你决定亲自查明真相。',
+      },
+      {
+        id: 'mediate_conflict',
+        text: '尝试调解矛盾',
+        hint: '需要高魅力值',
+        effects: [
+          { kind: 'jump', target: 'peaceful_resolution' },
+        ],
+        next: 'peaceful_resolution',
+        requires: {
+          resources: { intelligence: 15 },
+        },
+        result: '你试图在双方之间斡旋。',
+      },
+    ],
+  },
+
+  discover_conspiracy: {
+    id: 'discover_conspiracy',
+    text: `经过一周的暗中调查，你发现了惊人的真相：
+
+盗窃案确实是黑鹰团所为，但这只是冰山一角。他们的真正目的是：
+
+1. 窃取联盟的防御部署图
+2. 渗透到其他社区内部
+3. 等待时机发动政变，夺取联盟控制权
+
+更可怕的是，你发现联盟内部有内鬼在配合他们——是联盟的财务主管！
+
+你现在掌握了确凿证据，可以揭露这个阴谋。`,
+    choices: [
+      {
+        id: 'public_expose',
+        text: '在联盟大会上公开揭露',
+        hint: '正义之举，但可能打草惊蛇',
+        effects: [
+          { kind: 'flag', flag: 'exposed_conspiracy', flagValue: true },
+          { kind: 'jump', target: 'ending_alliance_leader' },
+        ],
+        next: 'ending_alliance_leader',
+        result: '你在联盟大会上出示了所有证据...',
+      },
+      {
+        id: 'secret_eliminate',
+        text: '暗中清除叛徒',
+        hint: '更高效但有道德风险',
+        effects: [
+          { kind: 'flag', flag: 'secret_purge', flagValue: true },
+          { kind: 'jump', target: 'ending_tyrant_ruler' },
+        ],
+        next: 'ending_tyrant_ruler',
+        result: '你决定用更直接的方式解决问题...',
+      },
+    ],
+  },
+
+  alliance_civil_war: {
+    id: 'alliance_civil_war',
+    text: `联盟爆发了内战！
+
+黑鹰团撕破脸皮，公然宣布独立，并占领了联盟东区的三个社区。其他成员被迫选边站队。
+
+这场内战持续了两周，造成了惨重损失：
+- 50多名幸存者死亡
+- 大量基础设施被毁
+- 联盟元气大伤
+
+最终，在外部威胁（兽潮）的压力下，双方被迫停战和解。但联盟已经名存实亡...
+
+【结局：分裂的联盟】
+联盟虽然没有完全解散，但再也无法恢复往日的团结。每个社区都开始为自己打算，联盟变成了一个松散的协调机构。`,
+    choices: [
+      {
+        id: 'continue_game',
+        text: '继续游戏',
+        effects: [{ kind: 'jump', target: '__return__' }],
+        next: '__return__',
+        result: '',
+      },
+    ],
+  },
+
+  peaceful_resolution: {
+    id: 'peaceful_resolution',
+    text: `通过你的努力调解，双方达成了妥协：
+
+1. 黑鹰团接受监督，交出武器库钥匙
+2. 联盟成立独立的监察委员会
+3. 建立更透明的财务制度
+
+虽然问题没有彻底解决，但至少避免了流血冲突。
+
+你的调解能力得到了所有人的认可，被推举为联盟的新任主席。
+
+【结局：民主联邦】
+在你领导下，联盟改革了制度，建立了更加公平透明的管理体系。虽然决策速度变慢了，但每个成员都有了发言权。这是一个更加可持续的发展模式。`,
+    choices: [
+      {
+        id: 'continue_game',
+        text: '继续游戏',
+        effects: [{ kind: 'jump', target: '__return__' }],
+        next: '__return__',
+        result: '',
+      },
+    ],
+  },
+
+  // 结局场景
+  ending_alliance_leader: {
+    id: 'ending_alliance_leader',
+    text: `【结局：联盟领袖】
+
+揭露阴谋后，你被推举为联盟的新任领袖。
+
+你进行了一系列改革：
+- 建立透明的财务系统
+- 成立独立的司法机构
+- 加强军事训练和防御工事
+- 与其他联盟建立外交关系
+
+在你的领导下，联盟从最初的5个社区发展到20个，人口超过1000人。你们甚至开始探索迷雾边缘，寻找回家的路。
+
+你是新秩序的缔造者，是人类复兴的希望。
+
+【联盟线完成·好结局】
+【解锁称号】联盟领袖
+【特殊权限】联盟军队指挥权、外交决策权
+【影响力】极高`,
+    choices: [
+      {
+        id: 'continue_game',
+        text: '继续游戏',
+        effects: [{ kind: 'jump', target: '__return__' }],
+        next: '__return__',
+        result: '',
+      },
+    ],
+  },
+
+  ending_tyrant_ruler: {
+    id: 'ending_tyrant_ruler',
+    text: `【结局：暴君统治】
+
+你暗中清除了所有叛徒，包括黑鹰团的首领和联盟内鬼。
+
+手段虽然残忍，但效果显著。从此再也没有人敢挑战你的权威。
+
+你建立了严密的监控体系，任何可疑行为都会被立即镇压。联盟变得前所未有的"稳定"，但这是建立在恐惧之上的和平。
+
+人们服从你，但没有人真心拥护你。你在权力的顶峰，却感到无比孤独...
+
+【联盟线完成·坏结局】
+【解锁称号】铁血统治者
+【特殊能力】绝对权威、情报网络
+【声望】恐惧值高，爱戴值低`,
+    choices: [
+      {
+        id: 'continue_game',
+        text: '继续游戏',
+        effects: [{ kind: 'jump', target: '__return__' }],
+        next: '__return__',
+        result: '',
+      },
+    ],
+  },
+
+  independent_path: {
+    id: 'independent_path',
+    text: `你选择了独立发展的道路。
+
+虽然没有联盟的支持，但你拥有完全的自主权。你可以按照自己的意愿建设基地，不必受制于人。
+
+偶尔，你会与附近的社区进行贸易，但始终保持警惕。在这个乱世中，只有强者才能生存。
+
+【联盟线关闭】
+【获得】独立自主成就
+【提示】未来可能会遇到其他势力`,
+    choices: [
+      {
+        id: 'continue_game',
+        text: '继续游戏',
+        effects: [{ kind: 'jump', target: '__return__' }],
+        next: '__return__',
+        result: '',
+      },
+    ],
+  },
+
+  found_new_alliance: {
+    id: 'found_new_alliance',
+    text: `你提出了一个更大胆的计划：创建一个新的联盟！
+
+老陈对你的想法很感兴趣。经过几轮谈判，你们决定合并各自的社区，成立"新曙光联盟"。
+
+你将担任联合主席之一，负责军事和外交事务。这是一个全新的开始，你可以按照自己的理念塑造这个组织。
+
+【解锁】新联盟创建者身份
+【初始成员】8个社区，350人
+【特殊优势】你可以制定联盟规则`,
+    choices: [
+      {
+        id: 'design_rules',
+        text: '设计联盟规则',
+        effects: [{ kind: 'jump', target: 'ending_democratic_union' }],
+        next: 'ending_democratic_union',
+        result: '你开始起草新联盟的章程...',
+      },
+    ],
+  },
+
+  ending_democratic_union: {
+    id: 'ending_democratic_union',
+    text: `【结局：民主联邦】
+
+你设计的联盟章程强调平等和民主：
+
+- 每个社区无论大小都有一票
+- 重大决策需要2/3多数通过
+- 设立轮值主席制，防止权力集中
+- 建立独立的司法和监察系统
+
+虽然决策效率不如独裁快，但这种制度更加稳定和可持续。成员们有强烈的归属感，愿意为联盟贡献力量。
+
+多年后，"新曙光联盟"成为了迷雾世界中最强大的政治实体。而你，作为创始人之一，被载入史册。
+
+【联盟线完成·真结局】
+【解锁称号】建国元勋
+【历史地位】联盟创始人
+【遗产】民主制度延续至今`,
+    choices: [
+      {
+        id: 'continue_game',
+        text: '继续游戏',
+        effects: [{ kind: 'jump', target: '__return__' }],
+        next: '__return__',
+        result: '',
+      },
+    ],
+  },
+
+  // 占位场景
+  negotiation_fail: {
+    id: 'negotiation_fail',
+    text: `谈判失败，老陈坚持原有条件。`,
+    choices: [],
+    next: '__return__',
+  },
+  negotiation_success: {
+    id: 'negotiation_success',
+    text: `谈判成功！资源税降至5%，并获得更多自主权。`,
+    choices: [],
+    next: 'alliance_member_life',
+  },
+  investigation_fail: {
+    id: 'investigation_fail',
+    text: `调查失败，你没有找到确凿证据。`,
+    choices: [],
+    next: '__return__',
+  },
+  blackhawk_retaliation: {
+    id: 'blackhawk_retaliation',
+    text: `黑鹰团被拒绝后怀恨在心，开始骚扰你的基地。`,
+    choices: [],
+    next: '__return__',
+  },
+};
+
+export const ALLIANCE_STORYLINE: StorylineDef = {
+  id: 'alliance_line',
+  title: '联盟线：新秩序的缔造者',
+  desc: '加入或创建联盟，在乱世中建立人类的新家园。',
+  initialScene: 'alliance_invitation',
+  scenes: ALLIANCE_SCENES,
+  endings: ALLIANCE_ENDINGS,
+};

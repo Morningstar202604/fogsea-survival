@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">全民求生：迷雾降临</string>
-    <string name="title_activity_main">全民求生：迷雾降临</string>
-    <string name="package_name">com.badhope.fogdescends</string>
-    <string name="custom_url_scheme">com.badhope.fogdescends</string>
-</resources>

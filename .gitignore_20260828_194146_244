@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+dist-ssr/
+coverage/
+*.tsbuildinfo
+
+# android
+android/
+*.apk
+*.aab
+
+# editor & os
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# logs & temp
+*.log
+npm-debug.log*
+.tmp/
+temp/
+
+# env
+.env
+.env.local
+.env.*.local

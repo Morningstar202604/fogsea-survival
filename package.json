@@ -1,7 +1,19 @@
 {
-  "name": "fog-descends",
-  "uuid": "a3f8c2e1-7b4d-4c9a-9e6f-2d5b8c1a4e7f",
-  "creator": {
-    "version": "3.8.2"
-  }
+  "name": "quanmin-survival",
+  "private": true,
+  "version": "2.0.0-alpha.1",
+  "description": "全民求生：迷雾降临 v2 - 基于热门小说机制重构的生存策略游戏 (Vue3 + TS monorepo)",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "validate": "pnpm -F @survival/core validate",
+    "dev:web": "pnpm --filter @survival/web dev",
+    "dev": "pnpm dev:web"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.11.0"
 }
