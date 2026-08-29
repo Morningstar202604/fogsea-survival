@@ -16,6 +16,12 @@ import {
   runDaily,
   exportState,
   importState,
+  upgradeBase,
+  unlockSkill,
+  chooseSpecialization,
+  buyFromMerchant,
+  sellToMerchant,
+  executeCombatRound,
   type GameState,
   type Choice,
 } from '@survival/core';
@@ -55,6 +61,16 @@ export interface GameSession {
   exportSave: () => string;
   importSave: (raw: string, slot: number) => boolean;
   deleteSlot: (slot: number) => void;
+  
+  // v2.0 新增方法
+  upgradeBase?: () => void;
+  openBuildMenu?: () => void;
+  upgradeSkill?: (skillId: string) => void;
+  chooseSpecialization?: (branch: 'tech' | 'cultivation' | 'general') => void;
+  buyFromMarket?: (itemId: string, merchantId: string) => void;
+  sellToMarket?: (itemId: string) => void;
+  startStory?: (storyId: string) => void;
+  combatAction?: (action: 'attack' | 'defend' | 'skill' | 'flee') => void;
 }
 
 let _session: GameSession | null = null;
@@ -236,6 +252,111 @@ function createSession(): GameSession {
     s.slots = clearSlot(slot);
   }
 
+  // === v2.0 新增方法实现 ===
+
+  function upgradeBase(): void {
+    if (!s.state) return;
+    const result = upgradeBase(s.state);
+    if (result.success) {
+      showToast(result.message);
+      pushLog(result.message, 'system');
+      persist();
+    } else {
+      showToast(result.message);
+    }
+  }
+
+  function openBuildMenu(): void {
+    showToast('建造功能开发中，敬请期待！');
+  }
+
+  function upgradeSkill(skillId: string): void {
+    if (!s.state) return;
+    const result = unlockSkill(s.state, skillId);
+    if (result.success) {
+      showToast(result.message);
+      pushLog(result.message, 'system');
+      persist();
+    } else {
+      showToast(result.message);
+    }
+  }
+
+  function chooseSpecializationFn(branch: 'tech' | 'cultivation' | 'general'): void {
+    if (!s.state) return;
+    const branchMap = { tech: 'tech', cultivation: 'cultivation', general: 'general' };
+    const result = chooseSpecialization(s.state, branchMap[branch]);
+    if (result.success) {
+      showToast(result.message);
+      pushLog(result.message, 'system');
+      persist();
+    } else {
+      showToast(result.message);
+    }
+  }
+
+  function buyFromMarket(itemId: string, merchantId: string): void {
+    if (!s.state) return;
+    const result = buyFromMerchant(s.state, itemId, merchantId);
+    if (result.success) {
+      showToast(`购买了 ${result.itemName || itemId}`);
+      pushLog(result.message, 'result');
+      persist();
+    } else {
+      showToast(result.message);
+    }
+  }
+
+  function sellToMarket(itemId: string): void {
+    if (!s.state) return;
+    const result = sellToMerchant(s.state, itemId);
+    if (result.success) {
+      showToast(`出售了 ${result.itemName || itemId}，获得 ${result.gold} 金币`);
+      pushLog(result.message, 'result');
+      persist();
+    } else {
+      showToast(result.message);
+    }
+  }
+
+  function startStory(storyId: string): void {
+    if (!s.state) return;
+    // 标记故事线已触发
+    s.state.flags[`story_${storyId}_started`] = true;
+    showToast(`开始探索${storyId}剧情线`);
+    pushLog(`你决定探索${storyId}的剧情线...`, 'system');
+    persist();
+  }
+
+  function combatAction(action: 'attack' | 'defend' | 'skill' | 'flee'): void {
+    if (!s.state || !s.state.combat) return;
+    
+    const result = executeCombatRound(s.state, action);
+    
+    // 显示战斗日志
+    for (const entry of result.log.slice(-3)) {
+      pushLog(entry, 'result');
+    }
+    
+    if (result.victory) {
+      showToast('战斗胜利！');
+      pushLog(`击败了敌人！获得战利品。`, 'system');
+      // 清除战斗状态
+      delete s.state.combat;
+      persist();
+    } else if (result.defeat) {
+      showToast('战斗失败！');
+      pushLog('你在战斗中落败...', 'system');
+      persist();
+    } else if (result.fled) {
+      showToast('成功逃脱！');
+      delete s.state.combat;
+      persist();
+    } else {
+      persist();
+    }
+  }
+
   return reactive({
     ...toRefs(s),
     viewText: computed(() => view.value.text),
@@ -250,6 +371,14 @@ function createSession(): GameSession {
     exportSave,
     importSave,
     deleteSlot,
+    upgradeBase,
+    openBuildMenu,
+    upgradeSkill,
+    chooseSpecialization: chooseSpecializationFn,
+    buyFromMarket,
+    sellToMarket,
+    startStory,
+    combatAction,
   }) as unknown as GameSession;
 }
 
