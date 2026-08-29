@@ -1,7 +1,7 @@
 {
   "name": "quanmin-survival",
   "private": true,
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.1-alpha.1",
   "description": "全民求生：迷雾降临 v2 - 基于热门小说机制重构的生存策略游戏 (Vue3 + TS monorepo)",
   "type": "module",
   "scripts": {
