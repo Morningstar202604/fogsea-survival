@@ -1,5 +1,5 @@
 /**
- * 游戏会话组合式函数：连接 @survival/core 引擎与 Vue UI。
+ * 游戏会话组合式函数：连接 @fogsea/core 引擎与 Vue UI。
  * 负责：新局/续档、选项应用、每日推进、叙事日志、存档持久化、导入导出。
  * 返回 reactive 代理本身（不解构），保证 UI 响应式。
  */
@@ -24,7 +24,7 @@ import {
   executeCombatRound,
   type GameState,
   type Choice,
-} from '@survival/core';
+} from '@fogsea/core';
 import {
   readSlots,
   writeSlot,

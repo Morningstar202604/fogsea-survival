@@ -19,7 +19,7 @@ importers:
       '@capacitor/core':
         specifier: ^7.6.8
         version: 7.6.8
-      '@survival/core':
+      '@fogsea/core':
         specifier: workspace:*
         version: link:../../packages/core
       vue:

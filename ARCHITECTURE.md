@@ -1,4 +1,4 @@
-# 全民求生 v2.0 架构设计文档
+# 雾海生存 v2.0 架构设计文档
 
 ## 📋 目录
 
@@ -563,4 +563,4 @@ describe('Full Game Loop', () => {
 
 **文档版本**: v2.0.0-alpha.1  
 **最后更新**: 2026-08-29  
-**维护者**: quanmin-survival team
+**维护者**: fogsea-survival team

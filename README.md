@@ -1,14 +1,14 @@
-# 全民求生：迷雾降临 v2.0
+# 雾海生存 FogSea Survival v2.0
 
-> 基于热门全民求生小说机制重构的生存策略游戏
+> 基于热门小说机制重构的迷雾求生策略游戏
 
-[![Version](https://img.shields.io/badge/version-2.0.0--alpha.1-blue)](https://github.com/your-repo/quanmin-survival)
+[![Version](https://img.shields.io/badge/version-2.0.0--alpha.1-blue)](https://github.com/your-repo/fogsea-survival)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](package.json)
 
 ## 📖 项目简介
 
-**全民求生：迷雾降临**是一款受热门网络小说启发的文字生存策略游戏。全球数十亿人类被卷入神秘的迷雾世界，每个人从一个小木屋开始，在充满危险的未知环境中艰难求生。
+**雾海生存**（FogSea Survival）是一款受热门网络小说启发的文字生存策略游戏。全球数十亿人类被卷入神秘的迷雾世界，每个人从一个小木屋开始，在充满危险的未知环境中艰难求生。
 
 ### 🎮 核心特色（v2.0 新增）
 
@@ -55,7 +55,7 @@ pnpm test
 ## 📦 项目结构
 
 ```
-quanmin-survival/
+fogsea-survival/
 ├── apps/
 │   └── web/                    # Vue3 Web 前端应用
 │       ├── src/

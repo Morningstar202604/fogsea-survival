@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGame } from '../game/useGame';
-import { RESOURCE_LABELS } from '@survival/core';
-import type { ResourceKey } from '@survival/core';
+import { RESOURCE_LABELS } from '@fogsea/core';
+import type { ResourceKey } from '@fogsea/core';
 
 const g = useGame();
 

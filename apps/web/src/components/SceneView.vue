@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue';
 import { useGame } from '../game/useGame';
-import type { Choice } from '@survival/core';
+import type { Choice } from '@fogsea/core';
 
 const g = useGame();
 const logBox = ref<HTMLElement | null>(null);

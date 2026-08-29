@@ -5,7 +5,7 @@
 远程仓库配置了OAuth2 token认证，但该token可能已过期或权限不足：
 
 ```
-origin	https://oauth2:fcTJQhDVVBoWjuxxN9BvaQSs@gitcode.com/badhope/quanmin-survival.git
+origin	https://oauth2:fcTJQhDVVBoWjuxxN9BvaQSs@gitcode.com/badhope/fogsea-survival.git
 ```
 
 ## 🔧 解决方案
@@ -21,7 +21,7 @@ origin	https://oauth2:fcTJQhDVVBoWjuxxN9BvaQSs@gitcode.com/badhope/quanmin-survi
 
 2. **更新远程URL**
    ```bash
-   git remote set-url origin https://oauth2:YOUR_NEW_TOKEN@gitcode.com/badhope/quanmin-survival.git
+   git remote set-url origin https://oauth2:YOUR_NEW_TOKEN@gitcode.com/badhope/fogsea-survival.git
    ```
 
 3. **推送到远程**
@@ -43,7 +43,7 @@ origin	https://oauth2:fcTJQhDVVBoWjuxxN9BvaQSs@gitcode.com/badhope/quanmin-survi
 
 3. **更改远程URL为SSH**
    ```bash
-   git remote set-url origin git@gitcode.com:badhope/quanmin-survival.git
+   git remote set-url origin git@gitcode.com:badhope/fogsea-survival.git
    ```
 
 4. **测试连接**
@@ -146,4 +146,4 @@ cat ~/.ssh/id_ed25519.pub
 ---
 
 **最后更新**: 2026-08-29
-**仓库**: quanmin-survival v2.0
+**仓库**: fogsea-survival v2.0

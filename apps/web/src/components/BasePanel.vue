@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGame } from '../game/useGame';
-import type { BuildingType } from '@survival/core';
+import type { BuildingType } from '@fogsea/core';
 
 const g = useGame();
 

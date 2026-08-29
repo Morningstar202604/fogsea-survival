@@ -42,7 +42,7 @@ function handleExport(): void {
 <template>
   <div class="menu">
     <div class="menu-title">
-      <h1>全民求生</h1>
+      <h1>雾海生存</h1>
       <p class="sub">迷雾降临</p>
       <p class="desc">雾起之后，你成了这座小镇最后的活人。活下去，撑到救援来临。</p>
     </div>

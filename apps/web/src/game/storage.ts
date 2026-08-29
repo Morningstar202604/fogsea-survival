@@ -2,8 +2,8 @@
  * Web 端存档持久化：3 槽位 + 跨周目 meta。
  * 仅 UI 层依赖 localStorage，core 保持纯逻辑。
  */
-import type { GameState, MetaState } from '@survival/core';
-import { serialize, deserialize } from '@survival/core';
+import type { GameState, MetaState } from '@fogsea/core';
+import { serialize, deserialize } from '@fogsea/core';
 
 const SAVE_KEY = 'qs_saves_v1';
 const META_KEY = 'qs_meta_v1';

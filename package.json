@@ -1,15 +1,15 @@
 {
-  "name": "quanmin-survival",
+  "name": "fogsea-survival",
   "private": true,
   "version": "2.0.3-alpha.1",
-  "description": "全民求生：迷雾降临 v2 - 基于热门小说机制重构的生存策略游戏 (Vue3 + TS monorepo)",
+  "description": "雾海生存 FogSea Survival v2 - 基于小说机制重构的迷雾求生策略游戏 (Vue3 + TS monorepo)",
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "validate": "pnpm -F @survival/core validate",
-    "dev:web": "pnpm --filter @survival/web dev",
+    "validate": "pnpm -F @fogsea/core validate",
+    "dev:web": "pnpm --filter @fogsea/web dev",
     "dev": "pnpm dev:web"
   },
   "engines": {
