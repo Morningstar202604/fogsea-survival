@@ -1,9 +1,18 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import { useGame } from '../game/useGame';
 import ResourceBar from './ResourceBar.vue';
 import SceneView from './SceneView.vue';
+import BasePanel from './BasePanel.vue';
+import SkillTreePanel from './SkillTreePanel.vue';
+import CombatScreen from './CombatScreen.vue';
+import MarketPanel from './MarketPanel.vue';
+import ProgressionIndicator from './ProgressionIndicator.vue';
 
 const g = useGame();
+const activeTab = ref<'story' | 'base' | 'skills' | 'combat' | 'market' | 'progression'>('story');
+
+const isInCombat = computed(() => g.state?.combat !== undefined);
 
 function exportSave(): void {
   const raw = g.exportSave();
@@ -16,6 +25,15 @@ function exportSave(): void {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+const tabLabels = {
+  story: '📖 剧情',
+  base: '🏠 基地',
+  skills: '⚡ 技能',
+  combat: '⚔️ 战斗',
+  market: '💰 市场',
+  progression: '🌍 推进',
+};
 </script>
 
 <template>
@@ -29,7 +47,43 @@ function exportSave(): void {
     </aside>
 
     <main class="panel main">
-      <SceneView />
+      <!-- 标签页导航 -->
+      <div class="tab-nav">
+        <button 
+          v-for="(label, key) in tabLabels" 
+          :key="key"
+          class="tab-btn"
+          :class="{ active: activeTab === key }"
+          @click="activeTab = key as any"
+        >
+          {{ label }}
+        </button>
+      </div>
+
+      <!-- 内容区域 -->
+      <div class="content-area">
+        <!-- 剧情视图 -->
+        <SceneView v-if="activeTab === 'story'" />
+        
+        <!-- 基地视图 -->
+        <BasePanel v-else-if="activeTab === 'base'" />
+        
+        <!-- 技能树视图 -->
+        <SkillTreePanel v-else-if="activeTab === 'skills'" />
+        
+        <!-- 战斗视图（仅在战斗中显示） -->
+        <CombatScreen v-else-if="activeTab === 'combat' && isInCombat" />
+        <div v-else-if="activeTab === 'combat' && !isInCombat" class="empty-view">
+          <p>当前没有战斗，探索时可能会遭遇怪物。</p>
+        </div>
+        
+        <!-- 市场视图 -->
+        <MarketPanel v-else-if="activeTab === 'market'" />
+        
+        <!-- 推进状态视图 -->
+        <ProgressionIndicator v-else-if="activeTab === 'progression'" />
+      </div>
+
       <div class="footer">
         <button v-if="!g.state?.outcome" class="btn primary wide" @click="g.endDay">
           结束今日，进入下一天
@@ -68,6 +122,8 @@ function exportSave(): void {
 }
 .main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .right {
   gap: 0.5rem;
@@ -78,6 +134,64 @@ function exportSave(): void {
   gap: 0.5rem;
   margin-top: auto;
 }
+
+/* 标签页导航 */
+.tab-nav {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 0.5rem 0.8rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #8b95a7;
+  cursor: pointer;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #cdd6e4;
+}
+
+.tab-btn.active {
+  background: rgba(122, 162, 201, 0.15);
+  border-color: #7aa2c9;
+  color: #e4e9f2;
+  font-weight: 600;
+}
+
+/* 内容区域 */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.empty-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #566072;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-view p {
+  margin: 0;
+}
+
 .footer {
   padding-top: 0.8rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -140,6 +254,9 @@ function exportSave(): void {
   }
   .main {
     order: 2;
+  }
+  .tab-nav {
+    flex-wrap: wrap;
   }
 }
 </style>
