@@ -30,8 +30,8 @@ const progressionInfo = computed(() => {
   const st = g.state;
   if (!st || !st.progression) return null;
   return {
-    worldTier: st.progression.worldTier,
-    nextTierDay: st.progression.nextWorldTierDay,
+    worldTier: st.progression.currentWorldTier,
+    nextTierDay: st.day + st.progression.daysToNextTier,
     skillPoints: st.skills?.totalPoints || 0,
     baseLevel: st.base?.level || 0,
     specialization: st.skills?.specialization || null,
