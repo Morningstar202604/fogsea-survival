@@ -6,9 +6,6 @@ native/
 extensions/
 node_modules/
 
-# Web 构建产物
-web/dist/
-
 # Capacitor Android 本机构建产物与本机配置
 .gradle/
 local.properties
@@ -16,4 +13,18 @@ local.properties
 
 # 打包产物
 dist-apk/
+
+# 工作台内部记忆（不对公开仓库暴露）
+.workbuddy/
+
+# IDE / Eclipse 导入残留
+.project
+.classpath
+.settings/
+
+# 临时调试文件
+log*.txt
+temp_dev.log
+*.tmp
+.gitignore_*
 

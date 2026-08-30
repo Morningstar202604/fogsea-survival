@@ -1,7 +1,7 @@
 import type { ContentPack, GameState, SceneNode, Choice, RandomEventDef, Outcome, Condition, EndingDef } from './types.js';
 import { Rng } from './rng.js';
-/** 创建新一局状态：从 ContentPack 的初始资源与入口场景起步。 */
-export declare function createInitialState(content: ContentPack, meta?: GameState['meta']): GameState;
+/** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
+export declare function createInitialState(content: ContentPack, meta?: GameState['meta'], talentId?: string): GameState;
 /** 跨主线 + 支线解析场景节点（currentScene 可能在某条线内）。 */
 export declare function resolveScene(content: ContentPack, sceneId: string): SceneNode | null;
 /** 跨主线 + 支线查找结局定义。 */
@@ -19,6 +19,8 @@ export interface ChoiceResult {
     /** 若跳转到结局则给出结算结果 */
     outcome?: Outcome;
     next?: string;
+    /** 系统播报（物品升级等 meta 反馈，UI 以系统口吻展示） */
+    systemMessages?: string[];
 }
 /**
  * 应用一个选项（场景或事件通用）：
@@ -39,12 +41,12 @@ export declare function drawDailyEvent(content: ContentPack, state: GameState, r
  */
 export declare function scheduleLine(content: ContentPack, state: GameState): void;
 /**
- * 推进一天：应用每日结算（income + 饥饿惩罚）→ 若死亡则结算死亡结局；
- * 否则 day+1，调度触发式支线；若未进入支线则抽取当日随机事件放入 pendingEvents。
+ * 推进一天 v2.0：集成基地生产、技能成长、推进机制
  */
 export declare function runDaily(content: ContentPack, state: GameState, rng: Rng): {
     dead: boolean;
     messages: string[];
     event: RandomEventDef | null;
+    progression?: any;
 };
 //# sourceMappingURL=engine.d.ts.map

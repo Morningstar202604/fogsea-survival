@@ -8,21 +8,33 @@ import type {
   Outcome,
   Condition,
   ResourceKey,
+  AttributeKey,
   EndingDef,
 } from './types.js';
-import { createResources, applyIncome, applyStarvation, deltaResource } from './resources.js';
+import { createResources, applyIncome, applyStarvation, applyDailyConsumption, deltaResource } from './resources.js';
 import { rollD100 } from './dice.js';
 import { Rng } from './rng.js';
 
 // v2.0 新增系统导入
 import { createInitialBase, processDailyProduction } from './base.js';
 import { createInitialSkillTree, gainSkillPoints } from './skills.js';
-import { createInitialProgressionState, checkProgression } from './progression.js';
+import { createInitialProgressionState, checkProgression, evaluateCatastrophe, resolveCatastrophe } from './progression.js';
+import { createInitialEconomy, ITEM_DATABASE } from './economy.js';
+import { applyTalent } from './talents.js';
+import { applyCompanionDaily } from './companions.js';
+import { rankMessage } from './ranking.js';
+import { processSignin } from './signin.js';
+import { maybeStartEncounter, initiateCombat, getAvailableMonsters } from './combat.js';
+import { checkAchievements } from './achievements.js';
 
-/** 创建新一局状态 v2.0：集成所有新系统 */
-export function createInitialState(content: ContentPack, meta?: GameState['meta']): GameState {
+/** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
+export function createInitialState(
+  content: ContentPack,
+  meta?: GameState['meta'],
+  talentId?: string,
+): GameState {
   const initial = content.storyline.initialScene;
-  return {
+  const state: GameState = {
     version: content.version,
     day: 1,
     resources: createResources(content.startingResources),
@@ -34,13 +46,16 @@ export function createInitialState(content: ContentPack, meta?: GameState['meta'
     triggeredEvents: [],
     eventStack: [],
     outcome: null,
-    runStats: { survivalDays: 0, eventsTriggered: 0, resources: {} },
-    meta: meta ?? { runs: 0, unlockedEndings: [], bestDays: 0 },
-    
+    runStats: { survivalDays: 0, eventsTriggered: 0, kills: 0, signinStreak: 0, resources: {} },
+    meta: { runs: 0, unlockedEndings: [], bestDays: 0, unlockedAchievements: [], ...meta },
+
     // v2.0 新增系统初始化
     base: createInitialBase(),
     skills: createInitialSkillTree(),
     progression: createInitialProgressionState(),
+    economy: createInitialEconomy(),
+    itemLevels: {},
+    ap: 3,
     equipment: {},
     attributes: {
       strength: 10,
@@ -49,6 +64,8 @@ export function createInitialState(content: ContentPack, meta?: GameState['meta'
       luck: 10,
     },
   };
+  if (talentId) applyTalent(state, talentId);
+  return state;
 }
 
 /** 跨主线 + 支线解析场景节点（currentScene 可能在某条线内）。 */
@@ -84,6 +101,11 @@ export function conditionMet(cond: Condition | undefined, state: GameState): boo
       if (state.resources[k].current < min) return false;
     }
   }
+  if (cond.attributes) {
+    for (const [k, min] of Object.entries(cond.attributes) as [AttributeKey, number][]) {
+      if ((state.attributes[k] ?? 0) < min) return false;
+    }
+  }
   return true;
 }
 
@@ -92,8 +114,9 @@ export function availableChoices(choices: Choice[], state: GameState): Choice[] 
   return choices.filter((c) => conditionMet(c.requires, state));
 }
 
-/** 应用单个非跳转类效果到状态。 */
-function applyEffect(state: GameState, eff: ChoiceEffect): void {
+/** 应用单个非跳转类效果到状态；返回产生的系统播报（物品升级等）。 */
+function applyEffect(state: GameState, eff: ChoiceEffect): string[] {
+  const system: string[] = [];
   switch (eff.kind) {
     case 'resource':
       if (eff.resource) deltaResource(state.resources[eff.resource], eff.delta ?? 0);
@@ -102,13 +125,66 @@ function applyEffect(state: GameState, eff: ChoiceEffect): void {
       state.flags[eff.flag ?? ''] = eff.flagValue ?? true;
       break;
     case 'item': {
-      const cur = state.inventory[eff.item ?? ''] ?? 0;
-      state.inventory[eff.item ?? ''] = Math.max(0, cur + (eff.amount ?? 0));
+      const id = eff.item ?? '';
+      const cur = state.inventory[id] ?? 0;
+      state.inventory[id] = Math.max(0, cur + (eff.amount ?? 0));
+      if ((eff.amount ?? 0) < 0) trackItemUsage(state, id, system);
       break;
     }
     default:
       break; // roll / jump 由 applyChoice 统一处理
   }
+  return system;
+}
+
+/** 处理 combat 效果：开启战斗会话（已在战斗中则跳过）；返回系统播报。 */
+function startCombatFromEffect(state: GameState, eff: ChoiceEffect, rng: Rng): string | null {
+  if (state.combat) return null;
+  const monsterId = eff.monster ?? pickEncounterMonster(state, rng);
+  if (!monsterId) return null;
+  state.combat = initiateCombat(state, monsterId);
+  return '【遭遇】雾的深处传来低吼——战斗开始！';
+}
+
+/** 按当前天数从可用怪物池随机取一只（主动狩猎用）。 */
+function pickEncounterMonster(state: GameState, rng: Rng): string | null {
+  const pool = getAvailableMonsters(state.day ?? 1).filter((m) => !!m);
+  if (!pool.length) return null;
+  return pool[rng.int(0, pool.length - 1)].id;
+}
+
+/**
+ * 自动进食/喝水：生存资源低于警戒线时，自动消耗背包里的食物/水物品补给。
+ * 打通"物品→资源"转换（签到/商人/基地产出物的库存意义），也是支线日程中断粮的兜底。
+ */
+function autoProvision(state: GameState): string[] {
+  const messages: string[] = [];
+  const provision = (key: 'food' | 'water', itemId: string, restore: number, verb: string) => {
+    if (state.resources[key].current < 30 && (state.inventory[itemId] ?? 0) > 0) {
+      state.inventory[itemId] -= 1;
+      deltaResource(state.resources[key], restore);
+      messages.push(`【系统】你从背包里拿出${ITEM_DATABASE[itemId]?.name ?? itemId}${verb}了下来（+${restore}）。`);
+    }
+  };
+  provision('food', 'food', 30, '吃');
+  provision('water', 'water', 30, '喝');
+  return messages;
+}
+
+/** 物品自动升级（致敬《全民求生：我的物品能自动升级》）：使用累积熟练度，每 10 点升 1 级。 */
+function trackItemUsage(state: GameState, itemId: string, out: string[]): void {
+  if (!itemId) return;
+  const rec = state.itemLevels[itemId] ?? { uses: 0, level: 1 };
+  rec.uses += state.flags['talent_item_xp_boost'] ? 2 : 1;
+  let need = rec.level * 10;
+  while (rec.uses >= need) {
+    rec.uses -= need;
+    rec.level += 1;
+    need = rec.level * 10;
+    const name = ITEM_DATABASE[itemId]?.name ?? itemId;
+    out.push(`【系统】叮！「${name}」熟练度突破了，升到 Lv.${rec.level}！（交易价值提升）`);
+  }
+  state.itemLevels[itemId] = rec;
 }
 
 export interface ChoiceResult {
@@ -118,6 +194,8 @@ export interface ChoiceResult {
   /** 若跳转到结局则给出结算结果 */
   outcome?: Outcome;
   next?: string;
+  /** 系统播报（物品升级等 meta 反馈，UI 以系统口吻展示） */
+  systemMessages?: string[];
 }
 
 /**
@@ -131,20 +209,34 @@ export interface ChoiceResult {
 export function applyChoice(content: ContentPack, state: GameState, choice: Choice, rng: Rng): ChoiceResult {
   let next = choice.next;
   const resultText = choice.result;
+  const systemMessages: string[] = [];
+  if (choice.apCost) state.ap = Math.max(0, state.ap - choice.apCost);
   for (const eff of choice.effects) {
     if (eff.kind === 'roll') {
       const res = rollD100(rng.next.bind(rng), eff.difficulty ?? 50);
       if (res.success) {
         next = eff.onSuccess ?? next;
-        if (eff.successEffects) for (const se of eff.successEffects) applyEffect(state, se);
+        if (eff.successEffects) {
+          for (const se of eff.successEffects) {
+            if (se.kind === 'combat') {
+              const msg = startCombatFromEffect(state, se, rng);
+              if (msg) systemMessages.push(msg);
+            } else {
+              systemMessages.push(...applyEffect(state, se));
+            }
+          }
+        }
       } else {
         next = eff.onFail ?? next;
         if (eff.lethal && res.tier === 'crit_fail') state.resources.health.current = 0;
       }
     } else if (eff.kind === 'jump') {
       next = eff.target ?? next;
+    } else if (eff.kind === 'combat') {
+      const msg = startCombatFromEffect(state, eff, rng);
+      if (msg) systemMessages.push(msg);
     } else {
-      applyEffect(state, eff);
+      systemMessages.push(...applyEffect(state, eff));
     }
   }
   let outcome: Outcome | undefined;
@@ -159,12 +251,19 @@ export function applyChoice(content: ContentPack, state: GameState, choice: Choi
     state.currentScene = next;
     if (!state.visitedScenes.includes(next)) state.visitedScenes.push(next);
   }
-  return { state, resultText, outcome, next };
+  return { state, resultText, outcome, next, systemMessages };
 }
 
 /** 应用事件选项：处理完后从 pendingEvents 弹出并记入 triggeredEvents。 */
 export function applyEventChoice(content: ContentPack, state: GameState, choice: Choice, rng: Rng): ChoiceResult {
+  const sceneBefore = state.currentScene;
+  const stackBefore = state.eventStack.slice();
   const r = applyChoice(content, state, choice, rng);
+  // 事件的 __return__ 只表示事件结束，不应把进行中的支线场景从栈里弹掉
+  if (choice.next === '__return__' && !r.outcome) {
+    state.currentScene = sceneBefore;
+    state.eventStack = stackBefore;
+  }
   const evId = state.pendingEvents.shift();
   if (evId) state.triggeredEvents.push(evId);
   return r;
@@ -211,10 +310,30 @@ export function runDaily(
   rng: Rng,
 ): { dead: boolean; messages: string[]; event: RandomEventDef | null; progression?: any } {
   const messages: string[] = [];
-  
+
+  // 0. 每日签到（连签递进奖励）
+  messages.push(processSignin(state));
+
   // 1. 基地每日生产
   const production = processDailyProduction(state as any);
   messages.push(...production.messages.map(m => `[生产] ${m}`));
+  
+  // 1a. 自动进食：背包食物/水在低存量时转化为生存资源
+  messages.push(...autoProvision(state));
+
+  // 1a++. 同伴每日被动
+  messages.push(...applyCompanionDaily(state));
+
+  // 1a+. 剧情间隙觅食：支线期间无法回中枢行动，保底收入防止"剧情链饿死"
+  if (state.eventStack.length > 0) {
+    deltaResource(state.resources.food, 8);
+    deltaResource(state.resources.water, 6);
+    messages.push('【间隙】日子再难也要过——你趁着剧情的空当搜刮了一圈（食物+8、水+6）。');
+  }
+
+  // 1b. 每日自动消耗（食物、水、理智、体力）
+  const daily = applyDailyConsumption(state);
+  messages.push(...daily.map(m => `[每日消耗] ${m}`));
   
   // 2. 应用每日结算（income + 饥饿惩罚）
   const inc = applyIncome(state, content.income);
@@ -232,8 +351,9 @@ export function runDaily(
     return { dead: true, messages, event: null };
   }
   
-  // 4. 天数递增
+  // 4. 天数递增 + 晨间刷新行动点
   state.day += 1;
+  state.ap = 3;
   state.runStats.survivalDays = state.day;
   
   // 5. 获得经验值（每天+1，用于技能点）
@@ -242,7 +362,13 @@ export function runDaily(
   // 6. 调度触发式支线
   scheduleLine(content, state);
   
-  // 7. 抽取随机事件
+  // 7. 野兽遭遇战检定（战斗为覆盖层：剧情进行中同样可能遇袭）
+  if (!state.combat) {
+    const encounter = maybeStartEncounter(state, rng);
+    if (encounter) messages.push(encounter);
+  }
+
+  // 8. 抽取随机事件
   let event: RandomEventDef | null = null;
   if (!state.eventStack.length) {
     event = drawDailyEvent(content, state, rng);
@@ -252,15 +378,38 @@ export function runDaily(
     }
   }
   
-  // 8. 【v2.0核心】检查推进机制
+  // 8. 检查推进机制（世界等级、天灾预警、剧情触发）
   const progressionCheck = checkProgression(state as any, content);
   messages.push(...progressionCheck.messages);
-  
-  return { 
-    dead: false, 
-    messages, 
+  if (progressionCheck.tierUpgrade) {
+    messages.push(`【世界升级】${progressionCheck.tierUpgrade.tierInfo.name}！`);
+  }
+  if (progressionCheck.catastropheWarning) {
+    messages.push(`【天灾预警】${progressionCheck.catastropheWarning.name}将在${progressionCheck.catastropheWarning.warningDays}天后降临！`);
+  }
+
+  // 9b. 天灾结算：核对准备情况，发放奖励或施加惩罚
+  if (progressionCheck.catastropheTrigger) {
+    const event = progressionCheck.catastropheTrigger;
+    const verdict = evaluateCatastrophe(state as any, event);
+    const settled = resolveCatastrophe(state as any, event, verdict.success);
+    messages.push(...verdict.messages, ...settled.messages);
+  }
+
+  // 10. 幸存者排行榜播报（每 3 天）
+  const rank = rankMessage(state);
+  if (rank) messages.push(rank);
+
+  // 11. 成就检查（跨周目持久）
+  for (const a of checkAchievements(state)) {
+    messages.push(`【成就达成】${a.name}：${a.desc}`);
+  }
+
+  return {
+    dead: false,
+    messages,
     event,
-    progression: progressionCheck
+    progression: progressionCheck,
   };
 }
 

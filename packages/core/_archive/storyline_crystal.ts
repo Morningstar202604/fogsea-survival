@@ -90,7 +90,7 @@ export const CRYSTAL_SCENES: Record<string, SceneNode> = {
         ],
         next: 'crystal_study_success',
         requires: {
-          resources: { intelligence: 12 },
+          attributes: { intelligence: 12 },
         },
         result: '你仔细观察结晶的结构和能量波动...',
       },
@@ -349,8 +349,8 @@ export const CRYSTAL_SCENES: Record<string, SceneNode> = {
         text: '尝试融合结晶',
         hint: '可能获得强大力量，也有风险',
         effects: [
-          { kind: 'item', item: 'purple_crystal', delta: -2 },
-          { kind: 'item', item: 'red_crystal', delta: -1 },
+          { kind: 'item', item: 'purple_crystal', amount: -2 },
+          { kind: 'item', item: 'red_crystal', amount: -1 },
           {
             kind: 'roll',
             difficulty: 60,
@@ -359,7 +359,7 @@ export const CRYSTAL_SCENES: Record<string, SceneNode> = {
             successEffects: [
               { kind: 'flag', flag: 'crystal_fusion_master', flagValue: true },
               { kind: 'resource', resource: 'health', delta: 20 },
-              { kind: 'resource', resource: 'max_spirit', delta: 50 },
+              { kind: 'resource', resource: 'sanity', delta: 20 },
             ],
           },
         ],

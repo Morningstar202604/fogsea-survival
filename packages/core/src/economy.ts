@@ -144,6 +144,82 @@ export const ITEM_DATABASE: Record<string, ItemDef> = {
     maxStack: 20,
   },
 
+  // 结晶线材料（结晶线剧情核心物品）
+  purple_crystal: {
+    id: 'purple_crystal',
+    name: '紫色结晶',
+    description: '蕴含灵力的紫色晶体，可引导融合',
+    category: 'material',
+    basePrice: 80,
+    stackable: true,
+    maxStack: 50,
+  },
+  red_crystal: {
+    id: 'red_crystal',
+    name: '赤红结晶',
+    description: '灼热的赤色晶体，能量暴烈',
+    category: 'material',
+    basePrice: 120,
+    stackable: true,
+    maxStack: 50,
+  },
+  blue_crystal: {
+    id: 'blue_crystal',
+    name: '湛蓝结晶',
+    description: '冰凉的蓝色晶体，能安抚心神',
+    category: 'material',
+    basePrice: 100,
+    stackable: true,
+    maxStack: 50,
+  },
+  golden_crystal: {
+    id: 'golden_crystal',
+    name: '鎏金结晶',
+    description: '稀有的金色晶体，结晶融合的钥匙',
+    category: 'special',
+    basePrice: 300,
+    stackable: true,
+    maxStack: 10,
+  },
+  mutant_core: {
+    id: 'mutant_core',
+    name: '变异核心',
+    description: '进化怪物体内的能量核心',
+    category: 'material',
+    basePrice: 60,
+    stackable: true,
+    maxStack: 50,
+  },
+
+  // 剧情任务物品
+  research_data: {
+    id: 'research_data',
+    name: '研究资料',
+    description: '研究所遗留的实验记录',
+    category: 'special',
+    basePrice: 40,
+    stackable: true,
+    maxStack: 20,
+  },
+  alliance_badge: {
+    id: 'alliance_badge',
+    name: '联盟徽章',
+    description: '幸存者联盟的信物',
+    category: 'special',
+    basePrice: 150,
+    stackable: true,
+    maxStack: 5,
+  },
+  ancient_scroll: {
+    id: 'ancient_scroll',
+    name: '上古卷轴',
+    description: '记载迷雾世界真相的古旧文书',
+    category: 'special',
+    basePrice: 250,
+    stackable: true,
+    maxStack: 10,
+  },
+
   // 装备类
   wooden_spear: {
     id: 'wooden_spear',
@@ -360,9 +436,12 @@ export function sellToMerchant(
     return { success: false, message: `库存不足！只有${playerStock}个` };
   }
 
-  // 计算价格（商人收购价打折）
+  // 计算价格（商人收购价打折；物品熟练度等级提升交易价值）
   const marketPrice = state.economy.marketPrices[itemId]?.currentPrice ?? item.basePrice;
-  const unitPrice = Math.floor(marketPrice * merchant.buyMultiplier);
+  const itemLevel = state.itemLevels?.[itemId]?.level ?? 1;
+  // 鼠王同伴：谈判力让出售价 +10%
+  const ratBonus = state.flags?.['companion_rat'] ? 1.1 : 1;
+  const unitPrice = Math.floor(marketPrice * merchant.buyMultiplier * (1 + 0.1 * (itemLevel - 1)) * ratBonus);
   const totalEarnings = unitPrice * quantity;
 
   // 执行交易

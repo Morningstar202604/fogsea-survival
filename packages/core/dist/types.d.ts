@@ -1,9 +1,15 @@
 /**
- * 核心领域类型定义。
+ * 核心领域类型定义 v2.0。
  * 所有数据均以纯 JSON 可序列化结构承载，GameState 为单一状态对象。
+ *
+ * v2.0 新增：基地建设、技能树、推进机制、战斗系统等完整游戏机制
  */
-/** 资源键：食物 / 水 / 生命 / 理智 / 体力 */
-export type ResourceKey = 'food' | 'water' | 'health' | 'sanity' | 'energy';
+import type { BaseInfo } from './base.js';
+import type { SkillTreeState } from './skills.js';
+import type { ProgressionState } from './progression.js';
+import type { EconomyState } from './economy.js';
+/** 资源键：食物 / 水 / 生命 / 理智 / 体力 / 温暖 */
+export type ResourceKey = 'food' | 'water' | 'health' | 'sanity' | 'energy' | 'warmth';
 export interface Resource {
     current: number;
     /** 本局累计获得量（结算统计用） */
@@ -17,7 +23,7 @@ export type RollTier = 'crit_success' | 'success' | 'fail' | 'crit_fail';
 export type OutcomeType = 'ending' | 'death';
 /** 场景节点分支 */
 export interface ChoiceEffect {
-    kind: 'resource' | 'flag' | 'item' | 'roll' | 'jump';
+    kind: 'resource' | 'flag' | 'item' | 'roll' | 'jump' | 'combat';
     /** kind=resource: 资源键 */
     resource?: ResourceKey;
     /** kind=resource: 增减量（负为消耗） */
@@ -40,6 +46,8 @@ export interface ChoiceEffect {
     lethal?: boolean;
     /** kind=jump: 无条件跳转目标 */
     target?: string;
+    /** kind=combat: 指定怪物 id；缺省时按当前天数自动选取 */
+    monster?: string;
     /** 检定成功后附加的额外效果（可嵌套 resource/flag/item） */
     successEffects?: ChoiceEffect[];
 }
@@ -56,6 +64,8 @@ export interface Choice {
     requires?: Condition;
     /** 选择后的结果旁白（旧版 outcomes 中的叙事文本，UI 展示用） */
     result?: string;
+    /** 行动点消耗（每日行动点不足时 UI 禁用；引擎扣减下限 0） */
+    apCost?: number;
 }
 export interface Condition {
     /** 需要持有的 flag（全部满足） */
@@ -64,12 +74,18 @@ export interface Condition {
     items?: Record<string, number>;
     /** 资源下限（key->最低 current） */
     resources?: Partial<Record<ResourceKey, number>>;
+    /** 属性下限（key->最低值） */
+    attributes?: Partial<Record<AttributeKey, number>>;
 }
+/** 玩家四维属性键 */
+export type AttributeKey = 'strength' | 'agility' | 'intelligence' | 'luck';
 export interface SceneNode {
     id: string;
     /** 场景正文 */
     text: string;
     choices: Choice[];
+    /** 部分内容声明的默认流向（引擎以选项 next/jump 为准，此字段仅作内容标注） */
+    next?: string;
 }
 /** 随机事件定义（事件池条目） */
 export interface RandomEventDef {
@@ -151,6 +167,10 @@ export interface RunStats {
     eventsTriggered: number;
     /** 各资源累计获得量快照 */
     resources: Partial<Record<ResourceKey, number>>;
+    /** 战斗击杀数 */
+    kills: number;
+    /** 连续签到天数 */
+    signinStreak: number;
 }
 /** 跨周目元数据 */
 export interface MetaState {
@@ -160,6 +180,8 @@ export interface MetaState {
     unlockedEndings: string[];
     /** 最大存活天数 */
     bestDays: number;
+    /** 已解锁成就 id 列表（跨周目持久，可缺省由引擎补齐） */
+    unlockedAchievements?: string[];
 }
 /** 结局/死亡结算结果 */
 export interface Outcome {
@@ -168,7 +190,7 @@ export interface Outcome {
     title: string;
     desc: string;
 }
-/** 游戏状态（单一对象） */
+/** 游戏状态（单一对象）v2.0 */
 export interface GameState {
     version: number;
     day: number;
@@ -189,5 +211,47 @@ export interface GameState {
     outcome: Outcome | null;
     runStats: RunStats;
     meta: MetaState;
+    /** 基地建设信息 */
+    base: BaseInfo;
+    /** 技能树状态 */
+    skills: SkillTreeState;
+    /** 推进机制状态 */
+    progression: ProgressionState;
+    /** 经济状态 */
+    economy: EconomyState;
+    /** 物品等级（物品自动升级系统：使用次数累积→熟练度升级） */
+    itemLevels: Record<string, {
+        uses: number;
+        level: number;
+    }>;
+    /** 战斗会话（战斗中临时状态） */
+    combat?: CombatSession;
+    /** 装备栏 */
+    equipment: EquipmentSlots;
+    /** 玩家属性 */
+    attributes: PlayerAttributes;
+    /** 每日行动点（晨间刷新为 3；hub 行动消耗） */
+    ap: number;
+}
+/** 玩家基础属性 */
+export interface PlayerAttributes {
+    strength: number;
+    agility: number;
+    intelligence: number;
+    luck: number;
+}
+/** 装备栏位 */
+export interface EquipmentSlots {
+    weapon?: string;
+    armor?: string;
+    accessory?: string;
+}
+/** 战斗会话 */
+export interface CombatSession {
+    enemyId: string;
+    enemyHp: number;
+    enemyMaxHp: number;
+    round: number;
+    log: string[];
 }
 //# sourceMappingURL=types.d.ts.map

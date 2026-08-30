@@ -1,0 +1,576 @@
+/**
+ * v2.0 主线剧情 - 救援线
+ *
+ * 剧情简介：第10天收到神秘信号，发现还有其他幸存者。
+ * 主角踏上救援之旅，逐步揭开迷雾世界的真相。
+ */
+/** 救援线结局定义 */
+export const RESCUE_ENDINGS = {
+    rescue_success: {
+        id: 'rescue_success',
+        title: '希望之光',
+        desc: '你成功救出了被困的幸存者，他们成为了你最忠实的盟友。 Together，你们建立了强大的联盟，共同对抗迷雾中的威胁。这是人类复兴的希望。',
+        category: 'good',
+    },
+    rescue_failure: {
+        id: 'rescue_failure',
+        title: '无力回天',
+        desc: '当你赶到时，幸存者已经被野兽吞噬。你只能带着他们的遗物返回，心中充满了悔恨和愤怒。这份仇恨将驱动你变得更强。',
+        category: 'bad',
+    },
+    truth_reveal: {
+        id: 'truth_reveal',
+        title: '迷雾真相',
+        desc: '在救援过程中，你发现了古代遗迹中的记录。原来迷雾是一场实验，而你是被选中的"观察者"。知道了真相的你，面临最终的选择...',
+        category: 'true',
+    },
+};
+/** 救援线场景节点 */
+export const RESCUE_SCENES = {
+    // === 触发场景 ===
+    mysterious_signal: {
+        id: 'mysterious_signal',
+        text: `【第${'{day}'}天】
+
+正当你在基地中整理物资时，突然听到一阵微弱的无线电杂音...
+
+"滋...滋滋...有人吗？这里是7号避难所...我们被困住了...食物快耗尽了...求救..."
+
+信号断断续续，但你能听出对方的绝望。从信号强度判断，距离你大约3公里外的废弃工厂区。
+
+你的基地目前等级为${'{baseLevel}'}，防御力${'{defense}'}。前往救援意味着要离开安全的基地，面对未知的危险。`,
+        choices: [
+            {
+                id: 'prepare_and_go',
+                text: '准备物资，立即出发救援',
+                hint: '需要携带至少50食物和一把武器',
+                effects: [
+                    { kind: 'resource', resource: 'food', delta: -50 },
+                    { kind: 'flag', flag: 'rescue_mission_started', flagValue: true },
+                    { kind: 'jump', target: 'journey_to_factory' },
+                ],
+                next: 'journey_to_factory',
+                requires: {
+                    resources: { food: 50 },
+                    items: { wooden_spear: 1 },
+                },
+                result: '你带上足够的食物和武器，踏上了救援之路。迷雾中，每一步都充满未知...',
+            },
+            {
+                id: 'ignore_signal',
+                text: '无视信号，继续苟活',
+                hint: '安全但会失去重要线索',
+                effects: [
+                    { kind: 'flag', flag: 'ignored_rescue', flagValue: true },
+                    { kind: 'resource', resource: 'sanity', delta: -10 },
+                ],
+                next: '__return__',
+                result: '你选择明哲保身。但那求救的声音在你脑海中挥之不去，理智值下降了10点...',
+            },
+            {
+                id: 'send_message',
+                text: '尝试回复信号（需要收音机）',
+                hint: '先建立联系再决定',
+                effects: [
+                    { kind: 'flag', flag: 'contact_established', flagValue: true },
+                    { kind: 'jump', target: 'radio_contact' },
+                ],
+                next: 'radio_contact',
+                requires: {
+                    items: { radio: 1 },
+                },
+                result: '你拿起收音机，调整频率...',
+            },
+        ],
+    },
+    // === 旅途场景 ===
+    journey_to_factory: {
+        id: 'journey_to_factory',
+        text: `你穿过浓密的迷雾，向废弃工厂前进。
+
+沿途你发现了其他幸存者的痕迹——破碎的帐篷、散落的物资、还有...干涸的血迹。
+
+走了约2小时后，你来到了工厂区外围。这里弥漫着诡异的寂静，只有远处传来低沉的咆哮声。
+
+前方有三条路可以进入工厂：
+- 正门：视野开阔但可能有守卫
+- 侧墙缺口：隐蔽但狭窄
+- 地下管道：最安全但可能迷路`,
+        choices: [
+            {
+                id: 'enter_main_gate',
+                text: '从正门进入',
+                hint: '直面危险',
+                effects: [
+                    { kind: 'roll', difficulty: 60, onFail: 'ambushed_at_gate', onSuccess: 'factory_courtyard' },
+                ],
+                next: 'factory_courtyard',
+                result: '你深吸一口气，走向正门...',
+            },
+            {
+                id: 'enter_side_wall',
+                text: '从侧墙缺口潜入',
+                hint: '需要敏捷检定',
+                effects: [
+                    { kind: 'roll', difficulty: 50, onFail: 'trapped_in_wall', onSuccess: 'factory_interior' },
+                ],
+                next: 'factory_interior',
+                result: '你小心翼翼地挤进墙缝...',
+            },
+            {
+                id: 'enter_sewer',
+                text: '走地下管道',
+                hint: '安全但耗时',
+                effects: [
+                    { kind: 'resource', resource: 'energy', delta: -20 },
+                    { kind: 'jump', target: 'sewer_tunnel' },
+                ],
+                next: 'sewer_tunnel',
+                result: '你打开井盖，跳入黑暗的管道...',
+            },
+        ],
+    },
+    // === 正门遭遇战 ===
+    ambushed_at_gate: {
+        id: 'ambushed_at_gate',
+        text: `陷阱！
+
+刚踏入正门，你就触发了警报。一群变异的野狗从阴影中扑出！
+
+【战斗开始】
+野狗群 x3（每只攻击力15，生命值30）
+
+你的当前生命值：${'{health}'}`,
+        choices: [
+            {
+                id: 'fight_dogs',
+                text: '迎战野狗',
+                hint: '需要掷骰检定',
+                effects: [
+                    {
+                        kind: 'roll',
+                        difficulty: 55,
+                        onFail: 'wounded_escape',
+                        onSuccess: 'dogs_defeated',
+                        lethal: false,
+                        successEffects: [
+                            { kind: 'item', item: 'mutant_fang', amount: 3 },
+                            { kind: 'resource', resource: 'energy', delta: -15 },
+                        ],
+                    },
+                ],
+                next: 'dogs_defeated',
+                result: '你挥舞武器，与野狗展开激战...',
+            },
+            {
+                id: 'flee_from_dogs',
+                text: '撤退逃跑',
+                hint: '损失部分物资',
+                effects: [
+                    { kind: 'resource', resource: 'food', delta: -20 },
+                    { kind: 'resource', resource: 'health', delta: -10 },
+                    { kind: 'jump', target: 'wounded_escape' },
+                ],
+                next: 'wounded_escape',
+                result: '你转身就跑，背后传来野狗的吠叫声...',
+            },
+        ],
+    },
+    dogs_defeated: {
+        id: 'dogs_defeated',
+        text: `经过一番苦战，你终于击退了野狗群。
+
+你从野狗尸体上收集到3颗变异獠牙（可用于制作高级武器）。
+
+现在你可以进入工厂庭院了。庭院中央有一座破旧的办公楼，信号似乎就是从那里发出的。
+
+但你也注意到，办公楼门口有两个身影在徘徊...是人还是怪物？`,
+        choices: [
+            {
+                id: 'observe_from_distance',
+                text: '远距离观察',
+                hint: '需要智力检定',
+                effects: [
+                    {
+                        kind: 'roll',
+                        difficulty: 45,
+                        onFail: 'spotted_by_figures',
+                        onSuccess: 'identify_survivors',
+                        successEffects: [
+                            { kind: 'flag', flag: 'identified_survivors', flagValue: true },
+                        ],
+                    },
+                ],
+                next: 'identify_survivors',
+                result: '你躲在掩体后仔细观察...',
+            },
+            {
+                id: 'approach_cautiously',
+                text: '谨慎靠近',
+                effects: [
+                    { kind: 'jump', target: 'meet_survivors' },
+                ],
+                next: 'meet_survivors',
+                result: '你握紧武器，慢慢走近...',
+            },
+        ],
+    },
+    // === 幸存者相遇 ===
+    identify_survivors: {
+        id: 'identify_survivors',
+        text: `通过仔细观察，你确认那是两个活人——一个中年男人和一个年轻女孩。
+
+男人手持自制长矛，警惕地扫视四周。女孩则蜷缩在他身后，看起来营养不良。
+
+他们就是发出求救信号的人！
+
+你现在可以选择：
+1. 直接现身表明身份
+2. 继续观察，了解更多信息
+3. 悄悄离开，放弃救援`,
+        choices: [
+            {
+                id: 'reveal_yourself',
+                text: '现身表明身份',
+                effects: [
+                    { kind: 'flag', flag: 'met_survivors', flagValue: true },
+                    { kind: 'jump', target: 'first_contact' },
+                ],
+                next: 'first_contact',
+                result: '你从掩体后走出，举起双手表示没有恶意...',
+            },
+            {
+                id: 'keep_watching',
+                text: '继续观察',
+                effects: [
+                    { kind: 'resource', resource: 'energy', delta: -10 },
+                    { kind: 'jump', target: 'secret_observation' },
+                ],
+                next: 'secret_observation',
+                result: '你决定再多观察一会儿...',
+            },
+        ],
+    },
+    first_contact: {
+        id: 'first_contact',
+        text: `"别过来！"男人举起长矛对准你。
+
+你停下脚步，大声喊道："我收到了你们的求救信号，是来帮忙的！"
+
+男人犹豫了一下，放下武器。"谢谢你...我是老陈，这是我女儿小雅。我们已经困在这里一周了，食物昨天就吃完了。"
+
+小雅虚弱地看着你，眼中既有希望也有恐惧。
+
+老陈继续说："这栋楼里有我们要找的东西——一份研究资料。但里面有一只变异兽守着，我们不敢进去。如果你能帮我们拿到资料，我们可以分享避难所的位置给你。"`,
+        choices: [
+            {
+                id: 'accept_quest',
+                text: '接受任务，帮他们拿资料',
+                hint: '进入危险区域',
+                effects: [
+                    { kind: 'flag', flag: 'accepted_data_quest', flagValue: true },
+                    { kind: 'jump', target: 'enter_office_building' },
+                ],
+                next: 'enter_office_building',
+                result: '"没问题，交给我吧。"',
+            },
+            {
+                id: 'ask_for_details',
+                text: '询问更多细节',
+                effects: [
+                    { kind: 'flag', flag: 'know_about_mutant', flagValue: true },
+                    { kind: 'jump', target: 'learn_about_mutant' },
+                ],
+                next: 'learn_about_mutant',
+                result: '"那只变异兽是什么样的？有什么弱点？"',
+            },
+            {
+                id: 'refuse_quest',
+                text: '拒绝任务，直接带他们离开',
+                effects: [
+                    { kind: 'flag', flag: 'skipped_data_quest', flagValue: true },
+                    { kind: 'jump', target: 'evacuate_survivors' },
+                ],
+                next: 'evacuate_survivors',
+                result: '"太危险了，我们先离开这里。"',
+            },
+        ],
+    },
+    // === 办公楼探索 ===
+    enter_office_building: {
+        id: 'enter_office_building',
+        text: `你走进破旧的办公楼，空气中弥漫着腐臭的味道。
+
+一楼大厅空无一人，但楼梯口有新鲜的爪痕。你要找的资料应该在二楼的研究室。
+
+突然，你听到楼上传来沉重的脚步声...
+
+【警告】检测到高威胁目标！
+
+你的选择：
+1. 正面迎战
+2. 寻找其他路径
+3. 设置陷阱`,
+        choices: [
+            {
+                id: 'fight_head_on',
+                text: '正面迎战变异兽',
+                hint: '高风险高回报',
+                effects: [
+                    {
+                        kind: 'roll',
+                        difficulty: 70,
+                        onFail: 'defeated_by_mutant',
+                        onSuccess: 'mutant_defeated',
+                        lethal: true,
+                        successEffects: [
+                            { kind: 'item', item: 'research_data', amount: 1 },
+                            { kind: 'item', item: 'mutant_core', amount: 1 },
+                            { kind: 'resource', resource: 'energy', delta: -30 },
+                        ],
+                    },
+                ],
+                next: 'mutant_defeated',
+                result: '你紧握武器，冲向楼梯...',
+            },
+            {
+                id: 'find_alternative',
+                text: '寻找其他路径',
+                hint: '需要智力检定',
+                effects: [
+                    {
+                        kind: 'roll',
+                        difficulty: 50,
+                        onFail: 'no_alternative',
+                        onSuccess: 'secret_passage',
+                        successEffects: [
+                            { kind: 'item', item: 'research_data', amount: 1 },
+                        ],
+                    },
+                ],
+                next: 'secret_passage',
+                result: '你四处搜索，寻找绕过怪物的方法...',
+            },
+            {
+                id: 'set_trap',
+                text: '设置陷阱',
+                hint: '需要木材x20',
+                effects: [
+                    { kind: 'item', item: 'wood', amount: -20 },
+                    {
+                        kind: 'roll',
+                        difficulty: 40,
+                        onFail: 'trap_failed',
+                        onSuccess: 'trap_success',
+                        successEffects: [
+                            { kind: 'item', item: 'research_data', amount: 1 },
+                            { kind: 'item', item: 'mutant_core', amount: 1 },
+                        ],
+                    },
+                ],
+                next: 'trap_success',
+                requires: {
+                    items: { wood: 20 },
+                },
+                result: '你用随身携带的木材快速布置陷阱...',
+            },
+        ],
+    },
+    mutant_defeated: {
+        id: 'mutant_defeated',
+        text: `经过一场惊心动魄的战斗，你终于击败了变异兽！
+
+这只怪物体型如牛，全身覆盖着黑色鳞片，口中喷出腐蚀性液体。它的核心是一颗拳头大小的紫色晶体——变异核心，蕴含强大的能量。
+
+你在二楼研究室找到了老陈要的资料。这是一份关于"迷雾起源计划"的研究档案，上面标注着"绝密"字样。
+
+带着资料和变异核心，你返回楼下。`,
+        choices: [
+            {
+                id: 'return_to_survivors',
+                text: '返回给老陈',
+                effects: [
+                    { kind: 'flag', flag: 'obtained_research_data', flagValue: true },
+                    { kind: 'jump', target: 'data_handover' },
+                ],
+                next: 'data_handover',
+                result: '你带着战利品回到幸存者身边...',
+            },
+        ],
+    },
+    // === 结局分支 ===
+    data_handover: {
+        id: 'data_handover',
+        text: `你将资料交给老陈。他颤抖着翻开第一页，脸色瞬间变得苍白。
+
+"这...这不可能..."老陈喃喃自语，"原来迷雾不是自然灾害，而是一场实验！"
+
+小雅好奇地凑过去看，老陈连忙合上资料。"小雅，你还小，不该知道这些。"
+
+老陈转向你，神色复杂："朋友，谢谢你救了我们。这份资料太重要了，我必须带回联盟总部。我想邀请你加入我们的幸存者联盟，一起揭开这个阴谋。"
+
+【关键抉择】
+这将影响后续剧情走向：
+1. 同意加入联盟 → 开启联盟线
+2. 拒绝但保持联系 → 独立发展
+3. 要求共享资料 → 获得知识但得罪联盟`,
+        choices: [
+            {
+                id: 'join_alliance',
+                text: '同意加入幸存者联盟',
+                effects: [
+                    { kind: 'flag', flag: 'joined_alliance', flagValue: true },
+                    { kind: 'flag', flag: 'alliance_line_unlocked', flagValue: true },
+                    { kind: 'item', item: 'alliance_badge', amount: 1 },
+                    { kind: 'jump', target: 'ending_rescue_success' },
+                ],
+                next: 'ending_rescue_success',
+                result: '"好，我们一起对抗这个阴谋！"',
+            },
+            {
+                id: 'stay_independent',
+                text: '拒绝但保持友好关系',
+                effects: [
+                    { kind: 'flag', flag: 'alliance_contact', flagValue: true },
+                    { kind: 'resource', resource: 'food', delta: 30 },
+                    { kind: 'jump', target: 'ending_independent' },
+                ],
+                next: 'ending_independent',
+                result: '"我还是喜欢独来独往，但我们可以互相帮助。"',
+            },
+            {
+                id: 'demand_data_copy',
+                text: '要求复制一份资料',
+                effects: [
+                    { kind: 'flag', flag: 'has_data_copy', flagValue: true },
+                    { kind: 'flag', flag: 'alliance_displeased', flagValue: true },
+                    { kind: 'jump', target: 'ending_truth_hint' },
+                ],
+                next: 'ending_truth_hint',
+                result: '"这份资料我也要看，给我复制一份。"',
+            },
+        ],
+    },
+    ending_rescue_success: {
+        id: 'ending_rescue_success',
+        text: `【结局：希望之光】
+
+老陈和小陈加入了你的队伍。有了联盟的支持，你的基地迅速发展壮大。
+
+更重要的是，通过那份研究资料，你得知迷雾世界背后隐藏着一个巨大的阴谋。而这，只是真相的冰山一角...
+
+【救援线完成】
+【解锁：联盟线剧情】
+【获得：联盟徽章（可在联盟商店兑换特殊物品）】`,
+        choices: [
+            {
+                id: 'continue_game',
+                text: '继续游戏',
+                effects: [
+                    { kind: 'jump', target: '__return__' },
+                ],
+                next: '__return__',
+                result: '',
+            },
+        ],
+    },
+    ending_independent: {
+        id: 'ending_independent',
+        text: `【结局：独行侠】
+
+你选择了独自发展的道路。老陈虽然失望，但还是给了你一些食物作为感谢，并留下了联系方式。
+
+"如果改变主意，随时欢迎加入联盟。"他说完便带着小雅离开了。
+
+你独自返回基地，心中五味杂陈。但至少，你保有了自由。
+
+【救援线完成】
+【获得：30食物】
+【解锁：联盟联系人（可进行有限交易）】`,
+        choices: [
+            {
+                id: 'continue_game',
+                text: '继续游戏',
+                effects: [
+                    { kind: 'jump', target: '__return__' },
+                ],
+                next: '__return__',
+                result: '',
+            },
+        ],
+    },
+    ending_truth_hint: {
+        id: 'ending_truth_hint',
+        text: `【结局：真相的碎片】
+
+老陈不情愿地让你复制了资料。通过研究，你发现了惊人的事实：
+
+"迷雾起源计划"是一个名为"新纪元"的组织进行的实验，目的是筛选出"进化者"。而你，可能是被选中的对象之一。
+
+这份知识既是力量也是诅咒。你知道的越多，就越接近危险...
+
+【救援线完成】
+【解锁：真相线剧情】
+【获得：研究资料副本】
+【警告：已被"新纪元"组织标记】`,
+        choices: [
+            {
+                id: 'continue_game',
+                text: '继续游戏',
+                effects: [
+                    { kind: 'jump', target: '__return__' },
+                ],
+                next: '__return__',
+                result: '',
+            },
+        ],
+    },
+    // === 失败结局 ===
+    wounded_escape: {
+        id: 'wounded_escape',
+        text: `你受了伤，被迫撤退。
+
+虽然没能救出幸存者，但你活着回来了。这次失败让你意识到自己的不足。
+
+你需要变得更强大，才能在下一次机会中成功。
+
+【任务失败】
+【获得经验：50XP】
+【解锁：训练系统】`,
+        choices: [
+            {
+                id: 'return_to_base',
+                text: '返回基地休整',
+                effects: [
+                    { kind: 'jump', target: '__return__' },
+                ],
+                next: '__return__',
+                result: '',
+            },
+        ],
+    },
+    defeated_by_mutant: {
+        id: 'defeated_by_mutant',
+        text: `【死亡结局】
+
+变异兽的力量远超你的想象。尽管你奋力抵抗，最终还是被它击败...
+
+你的意识逐渐模糊，最后看到的是那双猩红的眼睛。
+
+【游戏结束】
+【存活天数：${'{day}'}天】
+【解锁结局：无力回天】`,
+        choices: [],
+        next: 'death_ending',
+    },
+};
+/** 救援线剧本定义 */
+export const RESCUE_STORYLINE = {
+    id: 'rescue_line',
+    title: '救援线：希望的信号',
+    desc: '收到神秘求救信号，踏上救援之旅，揭开迷雾世界的真相。',
+    initialScene: 'mysterious_signal',
+    scenes: RESCUE_SCENES,
+    endings: RESCUE_ENDINGS,
+};
+//# sourceMappingURL=storyline_v2.js.map

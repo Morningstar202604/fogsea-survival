@@ -124,6 +124,9 @@ function validateChoice(
           issues.push({ code: 'V1', path: ep, msg: `jump 目标不存在: ${eff.target}` });
         }
         break;
+      case 'combat':
+        // 战斗效果：monster 缺省时引擎按天数自动选怪，无内容可校验
+        break;
       default:
         issues.push({ code: 'V3', path: ep, msg: `未知效果类型: ${String((eff as { kind?: unknown }).kind)}` });
     }

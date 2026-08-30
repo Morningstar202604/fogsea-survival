@@ -38,6 +38,7 @@ function lastChoice(): Choice {
     id: 'test_last_choice',
     text: '测试末路选项',
     effects: [{ kind: 'resource', resource: 'food', delta: -9999 }],
+    next: '__return__',
   };
 }
 
@@ -58,6 +59,7 @@ describe('core engine edge cases', () => {
       id: 'test_boom',
       text: '测试暴富选项',
       effects: [{ kind: 'resource', resource: 'food', delta: 99999 }],
+      next: '__return__',
     };
     applyChoice(demoContent, s, c, new Rng(1));
     expect(s.resources.food.current).toBe(s.resources.food.max);

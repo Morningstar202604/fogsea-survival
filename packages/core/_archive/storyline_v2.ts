@@ -366,7 +366,7 @@ export const RESCUE_SCENES: Record<string, SceneNode> = {
         text: '设置陷阱',
         hint: '需要木材x20',
         effects: [
-          { kind: 'resource', resource: 'wood', delta: -20 },
+          { kind: 'item', item: 'wood', amount: -20 },
           {
             kind: 'roll',
             difficulty: 40,

@@ -14,26 +14,29 @@ export const fullContent = {
                 "choices": [
                     {
                         "id": "search",
-                        "text": "出门搜寻物资",
-                        "hint": "食物与水",
+                        "text": "出门搜寻物资 [食物+12] [水+10]",
+                        "hint": "消耗1行动点",
+                        "apCost": 1,
                         "effects": [
                             {
                                 "kind": "resource",
                                 "resource": "food",
-                                "delta": 10
+                                "delta": 12
                             },
                             {
                                 "kind": "resource",
                                 "resource": "water",
-                                "delta": 8
+                                "delta": 10
                             }
                         ],
-                        "next": "start"
+                        "next": "start",
+                        "result": "你在雾里翻了三处废墟，收获够撑一天。"
                     },
                     {
                         "id": "rest",
-                        "text": "在屋里休整",
-                        "hint": "恢复体力",
+                        "text": "在屋里休整 [体力+15]",
+                        "hint": "消耗1行动点",
+                        "apCost": 1,
                         "effects": [
                             {
                                 "kind": "resource",
@@ -41,19 +44,41 @@ export const fullContent = {
                                 "delta": 15
                             }
                         ],
-                        "next": "start"
+                        "next": "start",
+                        "result": "你靠着墙打了个盹，梦里没有雾。"
                     },
                     {
                         "id": "fortify",
-                        "text": "加固门窗",
-                        "hint": "抵御夜袭",
+                        "text": "加固门窗 [防御+]",
+                        "hint": "消耗1行动点",
+                        "apCost": 1,
                         "effects": [
                             {
                                 "kind": "flag",
                                 "flag": "fortified"
                             }
                         ],
-                        "next": "start"
+                        "next": "start",
+                        "result": "木刺钉进门框，绳结勒紧横梁。今晚野兽得先问过它们。"
+                    },
+                    {
+                        "id": "hunt",
+                        "text": "夜巡狩猎 [风险：遭遇野兽]",
+                        "hint": "消耗1行动点，胜利缴获战利品",
+                        "apCost": 1,
+                        "effects": [
+                            {
+                                "kind": "roll",
+                                "difficulty": 55,
+                                "successEffects": [
+                                    {
+                                        "kind": "combat"
+                                    }
+                                ]
+                            }
+                        ],
+                        "next": "start",
+                        "result": "你握紧木矛走进雾里。黑暗深处，有什么东西也在找你。"
                     }
                 ]
             }
@@ -4844,6 +4869,87 @@ export const fullContent = {
         }
     ],
     "randomEvents": [
+        {
+            "id": "evt_airdrop",
+            "weight": 9,
+            "minDay": 3,
+            "maxTriggers": 3,
+            "text": "【系统播报】检测到未知飞行物掠过雾层上空——一只补给空投箱摇摇晃晃地坠落在东边两百米的灌木丛里，降落伞缠在了树枝上。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "冒险冲过去抢空投",
+                    "hint": "可能空手而归",
+                    "effects": [
+                        { "kind": "roll", "difficulty": 55,
+                            "successEffects": [
+                                { "kind": "item", "item": "food", "amount": 15 },
+                                { "kind": "item", "item": "metal", "amount": 5 }
+                            ] }
+                    ],
+                    "next": "__return__",
+                    "result": "你在雾里狂奔……灌木丛里的箱子还剩多少，全看运气。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "谨慎观察半小时再靠近",
+                    "effects": [
+                        { "kind": "resource", "resource": "energy", "delta": -5 },
+                        { "kind": "item", "item": "food", "amount": 8 }
+                    ],
+                    "next": "__return__",
+                    "result": "你等到雾稍散了些才摸过去，箱子被别人先撬开了一半，剩下的也够吃两天。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "无视它——太显眼的地方太危险",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": 2 }
+                    ],
+                    "next": "__return__",
+                    "result": "入夜后，东边传来几声争抢的尖叫。你裹紧毯子，庆幸自己没去。"
+                }
+            ]
+        },
+        {
+            "id": "evt_caravan",
+            "weight": 7,
+            "minDay": 5,
+            "maxTriggers": 2,
+            "text": "【系统播报】一辆挂着铜铃的三轮车碾过雾气停在你门口。车夫裹得只露出一双眼睛：「以物易物，童叟无欺——今日特价，木材换罐头。」",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "用木材×20换罐头（食物+12）",
+                    "effects": [
+                        { "kind": "item", "item": "wood", "amount": -20 },
+                        { "kind": "item", "item": "food", "amount": 12 }
+                    ],
+                    "next": "__return__",
+                    "result": "铜铃叮当作响，你用一捆木头换回了救命的热量。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "用石材×10换金属×6",
+                    "effects": [
+                        { "kind": "item", "item": "stone", "amount": -10 },
+                        { "kind": "item", "item": "metal", "amount": 6 }
+                    ],
+                    "next": "__return__",
+                    "result": "「石头换铁？你这买卖做得过。」车夫咧嘴，铜铃又响了一声。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "什么都不换，只打听外面的消息",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": -3 },
+                        { "kind": "flag", "flag": "heard_caravan_rumor", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "「西边的雾上周吃掉了一个村子。」车夫压低声音，「给钱也不换那种死法。」"
+                }
+            ]
+        },
         {
             "id": "evt_ch1_market",
             "weight": 0,
@@ -23476,18 +23582,410 @@ export const fullContent = {
                     "result": "你拿到了最基本的补给。"
                 }
             ]
-        }
-    ],
-    "income": [
-        {
-            "resource": "food",
-            "delta": -10
         },
         {
-            "resource": "water",
-            "delta": -10
+            "id": "first_beast_wave_warning",
+            "weight": 0,
+            "minDay": 7,
+            "maxTriggers": 1,
+            "text": "【世界预警·迷雾加深】\n\n后半夜，木屋外的雾墙亮起一阵不祥的微光。远处传来第一声真正的兽吼——不再是狼，是某种更重、更大的东西。\n\n雾在进化。兽群也在进化。留给你的时间不多了。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "连夜加固木屋外围（消耗木材×20）",
+                    "effects": [
+                        { "kind": "item", "item": "wood", "amount": -20 },
+                        { "kind": "resource", "resource": "sanity", "delta": -2 }
+                    ],
+                    "next": "__return__",
+                    "result": "你连夜把木刺削尖钉进门框。天亮时，泥地上多了几串陌生的爪印。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "磨一根像样的木矛",
+                    "hint": "获得木矛",
+                    "effects": [
+                        { "kind": "item", "item": "wooden_spear", "amount": 1 },
+                        { "kind": "resource", "resource": "energy", "delta": -10 }
+                    ],
+                    "next": "__return__",
+                    "result": "你花了一整夜打磨矛尖。手在抖，但矛比手稳。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "留在暗处观察兽群动向",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": -6 },
+                        { "kind": "flag", "flag": "beast_wave_observed", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "你记下了吼声的方位和间隔。恐惧还在，但你至少知道它们从哪来。"
+                }
+            ]
+        },
+        {
+            "id": "beast_wave_preparation",
+            "weight": 0,
+            "minDay": 15,
+            "maxTriggers": 1,
+            "text": "【世界预警·兽潮前夕】\n\n地平线传来持续的震动，雾海深处的嚎叫连成了一片。兽潮将在数日内抵达——这一次不是几只野兽，是一股潮水。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "储备木石，闭门死守（消耗木材×30、石头×10）",
+                    "effects": [
+                        { "kind": "item", "item": "wood", "amount": -30 },
+                        { "kind": "item", "item": "stone", "amount": -10 },
+                        { "kind": "flag", "flag": "beast_wave_ready", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "栅栏加高了两层，壕沟里插满削尖的木桩。它们想进来，就得先付出代价。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "主动出击，猎杀落单的先头兽",
+                    "hint": "有风险，缴获兽核",
+                    "effects": [
+                        { "kind": "resource", "resource": "health", "delta": -15 },
+                        { "kind": "resource", "resource": "energy", "delta": -20 },
+                        { "kind": "item", "item": "beast_core", "amount": 1 }
+                    ],
+                    "next": "__return__",
+                    "result": "你拖着伤回到屋里，手里的兽核还带着体温。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "用电台联络附近的幸存者",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": 4 },
+                        { "kind": "flag", "flag": "alliance_contact", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "无线电里传来三声短促的回应。你不是一个人在守。"
+                }
+            ]
+        },
+        {
+            "id": "power_awakening",
+            "weight": 0,
+            "minDay": 30,
+            "maxTriggers": 1,
+            "text": "【世界异变·力量觉醒】\n\n今夜，雾海深处浮起万千光点，像倒悬的星河。你的指尖开始发光——有什么东西正顺着血液爬升，在心脏处轰然炸开。\n\n雾海开始认可你了。选择你的道路。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "走科技之路：理解它，然后利用它",
+                    "effects": [
+                        { "kind": "flag", "flag": "path_tech", "flagValue": true },
+                        { "kind": "resource", "resource": "sanity", "delta": 2 }
+                    ],
+                    "next": "__return__",
+                    "result": "你拆开收音机的最后一枚零件，公式在脑中清晰起来——力量不必来自雾，可以来自理解。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "走修行之路：顺应它，与雾共鸣",
+                    "effects": [
+                        { "kind": "flag", "flag": "path_cultivation", "flagValue": true },
+                        { "kind": "resource", "resource": "energy", "delta": 5 }
+                    ],
+                    "next": "__return__",
+                    "result": "你盘膝坐下，跟随光点的节奏吐纳。一缕暖流沉入小腹——雾不是灾，是灵气。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "拒绝力量，保持凡人之躯",
+                    "effects": [
+                        { "kind": "flag", "flag": "path_mortal", "flagValue": true },
+                        { "kind": "resource", "resource": "sanity", "delta": 6 }
+                    ],
+                    "next": "__return__",
+                    "result": "你握紧拳头，把光芒按回皮肤之下。有些东西一旦拿起，就再也放不下了。"
+                }
+            ]
+        },
+        {
+            "id": "ancient_ruins_discovery",
+            "weight": 0,
+            "minDay": 50,
+            "maxTriggers": 1,
+            "text": "【世界发现·真相浮现】\n\n浓雾散开了一角。雾墙之后矗立着一座不属于这个时代的黑色石碑，碑文在发光，像是在等待能够读懂它的人。\n\n碑文的第一行只有一句话：观察者，你终于来了。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "抄录碑文，仔细研究",
+                    "effects": [
+                        { "kind": "flag", "flag": "ruins_truth_1", "flagValue": true },
+                        { "kind": "resource", "resource": "sanity", "delta": -4 }
+                    ],
+                    "next": "__return__",
+                    "result": "你抄下三十七个符号。夜里它们在梦中重排成句：这不是天灾，是一次筛选。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "带走碑文旁的神秘结晶",
+                    "hint": "获得神秘结晶",
+                    "effects": [
+                        { "kind": "item", "item": "mysterious_crystal", "amount": 1 },
+                        { "kind": "resource", "resource": "health", "delta": -10 }
+                    ],
+                    "next": "__return__",
+                    "result": "结晶入手的瞬间，雾海发出一声悠长的叹息。有什么东西，注意到你了。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "摧毁石碑，假装什么都没看见",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": 8 },
+                        { "kind": "flag", "flag": "ruins_destroyed", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "石碑碎裂时发出无声的悲鸣。你转身回屋，把那一角重新用雾封死。"
+                }
+            ]
+        },
+        {
+            "id": "final_countdown",
+            "weight": 0,
+            "minDay": 80,
+            "maxTriggers": 1,
+            "text": "【世界终局·终极考验】\n\n雾海开始退潮。地平线上，一座由雾构成的巨影缓缓站起——迷雾之主苏醒了。\n\n所有幸存者的无线电同时响起同一句话：倒数七日。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "燃烧储备，武装到牙齿（消耗食物30、金属×20）",
+                    "effects": [
+                        { "kind": "resource", "resource": "food", "delta": -30 },
+                        { "kind": "item", "item": "metal", "amount": -20 },
+                        { "kind": "flag", "flag": "final_battle_ready", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "你把最后的存粮烤成干粮，把废铁淬成刀锋。七天后，要么死，要么走出去。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "静坐调息，直面终局",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": 10 },
+                        { "kind": "flag", "flag": "final_battle_ready", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "你安静地擦净那把陪你走过八十天的木矛。来吧。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "深挖地窖，赌一把苟活",
+                    "effects": [
+                        { "kind": "resource", "resource": "energy", "delta": -15 },
+                        { "kind": "flag", "flag": "final_hideout", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "你把地窖挖深了三米，用木板封住头顶。雾声从缝隙里渗进来，像某种叹息。"
+                }
+            ]
+        },
+        {
+            "id": "catastrophe_beast_wave_tier1",
+            "weight": 0,
+            "minDay": 10,
+            "maxTriggers": 1,
+            "text": "【天灾降临·初级兽潮】\n\n黎明前，雾墙像被撕开了一样，数十头低阶野兽嚎叫着冲向你的木屋。它们眼里没有兽性，只有饥饿。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "依托工事死守",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": -5 }
+                    ],
+                    "next": "__return__",
+                    "result": "木栅栏被撞得吱呀作响，但它们没能进来。天亮时，院子里留下了七具尸体。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "爬上屋顶反击",
+                    "hint": "有受伤风险",
+                    "effects": [
+                        { "kind": "resource", "resource": "health", "delta": -10 },
+                        { "kind": "item", "item": "mutant_fang", "amount": 2 }
+                    ],
+                    "next": "__return__",
+                    "result": "你用木矛从屋顶一次次捅下去，最后两匹野兽拖着伤逃进了雾里。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "弃屋躲入地窖",
+                    "effects": [
+                        { "kind": "resource", "resource": "energy", "delta": -15 },
+                        { "kind": "resource", "resource": "food", "delta": -10 }
+                    ],
+                    "next": "__return__",
+                    "result": "你在黑暗里听着头顶的撕咬声直到黄昏。木屋损失惨重，但人没事。"
+                }
+            ]
+        },
+        {
+            "id": "catastrophe_extreme_cold",
+            "weight": 0,
+            "minDay": 20,
+            "maxTriggers": 1,
+            "text": "【天灾降临·极寒来袭】\n\n气温在一夜之间跌到了零下四十度。雾冻结成了霜壳，敲在墙上像石头。火堆成了你唯一的心跳。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "烧掉备用木料取暖（消耗木材×25）",
+                    "effects": [
+                        { "kind": "item", "item": "wood", "amount": -25 }
+                    ],
+                    "next": "__return__",
+                    "result": "炉火烧了整整五天。木料没了，但骨头是暖的。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "裹紧所有衣物，减少外出",
+                    "effects": [
+                        { "kind": "resource", "resource": "energy", "delta": -10 },
+                        { "kind": "resource", "resource": "sanity", "delta": -3 }
+                    ],
+                    "next": "__return__",
+                    "result": "你把自己裹成一个茧，靠数屋顶的冰裂声打发时间。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "冒雪外出搜集燃料",
+                    "hint": "有冻伤风险",
+                    "effects": [
+                        { "kind": "resource", "resource": "health", "delta": -15 },
+                        { "kind": "item", "item": "wood", "amount": 15 }
+                    ],
+                    "next": "__return__",
+                    "result": "你拖回一捆湿柴，指尖冻得发黑。这一趟，值，也不值。"
+                }
+            ]
+        },
+        {
+            "id": "catastrophe_beast_wave_tier2",
+            "weight": 0,
+            "minDay": 35,
+            "maxTriggers": 1,
+            "text": "【天灾降临·中级兽潮】\n\n这一次的兽群不一样：它们的甲壳泛着金属光泽，吼声里带着令理智震颤的音节。进化的怪物，学会了战术。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "消耗物资，全面死守（木材×40、石材×20）",
+                    "effects": [
+                        { "kind": "item", "item": "wood", "amount": -40 },
+                        { "kind": "item", "item": "stone", "amount": -20 },
+                        { "kind": "resource", "resource": "sanity", "delta": -5 }
+                    ],
+                    "next": "__return__",
+                    "result": "三道防线被撕碎了两道。黎明时分，兽潮退了，你的手还在抖。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "利用地形与兽群周旋",
+                    "effects": [
+                        { "kind": "resource", "resource": "energy", "delta": -20 },
+                        { "kind": "item", "item": "beast_core", "amount": 2 }
+                    ],
+                    "next": "__return__",
+                    "result": "你把兽群引进了沼泽，收割了两个核心。雾海在为你让路。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "释放信号弹向盟友求援",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": 3 },
+                        { "kind": "flag", "flag": "alliance_aid_received", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "远处亮起了回应的火光。有人和你在同一场噩梦里并肩。"
+                }
+            ]
+        },
+        {
+            "id": "catastrophe_fog_expansion",
+            "weight": 0,
+            "minDay": 45,
+            "maxTriggers": 1,
+            "text": "【天灾降临·迷雾扩张】\n\n你开垦的每一寸土地都在被浓雾重新吞没。边界上的木桩一节节消失在灰白里，像被什么东西吃掉了。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "举火把重新驱散领地",
+                    "effects": [
+                        { "kind": "resource", "resource": "energy", "delta": -25 }
+                    ],
+                    "next": "__return__",
+                    "result": "你举着火把走了一整天，雾退回了界碑之外。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "放弃外围田地，收缩防线",
+                    "effects": [
+                        { "kind": "resource", "resource": "sanity", "delta": -6 },
+                        { "kind": "resource", "resource": "food", "delta": -15 }
+                    ],
+                    "next": "__return__",
+                    "result": "你看着半年的耕作沉入灰白。活着，比什么都重要。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "深入新雾区侦察",
+                    "hint": "危险，可能有发现",
+                    "effects": [
+                        { "kind": "resource", "resource": "health", "delta": -10 },
+                        { "kind": "flag", "flag": "explored_new_fog", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "新雾区的雾是活的——你亲眼看见雾墙在你身后合拢。你记下了里面的路标。"
+                }
+            ]
+        },
+        {
+            "id": "catastrophe_beast_wave_tier3",
+            "weight": 0,
+            "minDay": 60,
+            "maxTriggers": 1,
+            "text": "【天灾降临·高级兽潮】\n\n大地在颤抖。雾海尽头，一头山岳般的巨兽缓缓走来，它的每一次呼吸都让雾浪翻滚。兽王来了——这是生死存亡的一战。",
+            "choices": [
+                {
+                    "id": "o_0",
+                    "text": "倾尽全力，与兽王决战",
+                    "hint": "九死一生",
+                    "effects": [
+                        { "kind": "resource", "resource": "health", "delta": -30 },
+                        { "kind": "resource", "resource": "energy", "delta": -30 },
+                        { "kind": "flag", "flag": "beast_king_slain", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "你亲手斩下了兽王的獠牙。那一夜，整个雾海安静得像在默哀。"
+                },
+                {
+                    "id": "o_1",
+                    "text": "退入基地核心，凭工事死守（木材×50、石材×30）",
+                    "effects": [
+                        { "kind": "item", "item": "wood", "amount": -50 },
+                        { "kind": "item", "item": "stone", "amount": -30 },
+                        { "kind": "resource", "resource": "sanity", "delta": -8 }
+                    ],
+                    "next": "__return__",
+                    "result": "城墙在兽王的冲撞下呻吟了三天。第四天清晨，它转身离开了。"
+                },
+                {
+                    "id": "o_2",
+                    "text": "携带轻装撤离，放弃基地",
+                    "effects": [
+                        { "kind": "resource", "resource": "energy", "delta": -20 },
+                        { "kind": "resource", "resource": "sanity", "delta": -12 },
+                        { "kind": "flag", "flag": "abandoned_base", "flagValue": true }
+                    ],
+                    "next": "__return__",
+                    "result": "你回头看了一眼燃烧的木屋，转身走进雾里。活着，就还有下一次。"
+                }
+            ]
         }
     ],
+    "income": [],
     "startingResources": {
         "food": {
             "current": 70,

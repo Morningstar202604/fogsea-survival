@@ -9,6 +9,7 @@
  */
 
 import type { GameState } from './types.js';
+import { RESOURCE_KEYS, deltaResource } from './resources.js';
 
 /** 基地类型枚举 */
 export enum BaseType {
@@ -172,7 +173,7 @@ export const BASE_LEVEL_CONFIG: Record<number, {
     maxStructures: 15,
     maxStorage: 500,
     maxDefense: 300,
-    cost: { stone: 1500, metal: 500, wood: 800, blueprint: 5 },
+    cost: { stone: 600, metal: 150, wood: 500 }, // 原 blueprint×5 为不可获得物品，升级链断裂，改为可达成材料
     unlocks: ['wall', 'farm', 'workshop', 'mine'],
   },
   5: {
@@ -181,7 +182,7 @@ export const BASE_LEVEL_CONFIG: Record<number, {
     maxStructures: 999,
     maxStorage: 9999,
     maxDefense: 999,
-    cost: { stone: 5000, metal: 2000, wood: 3000, rare_material: 100, legendary_item: 10 },
+    cost: { stone: 2000, metal: 800, wood: 1500 }, // 同上：移除不可获得物品
     unlocks: ['all_structures', 'automation', 'trade_center'],
   },
 };
@@ -528,8 +529,12 @@ export function processDailyProduction(
 
     for (const effect of productionEffects) {
       if (effect.target && effect.value > 0) {
-        // 添加到背包
-        state.inventory[effect.target] = (state.inventory[effect.target] ?? 0) + effect.value;
+        // 生存资源（食物/水等）直接入资源条；其余（木材/石材等）入背包
+        if ((RESOURCE_KEYS as string[]).includes(effect.target) && state.resources[effect.target as keyof typeof state.resources]) {
+          deltaResource(state.resources[effect.target as keyof typeof state.resources], effect.value);
+        } else {
+          state.inventory[effect.target] = (state.inventory[effect.target] ?? 0) + effect.value;
+        }
         produced[effect.target] = (produced[effect.target] ?? 0) + effect.value;
 
         // 更新最后生产时间
@@ -544,6 +549,13 @@ export function processDailyProduction(
   }
 
   return { produced, messages };
+}
+
+/**
+ * 重新计算基地总防御力（导出供天灾结算等模块使用）
+ */
+export function recalcBaseDefense(base: BaseInfo): void {
+  recalculateDefense(base);
 }
 
 /**

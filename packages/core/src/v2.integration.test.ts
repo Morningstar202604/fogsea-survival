@@ -8,7 +8,7 @@ import { describe, test, expect } from 'vitest';
 import { createInitialState, runDaily } from './engine.js';
 import { fullContent } from './content/full.js';
 import { Rng } from './rng.js';
-import { upgradeBase, buildStructure, getAvailableStructures } from './base.js';
+import { upgradeBase, buildStructure } from './base.js';
 import { unlockSkill, chooseSpecialization, SkillBranch, calculateSkillBonuses } from './skills.js';
 import { initiateCombat, executeCombatRound } from './combat.js';
 
@@ -53,7 +53,8 @@ describe('v2.0 Integration Tests', () => {
     expect(upgradeResult.success).toBe(true);
     expect(state.base.level).toBe(2);
     
-    // 建造伐木场
+    // 建造伐木场（伐木场要求基地3级，测试直接设置等级跳过升级链）
+    state.base.level = 3;
     state.inventory.wood = 100; // 补充木材用于建造
     const buildResult = buildStructure(state as any, 'logging_camp', { x: 0, y: 0 });
     expect(buildResult.success).toBe(true);

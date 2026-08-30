@@ -5,7 +5,11 @@
  * 确保游戏始终向前推进，避免玩家原地踏步。
  */
 
-import type { GameState } from './types.js';
+import type { GameState, ContentPack, ResourceKey } from './types.js';
+import { gainSkillPoints, type SkillTreeState } from './skills.js';
+import { ITEM_DATABASE } from './economy.js';
+import { recalcBaseDefense } from './base.js';
+import { getCompanionDefense } from './companions.js';
 
 /** 世界等级配置 */
 export interface WorldTier {
@@ -381,7 +385,7 @@ export function createInitialProgressionState(): ProgressionState {
  */
 export function checkProgression(
   state: GameState & { progression: ProgressionState },
-  content: any,
+  content: ContentPack,
 ): ProgressionCheck {
   const check: ProgressionCheck = { messages: [] };
   const { progression } = state;
@@ -394,8 +398,11 @@ export function checkProgression(
       `【世界升级】${tierUpgrade.tierInfo.name}！${tierUpgrade.tierInfo.description}`,
     );
 
-    // 如果有强制事件，加入待触发队列
-    if (tierUpgrade.tierInfo.forcedEvent) {
+    // 如果有强制事件且内容包里定义了该事件，加入待触发队列
+    if (
+      tierUpgrade.tierInfo.forcedEvent &&
+      content.randomEvents.some((e) => e.id === tierUpgrade.tierInfo.forcedEvent)
+    ) {
       state.pendingEvents.push(tierUpgrade.tierInfo.forcedEvent);
     }
   }
@@ -612,6 +619,36 @@ function updateCountdowns(progression: ProgressionState): void {
 /**
  * 处理天灾结果
  */
+/** 天灾结算前置评估：核对基地等级/防御/储备物资，返回是否守住及原因播报。 */
+export function evaluateCatastrophe(
+  state: GameState & { progression: ProgressionState },
+  event: CatastropheEvent,
+): { success: boolean; messages: string[] } {
+  const messages: string[] = [];
+  let success = true;
+  const req = event.requirements ?? {};
+  if (req.minBaseLevel && state.base.level < req.minBaseLevel) {
+    success = false;
+    messages.push(`基地等级不足（需要 ${req.minBaseLevel} 级）`);
+  }
+  // 防御值 = 工事 + 同伴协防（联盟雏形：有人和你并肩守夜）
+  const totalDefense = (state.base.totalDefense ?? 0) + getCompanionDefense(state);
+  if (req.minDefense != null && totalDefense < req.minDefense) {
+    success = false;
+    messages.push(`防御工事不足（需要 ${req.minDefense}，当前 ${totalDefense}）`);
+  }
+  for (const [itemId, need] of Object.entries(req.requiredResources ?? {})) {
+    // 内容包引用了不存在的物品（如燃料/御寒衣物）时视为自动满足，避免无解天灾
+    if (!ITEM_DATABASE[itemId]) continue;
+    if ((state.inventory[itemId] ?? 0) < need) {
+      success = false;
+      messages.push(`缺少 ${ITEM_DATABASE[itemId].name}×${need}`);
+    }
+  }
+  if (success) messages.push('你做足了准备——工事的轮廓在雾里沉默地站着。');
+  return { success, messages };
+}
+
 export function resolveCatastrophe(
   state: GameState & { progression: ProgressionState },
   event: CatastropheEvent,
@@ -624,8 +661,9 @@ export function resolveCatastrophe(
 
     // 发放奖励
     if (event.successRewards.xp) {
-      // TODO: 添加经验值
-      messages.push(`获得 ${event.successRewards.xp} 点经验值`);
+      const pts = Math.floor(event.successRewards.xp / 100);
+      if (pts > 0) gainSkillPoints(state as GameState & { skills: SkillTreeState }, pts);
+      messages.push(`获得 ${event.successRewards.xp} 点经验值${pts > 0 ? `（转化为 ${pts} 技能点）` : ''}`);
     }
     if (event.successRewards.items) {
       for (const [item, amount] of Object.entries(event.successRewards.items)) {
@@ -634,6 +672,7 @@ export function resolveCatastrophe(
       }
     }
     if (event.successRewards.unlock) {
+      state.flags[`unlocked_${event.successRewards.unlock}`] = true;
       messages.push(`解锁新内容：${event.successRewards.unlock}`);
     }
   } else {
@@ -641,11 +680,15 @@ export function resolveCatastrophe(
 
     // 应用惩罚
     if (event.failurePenalties.resourceLoss) {
-      for (const [resource, amount] of Object.entries(event.failurePenalties.resourceLoss)) {
-        const resKey = resource as any;
+      for (const [key, amount] of Object.entries(event.failurePenalties.resourceLoss)) {
+        const resKey = key as ResourceKey;
         if (state.resources[resKey]) {
           state.resources[resKey].current = Math.max(0, state.resources[resKey].current - amount);
-          messages.push(`${resource} 损失 ${amount}`);
+          messages.push(`${key} 损失 ${amount}`);
+        } else if (ITEM_DATABASE[key]) {
+          // 物品类损失（木材/石材/金属等）
+          state.inventory[key] = Math.max(0, (state.inventory[key] ?? 0) - amount);
+          messages.push(`${ITEM_DATABASE[key].name} 损失 ${amount}`);
         }
       }
     }
@@ -655,6 +698,16 @@ export function resolveCatastrophe(
         state.resources.health.current - event.failurePenalties.healthDamage,
       );
       messages.push(`生命值损失 ${event.failurePenalties.healthDamage}`);
+    }
+    if (event.failurePenalties.structureDamage) {
+      for (const st of state.base.structures) {
+        st.hp = Math.max(0, st.hp - event.failurePenalties.structureDamage);
+      }
+      const before = state.base.structures.length;
+      state.base.structures = state.base.structures.filter((st) => st.hp > 0);
+      recalcBaseDefense(state.base);
+      const destroyed = before - state.base.structures.length;
+      messages.push(destroyed > 0 ? `建筑受损，${destroyed} 座设施被摧毁` : `建筑受损（设施硬撑了下来）`);
     }
   }
 

@@ -1,4 +1,5 @@
 import type { GameState } from './types.js';
+import { createInitialBase } from './base.js';
 
 /**
  * 存档序列化。
@@ -61,6 +62,20 @@ export function importState(raw: string): GameState | null {
     const st = JSON.parse(json) as GameState;
     if (typeof st !== 'object' || st === null || !st.resources || !st.currentScene) return null;
     if (!st.meta || !st.runStats) return null;
+    // 旧档兼容：新增字段补默认值
+    if (!st.itemLevels) st.itemLevels = {};
+    if (st.ap == null) st.ap = 3;
+    if (st.runStats.kills == null) st.runStats.kills = 0;
+    if (st.runStats.signinStreak == null) st.runStats.signinStreak = 0;
+    if (!st.meta.unlockedAchievements) st.meta.unlockedAchievements = [];
+    if (!st.economy) {
+      st.economy = { currency: 0, customAmount: 0, tradeHistory: [], marketPrices: {}, unlockedMerchants: ['wandering_trader'] };
+    }
+    // v1.0 新增字段补默认值
+    if (typeof st.runStats.kills !== 'number') st.runStats.kills = 0;
+    if (typeof st.runStats.signinStreak !== 'number') st.runStats.signinStreak = 0;
+    if (!st.meta.unlockedAchievements) st.meta.unlockedAchievements = [];
+    if (!st.base) st.base = createInitialBase();
     return st;
   } catch {
     return null;

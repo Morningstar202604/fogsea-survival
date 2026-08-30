@@ -11,7 +11,9 @@
 import type { GameState, CombatSession } from './types.js';
 import { rollD100 } from './dice.js';
 import { Rng } from './rng.js';
-import { calculateSkillBonuses } from './skills.js';
+import { calculateSkillBonuses, gainSkillPoints, type SkillTreeState } from './skills.js';
+import { DEFAULT_WORLD_TIERS } from './progression.js';
+import { ITEM_DATABASE } from './economy.js';
 
 /** 怪物定义 */
 export interface MonsterDef {
@@ -164,7 +166,7 @@ export const MONSTER_DATABASE: Record<string, MonsterDef> = {
  * 发起战斗
  */
 export function initiateCombat(
-  state: GameState,
+  _state: GameState,
   monsterId: string,
 ): CombatSession {
   const monster = MONSTER_DATABASE[monsterId];
@@ -278,12 +280,22 @@ export function executeCombatRound(
     // 获得技能点（每100XP给1点）
     const skillPoints = Math.floor(xpGained / 100);
     if (skillPoints > 0) {
-      // 通过 gainSkillPoints 添加
+      gainSkillPoints(state as GameState & { skills: SkillTreeState }, skillPoints);
+      log.push(`战斗经验转化为 ${skillPoints} 点技能点`);
     }
-    
+
+    state.runStats.kills = (state.runStats?.kills ?? 0) + 1;
+
+    // 击杀获得积分（商城货币来源）
+    const economy = (state as any).economy;
+    if (economy) {
+      economy.currency += xpGained;
+      log.push(`获得 ${xpGained} 积分`);
+    }
+
     log.push(`击败了${monster.name}！获得${xpGained}XP`);
     for (const [itemId, count] of Object.entries(loot)) {
-      log.push(`获得 ${itemId} x${count}`);
+      log.push(`获得 ${ITEM_DATABASE[itemId]?.name ?? itemId} ×${count}`);
     }
     
     state.combat = undefined;
@@ -330,10 +342,31 @@ export function executeCombatRound(
     }
     
     case 'special': {
-      // 特殊能力（如果有）
+      // 特殊能力（语义化实现）
       if (monster.specialAbilities && monster.specialAbilities.length > 0) {
-        const ability = monster.specialAbilities[rng.nextInt(0, monster.specialAbilities.length - 1)];
-        log.push(`${monster.name}使用了特殊能力：${ability}！（效果待实现）`);
+        const ability = monster.specialAbilities[rng.int(0, monster.specialAbilities.length - 1)];
+        if (ability === 'stealth_attack') {
+          const dmg = Math.max(1, Math.floor(monster.attack * 0.5));
+          state.resources.health.current = Math.max(0, state.resources.health.current - dmg);
+          log.push(`${monster.name}从雾影中突袭！无法格挡，造成${dmg}点伤害`);
+        } else if (ability === 'charge') {
+          const dmg = Math.max(1, Math.floor(monster.attack * 0.7 - playerDefense * 0.5));
+          state.resources.health.current = Math.max(0, state.resources.health.current - dmg);
+          log.push(`${monster.name}蓄力冲撞，造成${dmg}点伤害`);
+        } else if (ability === 'pack_tactics') {
+          const dmg = Math.max(1, Math.floor(monster.attack * 0.4));
+          state.resources.health.current = Math.max(0, state.resources.health.current - dmg);
+          log.push(`${monster.name}的族群从两翼包抄，造成${dmg}点伤害`);
+        } else if (ability === 'fog_manipulation') {
+          state.resources.sanity.current = Math.max(0, state.resources.sanity.current - 6);
+          log.push(`${monster.name}搅动浓雾，低语钻进你的脑海（理智-6）`);
+        } else if (ability === 'roar') {
+          state.resources.sanity.current = Math.max(0, state.resources.sanity.current - 5);
+          log.push(`${monster.name}发出震耳咆哮（理智-5）`);
+        } else {
+          state.resources.sanity.current = Math.max(0, state.resources.sanity.current - 4);
+          log.push(`${monster.name}使出了神秘能力（理智-4）`);
+        }
       }
       break;
     }
@@ -420,4 +453,29 @@ export function getAvailableMonsters(day: number): MonsterDef[] {
   } else {
     return [MONSTER_DATABASE.beast_king];
   }
+}
+
+/**
+ * 每日遭遇检定（v1.0 战斗接入主循环）：
+ * 无事件日从第 3 天起按 15% + 世界等级×5% 概率遭遇野兽。
+ * 命中则写入 state.combat 并返回遭遇播报；未命中返回 null。
+ */
+export function maybeStartEncounter(
+  state: GameState,
+  rng: Rng,
+): string | null {
+  if (state.combat) return null;
+  const day = state.day ?? 1;
+  if (day < 3) return null;
+  const tier = state.progression?.currentWorldTier ?? 1;
+  // 世界难度乘数接线（此前为死配置）：难度越高，野外遇袭越频繁
+  const mult = DEFAULT_WORLD_TIERS[tier - 1]?.difficultyMultiplier ?? 1;
+  const chance = Math.min(0.6, (0.15 + tier * 0.05) * Math.sqrt(mult));
+  if (rng.next() >= chance) return null;
+
+  const pool = getAvailableMonsters(day).filter((m) => !!m);
+  if (!pool.length) return null;
+  const monster = pool[rng.int(0, pool.length - 1)];
+  state.combat = initiateCombat(state, monster.id);
+  return `【遭遇】一头${monster.name}从雾里扑了出来！战斗开始。`;
 }

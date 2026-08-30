@@ -222,7 +222,7 @@ export const ALLIANCE_SCENES: Record<string, SceneNode> = {
         ],
         next: 'peaceful_resolution',
         requires: {
-          resources: { intelligence: 15 },
+          attributes: { intelligence: 15 },
         },
         result: '你试图在双方之间斡旋。',
       },
