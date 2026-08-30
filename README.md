@@ -32,6 +32,7 @@
 
 1. 前往 Releases 页面下载 `FogSeaSurvival-v1.0.0-debug.apk`（约 4.4MB）：
    - GitHub：https://github.com/Morningstar202604/fogsea-survival/releases
+   - Gitee：https://gitee.com/badhope/fogsea-survival/releases
    - GitCode：https://gitcode.com/badhope/fogsea-survival/releases
 2. 允许安装未知来源应用后安装
 3. 离线可玩，进度保存在本机
@@ -168,10 +169,11 @@ fogsea-survival/
 
 本项目采用 [Apache License 2.0](LICENSE) 开源协议。
 
-## 🔗 仓库镜像
+## 🔗 仓库镜像（三平台同步，Release 均附 APK）
 
-- GitCode（主仓库）：https://gitcode.com/badhope/fogsea-survival
-- GitHub（镜像 + Releases）：https://github.com/Morningstar202604/fogsea-survival
+- GitCode：https://gitcode.com/badhope/fogsea-survival
+- GitHub：https://github.com/Morningstar202604/fogsea-survival
+- Gitee：https://gitee.com/badhope/fogsea-survival
 
 ## 🙏 致谢
 
