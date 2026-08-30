@@ -30,7 +30,9 @@
 
 ## 📱 下载安装（安卓）
 
-1. 前往 [Releases 页面](https://gitcode.com/badhope/fogsea-survival/releases) 下载最新的 `FogSeaSurvival-v1.0.0-debug.apk`
+1. 前往 Releases 页面下载 `FogSeaSurvival-v1.0.0-debug.apk`（约 4.4MB）：
+   - GitHub：https://github.com/Morningstar202604/fogsea-survival/releases
+   - GitCode：https://gitcode.com/badhope/fogsea-survival/releases
 2. 允许安装未知来源应用后安装
 3. 离线可玩，进度保存在本机
 
