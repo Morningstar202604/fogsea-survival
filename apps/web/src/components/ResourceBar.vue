@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGame } from '../game/useGame';
-import { RESOURCE_LABELS } from '@fogsea/core';
+import { RESOURCE_LABELS, computeRank, RANK_TOTAL } from '@fogsea/core';
 import type { ResourceKey } from '@fogsea/core';
 
 const g = useGame();
@@ -35,6 +35,8 @@ const progressionInfo = computed(() => {
     skillPoints: st.skills?.totalPoints || 0,
     baseLevel: st.base?.level || 0,
     specialization: st.skills?.specialization || null,
+    rank: computeRank(st),
+    rankTotal: RANK_TOTAL,
   };
 });
 
@@ -59,6 +61,7 @@ function getBaseLevelLabel(level: number): string {
   <div class="resbar">
     <div class="resbar-head">
       <span class="day">第 {{ g.state?.day ?? 1 }} 天</span>
+      <span class="ap" :class="{ out: (g.state?.ap ?? 3) <= 0 }">行动点 {{ g.state?.ap ?? 3 }}/3</span>
       <span class="best">历史最佳 {{ g.state?.meta.bestDays ?? 0 }} 天</span>
     </div>
 
@@ -67,6 +70,10 @@ function getBaseLevelLabel(level: number): string {
       <div class="info-row">
         <span class="label">世界等级:</span>
         <span class="value tier">{{ getTierLabel(progressionInfo.worldTier) }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">幸存者排名:</span>
+        <span class="value points">#{{ progressionInfo.rank }} / {{ progressionInfo.rankTotal }}</span>
       </div>
       <div class="info-row">
         <span class="label">基地等级:</span>
@@ -78,7 +85,7 @@ function getBaseLevelLabel(level: number): string {
       </div>
       <div v-if="progressionInfo.specialization" class="info-row">
         <span class="label">专精:</span>
-        <span class="value spec">{{ progressionInfo.specialization === 'tech' ? '科技' : progressionInfo.specialization === 'cultivation' ? '修炼' : '通用' }}</span>
+        <span class="value spec">{{ progressionInfo.specialization === 'technology' ? '科技' : progressionInfo.specialization === 'cultivation' ? '修炼' : '通用' }}</span>
       </div>
     </div>
 
@@ -246,5 +253,14 @@ function getBaseLevelLabel(level: number): string {
   font-size: 0.9rem;
   font-weight: 600;
   color: #e4e9f2;
+}
+
+.ap {
+  font-size: 0.8rem;
+  color: #6fc492;
+  font-weight: 600;
+}
+.ap.out {
+  color: #c0504d;
 }
 </style>

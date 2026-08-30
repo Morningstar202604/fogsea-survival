@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useGame } from '../game/useGame';
 import ResourceBar from './ResourceBar.vue';
 import SceneView from './SceneView.vue';
@@ -8,11 +8,18 @@ import SkillTreePanel from './SkillTreePanel.vue';
 import CombatScreen from './CombatScreen.vue';
 import MarketPanel from './MarketPanel.vue';
 import ProgressionIndicator from './ProgressionIndicator.vue';
+import InventoryPanel from './InventoryPanel.vue';
+import NpcPanel from './NpcPanel.vue';
 
 const g = useGame();
-const activeTab = ref<'story' | 'base' | 'skills' | 'combat' | 'market' | 'progression'>('story');
+const activeTab = ref<'story' | 'base' | 'skills' | 'inventory' | 'npc' | 'combat' | 'market' | 'progression'>('story');
 
 const isInCombat = computed(() => g.state?.combat !== undefined);
+
+// 遭遇战开始时自动切到战斗页
+watch(isInCombat, (inCombat) => {
+  if (inCombat) activeTab.value = 'combat';
+});
 
 function exportSave(): void {
   const raw = g.exportSave();
@@ -29,6 +36,8 @@ function exportSave(): void {
 const tabLabels = {
   story: '📖 剧情',
   base: '🏠 基地',
+  inventory: '🎒 背包',
+  npc: '👥 同伴',
   skills: '⚡ 技能',
   combat: '⚔️ 战斗',
   market: '💰 市场',
@@ -67,7 +76,13 @@ const tabLabels = {
         
         <!-- 基地视图 -->
         <BasePanel v-else-if="activeTab === 'base'" />
-        
+
+        <!-- 背包视图 -->
+        <InventoryPanel v-else-if="activeTab === 'inventory'" />
+
+        <!-- 同伴羁绊 -->
+        <NpcPanel v-else-if="activeTab === 'npc'" />
+
         <!-- 技能树视图 -->
         <SkillTreePanel v-else-if="activeTab === 'skills'" />
         
@@ -106,6 +121,10 @@ const tabLabels = {
   gap: 1rem;
   height: 100vh;
   padding: 1rem;
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
   box-sizing: border-box;
 }
 .panel {

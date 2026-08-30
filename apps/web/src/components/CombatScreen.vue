@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGame } from '../game/useGame';
+import { MONSTER_DATABASE } from '@fogsea/core';
 
 const g = useGame();
 
 const combatInfo = computed(() => {
   const st = g.state;
   if (!st || !st.combat) return null;
-  
+
   return {
-    monster: st.combat.monster,
+    monster: MONSTER_DATABASE[st.combat.enemyId] ?? null,
     playerHp: st.resources.health.current,
     playerMaxHp: st.resources.health.max,
-    monsterHp: st.combat.monsterHp,
-    monsterMaxHp: st.combat.monster?.hp || 0,
+    monsterHp: st.combat.enemyHp,
+    monsterMaxHp: st.combat.enemyMaxHp,
+    round: st.combat.round,
     log: st.combat.log || [],
-    isPlayerTurn: st.combat.isPlayerTurn ?? true,
   };
 });
 
@@ -38,7 +39,7 @@ function defend() {
 }
 
 function useSkill() {
-  g.combatAction?.('skill');
+  g.combatAction?.('use_item');
 }
 
 function flee() {
@@ -107,22 +108,22 @@ function flee() {
 
     <!-- 行动按钮 -->
     <div class="combat-actions">
-      <button class="action-btn attack" @click="attack" :disabled="!combatInfo.isPlayerTurn">
+      <button class="action-btn attack" @click="attack">
         ⚔️ 攻击
       </button>
-      <button class="action-btn defend" @click="defend" :disabled="!combatInfo.isPlayerTurn">
+      <button class="action-btn defend" @click="defend">
         🛡️ 防御
       </button>
-      <button class="action-btn skill" @click="useSkill" :disabled="!combatInfo.isPlayerTurn">
+      <button class="action-btn skill" @click="useSkill">
         ✨ 技能
       </button>
-      <button class="action-btn flee" @click="flee" :disabled="!combatInfo.isPlayerTurn">
+      <button class="action-btn flee" @click="flee">
         🏃 逃跑
       </button>
     </div>
 
-    <div v-if="!combatInfo.isPlayerTurn" class="turn-indicator">
-      敌人行动中...
+    <div class="turn-indicator">
+      第 {{ combatInfo.round }} 回合
     </div>
   </div>
 </template>

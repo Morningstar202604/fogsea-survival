@@ -1,17 +1,50 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGame } from '../game/useGame';
+import { MERCHANT_DATABASE, ITEM_DATABASE, type GameState } from '@fogsea/core';
 
 const g = useGame();
 
+function currentPrice(st: GameState, itemId: string, sellMultiplier: number): number {
+  const mp = st.economy?.marketPrices?.[itemId];
+  return Math.round((mp?.currentPrice ?? ITEM_DATABASE[itemId]?.basePrice ?? 0) * sellMultiplier);
+}
+
 const marketInfo = computed(() => {
   const st = g.state;
-  if (!st || !st.market) return null;
-  
+  if (!st || !st.economy) return null;
+
+  const merchants = (st.economy.unlockedMerchants ?? [])
+    .map((id) => MERCHANT_DATABASE[id])
+    .filter((m) => !!m)
+    .map((m) => ({
+      id: m.id,
+      name: m.name,
+      location: m.location,
+      items: Object.entries(m.inventory ?? {})
+        .filter(([itemId]) => !!ITEM_DATABASE[itemId])
+        .map(([itemId, qty]) => ({
+          itemId,
+          name: ITEM_DATABASE[itemId].name,
+          price: currentPrice(st, itemId, m.sellMultiplier),
+          qty,
+        })),
+    }));
+
+  const inventory = Object.entries(st.inventory ?? {})
+    .filter(([itemId, n]) => (n ?? 0) > 0 && !!ITEM_DATABASE[itemId])
+    .map(([itemId, n]) => ({
+      itemId,
+      name: ITEM_DATABASE[itemId].name,
+      count: n,
+      price: Math.round((st.economy?.marketPrices?.[itemId]?.currentPrice ?? ITEM_DATABASE[itemId]?.basePrice ?? 0) * 0.6),
+    }));
+
   return {
-    merchants: st.market.merchants || [],
-    prices: st.market.prices || {},
-    playerGold: st.resources.gold?.current || 0,
+    currency: st.economy.currency,
+    merchants,
+    prices: st.economy.marketPrices ?? {},
+    inventory,
   };
 });
 
@@ -27,10 +60,10 @@ function sellItem(itemId: string) {
 <template>
   <div v-if="marketInfo" class="market-panel">
     <h3 class="panel-title">交易市场</h3>
-    
+
     <div class="gold-info">
-      <span class="label">持有金币:</span>
-      <span class="value">{{ marketInfo.playerGold }}</span>
+      <span class="label">持有积分:</span>
+      <span class="value">{{ marketInfo.currency }}</span>
     </div>
 
     <!-- 商人列表 -->
@@ -40,19 +73,19 @@ function sellItem(itemId: string) {
         <div v-for="merchant in marketInfo.merchants" :key="merchant.id" class="merchant-card">
           <div class="merchant-header">
             <span class="merchant-name">{{ merchant.name }}</span>
-            <span class="merchant-type">{{ merchant.type === 'traveling' ? '行商' : '固定摊位' }}</span>
+            <span class="merchant-type">{{ merchant.location }}</span>
           </div>
-          
-          <div v-if="merchant.inventory && merchant.inventory.length > 0" class="inventory">
+
+          <div v-if="merchant.items.length > 0" class="inventory">
             <h5 class="inventory-title">出售物品</h5>
             <div class="item-grid">
-              <div v-for="item in merchant.inventory" :key="item.itemId" class="item-card">
-                <div class="item-name">{{ item.name }}</div>
+              <div v-for="item in merchant.items" :key="item.itemId" class="item-card">
+                <div class="item-name">{{ item.name }} <span v-if="item.qty > 1" class="item-qty">×{{ item.qty }}</span></div>
                 <div class="item-price">💰 {{ item.price }}</div>
-                <button 
+                <button
                   class="buy-btn"
                   @click="buyItem(item.itemId, merchant.id)"
-                  :disabled="marketInfo.playerGold < item.price"
+                  :disabled="marketInfo.currency < item.price"
                 >
                   购买
                 </button>
@@ -63,18 +96,32 @@ function sellItem(itemId: string) {
       </div>
     </div>
 
+    <!-- 玩家背包出售 -->
+    <div v-if="marketInfo.inventory.length > 0" class="prices-section">
+      <h4 class="section-title">出售背包物品</h4>
+      <div class="price-list">
+        <div v-for="item in marketInfo.inventory" :key="item.itemId" class="price-item">
+          <span class="item-label">{{ item.name }} ×{{ item.count }}</span>
+          <span class="sell-group">
+            <span class="price-value">{{ item.price }} 积分</span>
+            <button class="buy-btn" @click="sellItem(item.itemId)">出售</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- 动态价格信息 -->
     <div v-if="Object.keys(marketInfo.prices).length > 0" class="prices-section">
       <h4 class="section-title">市场参考价</h4>
       <div class="price-list">
         <div v-for="(price, itemId) in marketInfo.prices" :key="itemId" class="price-item">
-          <span class="item-label">{{ itemId }}</span>
-          <span class="price-value">{{ price }} 金币</span>
+          <span class="item-label">{{ ITEM_DATABASE[itemId]?.name || itemId }}</span>
+          <span class="price-value">{{ price.currentPrice }} 积分</span>
         </div>
       </div>
     </div>
 
-    <div v-if="!marketInfo.merchants || marketInfo.merchants.length === 0" class="empty-state">
+    <div v-if="marketInfo.merchants.length === 0" class="empty-state">
       当前没有商人，探索时可能会遇到行商。
     </div>
   </div>

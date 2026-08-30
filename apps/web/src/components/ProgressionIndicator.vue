@@ -1,32 +1,57 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGame } from '../game/useGame';
+import { DEFAULT_WORLD_TIERS, ACHIEVEMENTS } from '@fogsea/core';
 
 const g = useGame();
+
+const TRIGGER_NAMES: Record<string, string> = {
+  mysterious_signal: '神秘信号',
+  alliance_invitation: '联盟邀请',
+  crystal_discovery: '结晶发现',
+  survivor_encounter: '幸存者遭遇',
+  ancient_ruins_hint: '远古遗迹线索',
+};
 
 const progressionInfo = computed(() => {
   const st = g.state;
   if (!st || !st.progression) return null;
-  
+
+  const nextTier = DEFAULT_WORLD_TIERS.find((t) => t.triggerDay > (st.day ?? 1)) ?? null;
+  const upcoming = st.progression.upcomingCatastrophes ?? [];
+  const catastrophe = upcoming.length > 0 ? upcoming[upcoming.length - 1] : null;
+
   return {
-    worldTier: st.progression.worldTier,
-    nextWorldTierDay: st.progression.nextWorldTierDay,
-    catastropheWarning: st.progression.catastropheWarning,
-    resourceDepletion: st.progression.resourceDepletion || {},
-    activeStoryTriggers: st.progression.activeStoryTriggers || [],
+    worldTier: st.progression.currentWorldTier,
+    worldTierName: DEFAULT_WORLD_TIERS[st.progression.currentWorldTier - 1]?.name ?? '',
+    nextTierDay: nextTier?.triggerDay ?? null,
+    nextTierName: nextTier?.name ?? '',
+    catastrophe,
+    resourceDepletion: st.progression.resourceDepletion ?? {},
+    storyTriggers: (st.progression.triggeredStories ?? [])
+      .filter((id) => !st.flags[`story_${id}_started`])
+      .map((id) => ({ id, name: TRIGGER_NAMES[id] ?? id })),
   };
 });
 
 function getDaysUntilUpgrade(): number {
-  if (!progressionInfo.value) return 0;
-  const currentDay = g.state?.day || 1;
-  return Math.max(0, (progressionInfo.value.nextWorldTierDay || 0) - currentDay);
+  const p = progressionInfo.value;
+  if (!p || !p.nextTierDay) return 0;
+  return Math.max(0, p.nextTierDay - (g.state?.day || 1));
+}
+
+function getCatastropheDaysLeft(): number {
+  const p = progressionInfo.value;
+  if (!p || !p.catastrophe) return 0;
+  return Math.max(0, (p.catastrophe.triggerDay ?? 0) - (g.state?.day || 1));
 }
 
 function getCatastropheLabel(type?: string): string {
   if (!type) return '';
   const labels: Record<string, string> = {
     beast_wave: '兽潮来袭',
+    extreme_weather: '极寒降临',
+    fog_expansion: '迷雾扩张',
     acid_rain: '酸雨降临',
     earthquake: '大地震颤',
     plague: '瘟疫蔓延',
@@ -34,34 +59,43 @@ function getCatastropheLabel(type?: string): string {
   };
   return labels[type] || type;
 }
+
+const achievementList = computed(() => {
+  const st = g.state;
+  if (!st) return [];
+  const unlocked = new Set(st.meta?.unlockedAchievements ?? []);
+  return ACHIEVEMENTS.map((a) => ({ ...a, unlocked: unlocked.has(a.id) }));
+});
+
+const unlockedCount = computed(() => achievementList.value.filter((a) => a.unlocked).length);
 </script>
 
 <template>
   <div v-if="progressionInfo" class="progression-indicator">
     <h3 class="panel-title">世界状态</h3>
-    
+
     <!-- 世界等级倒计时 -->
     <div class="tier-countdown">
       <div class="countdown-header">
-        <span class="label">距离下次升级:</span>
-        <span class="days">{{ getDaysUntilUpgrade() }} 天</span>
+        <span class="label">当前: {{ progressionInfo.worldTierName }}</span>
+        <span class="days">{{ getDaysUntilUpgrade() > 0 ? `距「${progressionInfo.nextTierName}」还有 ${getDaysUntilUpgrade()} 天` : '已至最终等级' }}</span>
       </div>
       <div class="countdown-bar">
-        <div 
+        <div
           class="countdown-fill"
-          :style="{ width: Math.min(100, (g.state?.day || 1) / (progressionInfo.nextWorldTierDay || 1) * 100) + '%' }"
+          :style="{ width: Math.min(100, (g.state?.day || 1) / (progressionInfo.nextTierDay || 1) * 100) + '%' }"
         ></div>
       </div>
     </div>
 
     <!-- 灾难警告 -->
-    <div v-if="progressionInfo.catastropheWarning" class="catastrophe-warning">
+    <div v-if="progressionInfo.catastrophe" class="catastrophe-warning">
       <div class="warning-icon">⚠️</div>
       <div class="warning-content">
         <div class="warning-title">灾难预警</div>
         <div class="warning-desc">
-          {{ getCatastropheLabel(progressionInfo.catastropheWarning.type) }} 
-          将在 {{ progressionInfo.catastropheWarning.daysLeft }} 天后降临
+          {{ getCatastropheLabel(progressionInfo.catastrophe.type) }}
+          将在 {{ getCatastropheDaysLeft() }} 天后降临
         </div>
       </div>
     </div>
@@ -70,23 +104,23 @@ function getCatastropheLabel(type?: string): string {
     <div v-if="Object.keys(progressionInfo.resourceDepletion).length > 0" class="depletion-warnings">
       <h4 class="warning-section-title">资源枯竭区域</h4>
       <div class="depletion-list">
-        <div 
-          v-for="(count, area) in progressionInfo.resourceDepletion" 
+        <div
+          v-for="(depleted, area) in progressionInfo.resourceDepletion"
           :key="area"
           class="depletion-item"
         >
           <span class="area-name">{{ area }}</span>
-          <span class="exploration-count">已探索 {{ count }} 次</span>
+          <span class="exploration-count">{{ depleted ? '已枯竭' : '开发中' }}</span>
         </div>
       </div>
     </div>
 
     <!-- 故事触发提示 -->
-    <div v-if="progressionInfo.activeStoryTriggers.length > 0" class="story-triggers">
-      <h4 class="trigger-section-title">可用剧情线</h4>
+    <div v-if="progressionInfo.storyTriggers.length > 0" class="story-triggers">
+      <h4 class="trigger-section-title">可探索剧情</h4>
       <div class="trigger-list">
-        <div 
-          v-for="trigger in progressionInfo.activeStoryTriggers" 
+        <div
+          v-for="trigger in progressionInfo.storyTriggers"
           :key="trigger.id"
           class="trigger-item"
         >
@@ -94,6 +128,22 @@ function getCatastropheLabel(type?: string): string {
           <button class="trigger-btn" @click="g.startStory?.(trigger.id)">
             开始
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 成就 -->
+    <div class="story-triggers">
+      <h4 class="trigger-section-title">成就（{{ unlockedCount }} / {{ achievementList.length }}）</h4>
+      <div class="trigger-list">
+        <div
+          v-for="a in achievementList"
+          :key="a.id"
+          class="trigger-item ach-item"
+          :class="{ locked: !a.unlocked }"
+        >
+          <span class="trigger-name">{{ a.unlocked ? '🏆' : '🔒' }} {{ a.name }}</span>
+          <span class="ach-desc">{{ a.desc }}</span>
         </div>
       </div>
     </div>
@@ -265,5 +315,22 @@ function getCatastropheLabel(type?: string): string {
 
 .trigger-btn:hover {
   background: #357eaf;
+}
+
+.ach-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ach-item.locked {
+  opacity: 0.45;
+}
+
+.ach-desc {
+  font-size: 0.75rem;
+  color: #7c8799;
+  text-align: right;
 }
 </style>

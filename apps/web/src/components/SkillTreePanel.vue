@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGame } from '../game/useGame';
+import { SkillBranch } from '@fogsea/core';
 
 const g = useGame();
 
@@ -10,7 +11,7 @@ const skillInfo = computed(() => {
   
   return {
     totalPoints: st.skills.totalPoints,
-    availablePoints: st.skills.availablePoints,
+    availablePoints: st.skills.points,
     skills: st.skills.skills,
     specialization: st.skills.specialization,
     canChooseSpecialization: st.skills.canChooseSpecialization,
@@ -18,21 +19,21 @@ const skillInfo = computed(() => {
 });
 
 const branchLabels = {
-  tech: '科技',
+  technology: '科技',
   cultivation: '修炼',
   general: '通用',
 };
 
 const skillCategories = computed(() => {
   if (!skillInfo.value) return null;
-  
+
   const tech: any[] = [];
   const cultivation: any[] = [];
   const general: any[] = [];
-  
+
   for (const [id, skill] of Object.entries(skillInfo.value.skills)) {
     const skillData = skill as any;
-    if (skillData.branch === 'tech') {
+    if (skillData.branch === 'technology') {
       tech.push({ id, ...skillData });
     } else if (skillData.branch === 'cultivation') {
       cultivation.push({ id, ...skillData });
@@ -40,7 +41,7 @@ const skillCategories = computed(() => {
       general.push({ id, ...skillData });
     }
   }
-  
+
   return { tech, cultivation, general };
 });
 
@@ -73,8 +74,8 @@ function upgradeSkill(skillId: string) {
   g.upgradeSkill?.(skillId);
 }
 
-function chooseSpecialization(branch: 'tech' | 'cultivation' | 'general') {
-  g.chooseSpecialization?.(branch);
+function chooseSpecialization(branch: 'technology' | 'cultivation' | 'general') {
+  g.chooseSpecialization?.(branch as SkillBranch);
 }
 </script>
 
@@ -97,8 +98,8 @@ function chooseSpecialization(branch: 'tech' | 'cultivation' | 'general') {
     <div v-if="skillInfo.canChooseSpecialization && !skillInfo.specialization" class="specialization-choice">
       <h4 class="section-title">选择专精方向（不可更改）</h4>
       <div class="spec-options">
-        <button 
-          v-for="branch in ['tech', 'cultivation', 'general']" 
+        <button
+          v-for="branch in ['technology', 'cultivation', 'general']"
           :key="branch"
           class="spec-btn"
           @click="chooseSpecialization(branch as any)"

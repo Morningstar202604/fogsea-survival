@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.survival.mist',
+  appId: 'com.fogsea.survival',
   appName: '雾海生存',
   webDir: 'dist',
   server: {

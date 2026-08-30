@@ -16,7 +16,12 @@ watch(
   },
 );
 
+function apBlocked(c: Choice): boolean {
+  return !!c.apCost && (g.state?.ap ?? 3) <= 0;
+}
+
 function pick(c: Choice): void {
+  if (apBlocked(c)) return;
   g.choose(c);
 }
 </script>
@@ -37,10 +42,13 @@ function pick(c: Choice): void {
         v-for="(c, i) in g.viewChoices"
         :key="i"
         class="choice"
+        :class="{ blocked: apBlocked(c) }"
+        :disabled="apBlocked(c)"
         @click="pick(c)"
       >
-        <span class="ct">{{ c.text }}</span>
+        <span class="ct">{{ c.text }}<span v-if="c.apCost" class="ap-chip">AP -{{ c.apCost }}</span></span>
         <span v-if="c.hint" class="ch">{{ c.hint }}</span>
+        <span v-if="apBlocked(c)" class="no-ap">行动点已用完，结束今天吧</span>
       </button>
       <p v-if="g.viewChoices.length === 0" class="none">眼前没有可做的事，等待明天的到来。</p>
     </div>
@@ -165,5 +173,25 @@ function pick(c: Choice): void {
   display: flex;
   gap: 0.6rem;
   margin-top: 0.4rem;
+}
+
+.choice.blocked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ap-chip {
+  margin-left: 0.45rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(122, 162, 201, 0.18);
+  color: #7aa2c9;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.no-ap {
+  display: block;
+  font-size: 0.7rem;
+  color: #c0504d;
+  margin-top: 0.15rem;
 }
 </style>

@@ -16,14 +16,20 @@ import {
   runDaily,
   exportState,
   importState,
-  upgradeBase,
+  upgradeBase as upgradeBaseCore,
   unlockSkill,
   chooseSpecialization,
   buyFromMerchant,
   sellToMerchant,
   executeCombatRound,
+  SkillBranch,
+  buildStructure as buildStructureCore,
+  getNpcStatuses,
+  recruitCompanion,
+  STRUCTURE_DEFS,
   type GameState,
   type Choice,
+  type CombatAction,
 } from '@fogsea/core';
 import {
   readSlots,
@@ -53,7 +59,7 @@ export interface GameSession {
   viewChoices: Choice[];
   inEvent: boolean;
   eventText: string;
-  newGame: (slot: number) => void;
+  newGame: (slot: number, talentId?: string) => void;
   continueGame: (slot: number) => void;
   choose: (choice: Choice) => void;
   endDay: () => void;
@@ -64,13 +70,14 @@ export interface GameSession {
   
   // v2.0 新增方法
   upgradeBase?: () => void;
-  openBuildMenu?: () => void;
+  build?: (structureId: string) => void;
+  recruit?: (npcId: string) => void;
   upgradeSkill?: (skillId: string) => void;
-  chooseSpecialization?: (branch: 'tech' | 'cultivation' | 'general') => void;
+  chooseSpecialization?: (branch: SkillBranch) => void;
   buyFromMarket?: (itemId: string, merchantId: string) => void;
   sellToMarket?: (itemId: string) => void;
   startStory?: (storyId: string) => void;
-  combatAction?: (action: 'attack' | 'defend' | 'skill' | 'flee') => void;
+  combatAction?: (action: CombatAction) => void;
 }
 
 let _session: GameSession | null = null;
@@ -161,14 +168,17 @@ function createSession(): GameSession {
     persist();
   }
 
-  function newGame(slot: number): void {
-    const state = createInitialState(fullContent, readMeta());
+  function newGame(slot: number, talentId?: string): void {
+    const state = createInitialState(fullContent, readMeta(), talentId);
     s.state = state;
     s.activeSlot = slot;
     s.log = [];
     rng = new Rng();
     const node = resolveScene(fullContent, state.currentScene);
     if (node) pushLog(node.text, 'scene');
+    if (talentId) {
+      pushLog(`【天赋觉醒】你携带着与生俱来的天赋踏入迷雾。`, 'system');
+    }
     persist();
     s.screen = 'game';
     showToast('新的一局开始了，第 1 天');
@@ -195,6 +205,7 @@ function createSession(): GameSession {
       ? applyEventChoice(fullContent, st, choice, rng)
       : applyChoice(fullContent, st, choice, rng);
     if (r.resultText) pushLog(r.resultText, 'result');
+    for (const m of r.systemMessages ?? []) pushLog(m, 'system');
     if (st.outcome) {
       finalizeRun();
       pushLog(`【${st.outcome.title}】${st.outcome.desc}`, 'system');
@@ -256,7 +267,7 @@ function createSession(): GameSession {
 
   function upgradeBase(): void {
     if (!s.state) return;
-    const result = upgradeBase(s.state);
+    const result = upgradeBaseCore(s.state);
     if (result.success) {
       showToast(result.message);
       pushLog(result.message, 'system');
@@ -266,8 +277,31 @@ function createSession(): GameSession {
     }
   }
 
-  function openBuildMenu(): void {
-    showToast('建造功能开发中，敬请期待！');
+  function build(structureId: string): void {
+    if (!s.state) return;
+    const pos = { x: s.state.base.structures.length, y: 0 };
+    const result = buildStructureCore(s.state as any, structureId, pos);
+    showToast(result.message);
+    pushLog(result.message, 'system');
+    if (result.success) {
+      const def = STRUCTURE_DEFS[structureId];
+      if (def) pushLog(`【基地】${def.name}落成。${def.description}。`, 'system');
+      persist();
+    }
+  }
+
+  function recruit(npcId: string): void {
+    if (!s.state) return;
+    const npc = getNpcStatuses(s.state).find((n) => n.id === npcId);
+    if (!npc) return;
+    const msg = recruitCompanion(s.state, npcId, npc.favor);
+    if (msg) {
+      showToast(`${npc.name}加入了你的木屋`);
+      pushLog(msg, 'system');
+      persist();
+    } else {
+      showToast(npc.favor < 30 ? '羁绊还不够深（需要信赖 30）' : '已在队伍中');
+    }
   }
 
   function upgradeSkill(skillId: string): void {
@@ -282,10 +316,9 @@ function createSession(): GameSession {
     }
   }
 
-  function chooseSpecializationFn(branch: 'tech' | 'cultivation' | 'general'): void {
+  function chooseSpecializationFn(branch: SkillBranch): void {
     if (!s.state) return;
-    const branchMap = { tech: 'tech', cultivation: 'cultivation', general: 'general' };
-    const result = chooseSpecialization(s.state, branchMap[branch]);
+    const result = chooseSpecialization(s.state, branch);
     if (result.success) {
       showToast(result.message);
       pushLog(result.message, 'system');
@@ -297,25 +330,21 @@ function createSession(): GameSession {
 
   function buyFromMarket(itemId: string, merchantId: string): void {
     if (!s.state) return;
-    const result = buyFromMerchant(s.state, itemId, merchantId);
+    const result = buyFromMerchant(s.state, merchantId, itemId, 1);
+    showToast(result.message);
     if (result.success) {
-      showToast(`购买了 ${result.itemName || itemId}`);
       pushLog(result.message, 'result');
       persist();
-    } else {
-      showToast(result.message);
     }
   }
 
   function sellToMarket(itemId: string): void {
     if (!s.state) return;
-    const result = sellToMerchant(s.state, itemId);
+    const result = sellToMerchant(s.state, 'wandering_trader', itemId, 1);
+    showToast(result.message);
     if (result.success) {
-      showToast(`出售了 ${result.itemName || itemId}，获得 ${result.gold} 金币`);
       pushLog(result.message, 'result');
       persist();
-    } else {
-      showToast(result.message);
     }
   }
 
@@ -328,33 +357,28 @@ function createSession(): GameSession {
     persist();
   }
 
-  function combatAction(action: 'attack' | 'defend' | 'skill' | 'flee'): void {
+  function combatAction(action: CombatAction): void {
     if (!s.state || !s.state.combat) return;
-    
-    const result = executeCombatRound(s.state, action);
-    
+
+    const r = executeCombatRound(s.state, s.state.combat, action, rng);
+    s.state.combat = r.session;
+
     // 显示战斗日志
-    for (const entry of result.log.slice(-3)) {
+    for (const entry of r.session.log.slice(-3)) {
       pushLog(entry, 'result');
     }
-    
-    if (result.victory) {
-      showToast('战斗胜利！');
-      pushLog(`击败了敌人！获得战利品。`, 'system');
-      // 清除战斗状态
+
+    if (r.ended && r.result) {
+      if (r.result.victory) {
+        showToast('战斗胜利！');
+        pushLog('击败了敌人！获得战利品。', 'system');
+      } else {
+        showToast('战斗失败！');
+        pushLog('你在战斗中落败...', 'system');
+      }
       delete s.state.combat;
-      persist();
-    } else if (result.defeat) {
-      showToast('战斗失败！');
-      pushLog('你在战斗中落败...', 'system');
-      persist();
-    } else if (result.fled) {
-      showToast('成功逃脱！');
-      delete s.state.combat;
-      persist();
-    } else {
-      persist();
     }
+    persist();
   }
 
   return reactive({
@@ -372,7 +396,8 @@ function createSession(): GameSession {
     importSave,
     deleteSlot,
     upgradeBase,
-    openBuildMenu,
+    build,
+    recruit,
     upgradeSkill,
     chooseSpecialization: chooseSpecializationFn,
     buyFromMarket,
