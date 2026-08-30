@@ -1,23 +1,40 @@
-# 雾海生存 FogSea Survival v2.0
+# 雾海生存 FogSea Survival v1.0
 
-> 基于热门小说机制重构的迷雾求生策略游戏
+> 基于热门求生流小说机制重构的文字生存策略游戏（安卓 App / Web）
+>
+> **关键词**：迷雾求生 · 文字游戏 · 生存策略 · 全民求生 · roguelite · 天赋三选一 · 基地建设 · 兽潮天灾 · 排行榜 · 安卓APK
 
-[![Version](https://img.shields.io/badge/version-2.0.0--alpha.1-blue)](https://github.com/your-repo/fogsea-survival)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://gitcode.com/badhope/fogsea-survival)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web-green)](https://gitcode.com/badhope/fogsea-survival/releases)
+[![Test](https://img.shields.io/badge/tests-71%2F71-brightgreen)](packages/core)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](package.json)
 
 ## 📖 项目简介
 
 **雾海生存**（FogSea Survival）是一款受热门网络小说启发的文字生存策略游戏。全球数十亿人类被卷入神秘的迷雾世界，每个人从一个小木屋开始，在充满危险的未知环境中艰难求生。
 
-### 🎮 核心特色（v2.0 新增）
+### 🎮 核心特色（v1.0 正式基线）
 
-- **🏗️ 基地建设系统** - 从小木屋到山谷堡垒的完整升级路线
-- **⚔️ 技能树系统** - 科技/修仙双分支专精，自由搭配战斗风格
-- **💰 经济交易系统** - 玩家间自由交易、市场定价、货币发行
-- **🌫️ 迷雾探索** - 5×5米范围驱散，发现资源与危险并存
-- **📖 多线剧情** - 主线+支线+随机事件，20+种不同结局
-- **👥 社交系统** - 联盟建立、领地争夺、PVP/PVE玩法
+- **🎲 开局天赋三选一** - S/A/B 分级 9 天赋，加权抽取，build 由选择铸成
+- **⏳ 行动点日循环** - 每天 3 点行动力：搜寻/休整/加固/夜巡狩猎，资源分配即策略
+- **⚔️ 回合制战斗** - 野外遭遇 + 主动狩猎，击杀掉落、XP、商城积分
+- **🎒 物品自动升级** - 使用累积熟练度，Lv 提升交易价值（致敬《我的物品能自动升级》）
+- **🏆 幸存者排行榜** - 162 人排位不进则退，满配可冲前三
+- **🌦️ 世界等级 + 天灾** - D7/15/30/50/80 递进压力，天灾结算奖惩（基地/防御/储备判定）
+- **👥 NPC 羁绊** - 朵朵/老K/林医生/鼠王/救援队/结晶之声，6 条支线共同经历换好感
+- **📅 每日签到 + 成就** - 7 天周期大奖，12 枚跨周目成就
+- **📖 结局图鉴** - 14 结局跨周目收集
+- **🏗️ 基地建设** - 5 级升级路线，产出直入生存资源
+- **💰 经济交易** - 商人 NPC、动态定价、以物易物
+
+## 📱 下载安装（安卓）
+
+1. 前往 [Releases 页面](https://gitcode.com/badhope/fogsea-survival/releases) 下载最新的 `FogSeaSurvival-v1.0.0-debug.apk`
+2. 允许安装未知来源应用后安装
+3. 离线可玩，进度保存在本机
+
+> Web 版仅作开发测试壳，功能与 APK 同步。
 
 ## 🚀 快速开始
 
@@ -149,12 +166,17 @@ fogsea-survival/
 
 本项目采用 [Apache License 2.0](LICENSE) 开源协议。
 
+## 🔗 仓库镜像
+
+- GitCode（主仓库）：https://gitcode.com/badhope/fogsea-survival
+- GitHub（镜像 + Releases）：https://github.com/Morningstar202604/fogsea-survival
+
 ## 🙏 致谢
 
 感谢所有为全民求生类小说创作做出贡献的作者们，是你们的想象力为本项目提供了丰富的灵感源泉。
 
 ---
 
-**当前版本**: v2.0.0-alpha.1  
-**最后更新**: 2026-08-29  
-**状态**: 重构进行中 🚧
+**当前版本**: v1.0.0（正式基线）  
+**最后更新**: 2026-08-30  
+**状态**: 安卓发布目标，web 为测试壳 🚀
