@@ -21,6 +21,9 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
+      - name: 构建 core 包（生成最新类型声明）
+        run: pnpm -F @fogsea/core build
+
       - name: 类型检查（core + web）
         run: pnpm typecheck
 
