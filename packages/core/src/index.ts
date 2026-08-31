@@ -25,3 +25,5 @@ export * from './npc.js';
 export * from './companions.js';
 // v3.0 统一配置与公式
 export * from './gameConfig.js';
+// v0.5.0 第一阶段内容
+export * from './content/phase1.js';
