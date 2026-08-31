@@ -19,13 +19,18 @@ import { Rng } from './rng.js';
 import { createInitialBase, processDailyProduction } from './base.js';
 import { createInitialSkillTree, gainSkillPoints } from './skills.js';
 import { createInitialProgressionState, checkProgression, evaluateCatastrophe, resolveCatastrophe } from './progression.js';
-import { createInitialEconomy, ITEM_DATABASE } from './economy.js';
+import { createInitialEconomy, ITEM_DATABASE, updateMarketPrices } from './economy.js';
 import { applyTalent } from './talents.js';
 import { applyCompanionDaily } from './companions.js';
 import { rankMessage } from './ranking.js';
 import { processSignin } from './signin.js';
 import { maybeStartEncounter, initiateCombat, getAvailableMonsters } from './combat.js';
 import { checkAchievements } from './achievements.js';
+// v3.0 新增：统一配置与公式
+import {
+  getPhaseByDay, calculateExpRequired,
+  TITLES,
+} from './gameConfig.js';
 
 /** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
 export function createInitialState(
@@ -63,6 +68,17 @@ export function createInitialState(
       intelligence: 10,
       luck: 10,
     },
+    // v3.0 新增：等级/经验/属性点/称号系统
+    level: 1,
+    exp: 0,
+    expToNext: calculateExpRequired(1),
+    attributePoints: 0,
+    skillPoints: 0,
+    titles: [],
+    activeTitle: null,
+    combatKills: 0,
+    currentPhase: 1,
+    mistPoints: 0,
   };
   if (talentId) applyTalent(state, talentId);
   return state;
@@ -229,6 +245,11 @@ export function applyChoice(content: ContentPack, state: GameState, choice: Choi
       } else {
         next = eff.onFail ?? next;
         if (eff.lethal && res.tier === 'crit_fail') state.resources.health.current = 0;
+        if (eff.failEffects) {
+          for (const fe of eff.failEffects) {
+            systemMessages.push(...applyEffect(state, fe));
+          }
+        }
       }
     } else if (eff.kind === 'jump') {
       next = eff.target ?? next;
@@ -339,15 +360,28 @@ export function runDaily(
   const inc = applyIncome(state, content.income);
   messages.push(...inc.messages);
   if (inc.dead) {
-    finalizeDeath(state, content);
+    // 判断死因
+    let cause = 'health';
+    if (state.resources.water.current <= 0) cause = 'thirst';
+    else if (state.resources.food.current <= 0) cause = 'hunger';
+    finalizeDeath(state, content, cause);
     return { dead: true, messages, event: null };
   }
   
   // 3. 检查生存状态
   const starv = applyStarvation(state);
   messages.push(...starv);
+  // 3a. 理智归零：精神崩溃，持续流失生命
+  if (state.resources.sanity.current <= 0) {
+    deltaResource(state.resources.health, -8);
+    messages.push('理智彻底耗尽——迷雾中的低语钻进了你的骨头，你开始分不清现实和幻觉（生命-8）。');
+  }
   if (state.resources.health.current <= 0) {
-    finalizeDeath(state, content);
+    let cause = 'health';
+    if (state.resources.sanity.current <= 0) cause = 'sanity';
+    else if (state.resources.food.current <= 0) cause = 'hunger';
+    else if (state.resources.water.current <= 0) cause = 'thirst';
+    finalizeDeath(state, content, cause);
     return { dead: true, messages, event: null };
   }
   
@@ -379,14 +413,9 @@ export function runDaily(
   }
   
   // 8. 检查推进机制（世界等级、天灾预警、剧情触发）
+  //    checkProgression 内部已生成 messages，此处不再重复推送
   const progressionCheck = checkProgression(state as any, content);
   messages.push(...progressionCheck.messages);
-  if (progressionCheck.tierUpgrade) {
-    messages.push(`【世界升级】${progressionCheck.tierUpgrade.tierInfo.name}！`);
-  }
-  if (progressionCheck.catastropheWarning) {
-    messages.push(`【天灾预警】${progressionCheck.catastropheWarning.name}将在${progressionCheck.catastropheWarning.warningDays}天后降临！`);
-  }
 
   // 9b. 天灾结算：核对准备情况，发放奖励或施加惩罚
   if (progressionCheck.catastropheTrigger) {
@@ -405,6 +434,30 @@ export function runDaily(
     messages.push(`【成就达成】${a.name}：${a.desc}`);
   }
 
+  // 11a. 更新当前游戏阶段
+  const oldPhase = state.currentPhase;
+  updateCurrentPhase(state);
+  if (state.currentPhase !== oldPhase) {
+    const phase = getPhaseByDay(state.day);
+    messages.push(`【阶段进入】${phase.name}：${phase.description}`);
+  }
+
+  // 11b. 称号检查
+  const newTitles = checkTitles(state);
+  for (const t of newTitles) {
+    messages.push(`【称号解锁】${t}`);
+  }
+
+  // 12. 每日市场价格更新（经济系统接入）
+  updateMarketPrices(state as any, state.day);
+
+  // 13. 好结局/隐藏结局触发检查
+  const goodEnding = checkGoodEndings(state, content);
+  if (goodEnding) {
+    messages.push(`【结局达成】${goodEnding.title}`);
+    return { dead: true, messages, event: null };
+  }
+
   return {
     dead: false,
     messages,
@@ -413,12 +466,170 @@ export function runDaily(
   };
 }
 
-/** 生命归零时结算死亡结局（优先取 category=death 的结局定义）。 */
-function finalizeDeath(state: GameState, content: ContentPack): void {
-  const death =
-    Object.values(content.storyline.endings).find((e) => e.category === 'death') ??
+// ============================================================
+// v3.0 等级/经验/属性点/称号系统
+// ============================================================
+
+/** 获得经验值，自动检查升级 */
+export function gainExp(state: GameState, amount: number): { leveledUp: boolean; newLevel: number } {
+  state.exp += amount;
+  let leveledUp = false;
+  while (state.exp >= state.expToNext && state.level < 30) {
+    state.exp -= state.expToNext;
+    state.level += 1;
+    state.expToNext = calculateExpRequired(state.level);
+    // 升级奖励
+    state.attributePoints += 1;
+    state.skillPoints += 1;
+    state.resources.health.max += 10;
+    state.resources.health.current = Math.min(state.resources.health.max, state.resources.health.current + 10);
+    leveledUp = true;
+  }
+  return { leveledUp, newLevel: state.level };
+}
+
+/** 分配属性点 */
+export function allocateAttribute(state: GameState, attr: 'strength' | 'agility' | 'intelligence' | 'luck'): boolean {
+  if (state.attributePoints <= 0) return false;
+  state.attributes[attr] += 1;
+  state.attributePoints -= 1;
+  return true;
+}
+
+/** 获得迷雾积分 */
+export function gainMistPoints(state: GameState, amount: number): void {
+  state.mistPoints += amount;
+}
+
+/** 检查并解锁称号 */
+export function checkTitles(state: GameState): string[] {
+  const newlyUnlocked: string[] = [];
+  for (const title of TITLES) {
+    if (state.titles.includes(title.id)) continue;
+    let unlocked = false;
+    switch (title.unlockCondition.type) {
+      case 'day':
+        unlocked = state.day >= (title.unlockCondition.value as number);
+        break;
+      case 'combat':
+        unlocked = state.combatKills >= (title.unlockCondition.value as number);
+        break;
+      case 'explore':
+        unlocked = state.visitedScenes.length >= (title.unlockCondition.value as number);
+        break;
+      case 'special':
+        unlocked = !!state.flags[title.unlockCondition.value as string];
+        break;
+    }
+    if (unlocked) {
+      state.titles.push(title.id);
+      newlyUnlocked.push(title.name);
+      // 自动装备第一个解锁的称号
+      if (!state.activeTitle) state.activeTitle = title.id;
+    }
+  }
+  return newlyUnlocked;
+}
+
+/** 获取当前称号的属性加成 */
+export function getActiveTitleBonuses(state: GameState): Record<string, number> {
+  if (!state.activeTitle) return {};
+  const title = TITLES.find(t => t.id === state.activeTitle);
+  if (!title) return {};
+  return title.bonuses as Record<string, number>;
+}
+
+/** 更新当前游戏阶段 */
+export function updateCurrentPhase(state: GameState): void {
+  const phase = getPhaseByDay(state.day);
+  if (phase.id !== state.currentPhase) {
+    state.currentPhase = phase.id;
+  }
+}
+
+/** 生命归零时结算死亡结局（根据死因选择对应结局）。 */
+function finalizeDeath(state: GameState, content: ContentPack, cause?: string): void {
+  const deathEndings = Object.values(content.storyline.endings).filter((e) => e.category === 'death');
+  // 默认死亡结局：E10 病榻（生命归零的通用结局）
+  let death = deathEndings.find(e => e.id === 'E10') ?? deathEndings[0] ?? 
     { id: 'death', title: '死亡', desc: '你在迷雾中倒下。', category: 'death' };
+  
+  // 根据死因选择对应结局
+  if (cause === 'sanity') {
+    death = deathEndings.find(e => e.id === 'E07') ?? death; // 走进雾里
+  } else if (cause === 'thirst') {
+    death = deathEndings.find(e => e.id === 'E08') ?? death; // 干渴
+  } else if (cause === 'hunger') {
+    death = deathEndings.find(e => e.id === 'E09') ?? death; // 饥饿
+  } else if (cause === 'combat') {
+    death = deathEndings.find(e => e.id === 'E11') ?? death; // 夜访者
+  } else if (cause === 'beast_wave') {
+    death = deathEndings.find(e => e.id === 'E12') ?? death; // 兽潮之夜
+  }
+  
   const outcome: Outcome = { type: 'death', id: death.id, title: death.title, desc: death.desc };
   state.outcome = outcome;
   state.meta.bestDays = Math.max(state.meta.bestDays, state.day);
+}
+
+/**
+ * 检查好结局/隐藏结局触发条件。
+ * 在每日结算后调用，满足条件则触发对应结局。
+ */
+function checkGoodEndings(state: GameState, content: ContentPack): Outcome | null {
+  const day = state.day;
+  const flags = state.flags;
+  const inv = state.inventory;
+  
+  // 好结局均在第30天以后触发（保证游戏有足够长度）
+  if (day < 30) return null;
+  
+  // E05 迷雾之眼：收集3块结晶
+  if ((inv['purple_crystal'] ?? 0) >= 1 && (inv['red_crystal'] ?? 0) >= 1 && (inv['blue_crystal'] ?? 0) >= 1) {
+    return triggerEnding(content, state, 'E05');
+  }
+  
+  // E01 直升机的轰鸣：修好无线电
+  if (flags['radio_fixed']) {
+    return triggerEnding(content, state, 'E01');
+  }
+  
+  // E02 冲天信号弹：获得信号弹
+  if ((inv['signal_flare'] ?? 0) > 0) {
+    return triggerEnding(content, state, 'E02');
+  }
+  
+  // E06 同行者：老K同行
+  if (flags['laok_ally'] && flags['laok_trust']) {
+    return triggerEnding(content, state, 'E06');
+  }
+  
+  // E14 不散的篝火：朵朵存活
+  if (flags['kid_saved']) {
+    return triggerEnding(content, state, 'E14');
+  }
+  
+  // E13 守望者的日记：探索次数多
+  if (state.visitedScenes.length >= 15) {
+    return triggerEnding(content, state, 'E13');
+  }
+  
+  // E03 篝火长明：温暖度保持良好
+  if (state.resources.warmth.current >= 50) {
+    return triggerEnding(content, state, 'E03');
+  }
+  
+  // E04 平凡的等待：无特殊条件（最基础的好结局）
+  return triggerEnding(content, state, 'E04');
+}
+
+/** 触发指定结局并写入状态。 */
+function triggerEnding(content: ContentPack, state: GameState, endingId: string): Outcome | null {
+  const ed = findEnding(content, endingId);
+  if (!ed) return null;
+  const outcome: Outcome = { type: 'ending', id: ed.id, title: ed.title, desc: ed.desc };
+  state.outcome = outcome;
+  state.meta.unlockedEndings = Array.from(new Set([...state.meta.unlockedEndings, ed.id]));
+  state.meta.bestDays = Math.max(state.meta.bestDays, state.day);
+  return outcome;
 }

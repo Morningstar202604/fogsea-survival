@@ -23,3 +23,5 @@ export * from './signin.js';
 export * from './achievements.js';
 export * from './npc.js';
 export * from './companions.js';
+// v3.0 统一配置与公式
+export * from './gameConfig.js';

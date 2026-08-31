@@ -57,6 +57,8 @@ export interface ChoiceEffect {
   monster?: string;
   /** 检定成功后附加的额外效果（可嵌套 resource/flag/item） */
   successEffects?: ChoiceEffect[];
+  /** 检定失败后附加的额外效果（可嵌套 resource/flag/item） */
+  failEffects?: ChoiceEffect[];
 }
 
 export interface Choice {
@@ -254,6 +256,29 @@ export interface GameState {
 
   /** 每日行动点（晨间刷新为 3；hub 行动消耗） */
   ap: number;
+
+  // === v3.0 新增：等级/经验/属性点/称号系统 ===
+  
+  /** 玩家等级 */
+  level: number;
+  /** 当前经验值 */
+  exp: number;
+  /** 升级所需经验 */
+  expToNext: number;
+  /** 未分配的属性点 */
+  attributePoints: number;
+  /** 未分配的技能点 */
+  skillPoints: number;
+  /** 已解锁称号ID列表 */
+  titles: string[];
+  /** 当前装备的称号ID */
+  activeTitle: string | null;
+  /** 累计击杀数 */
+  combatKills: number;
+  /** 当前游戏阶段（1-5） */
+  currentPhase: number;
+  /** 迷雾积分（通用货币） */
+  mistPoints: number;
 }
 
 /** 玩家基础属性 */

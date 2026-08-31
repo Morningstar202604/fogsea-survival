@@ -22,6 +22,11 @@ import {
   buyFromMerchant,
   sellToMerchant,
   executeCombatRound,
+  gainExp,
+  gainMistPoints,
+  checkTitles,
+  calculateCombatExp,
+  calculateCombatPoints,
   SkillBranch,
   buildStructure as buildStructureCore,
   getNpcStatuses,
@@ -372,9 +377,40 @@ function createSession(): GameSession {
       if (r.result.victory) {
         showToast('战斗胜利！');
         pushLog('击败了敌人！获得战利品。', 'system');
+        // v3.0：战斗胜利奖励经验、积分、掉落
+        const enemyLevel = s.state.combat ? (s.state.combat as any).enemyLevel ?? 1 : 1;
+        const expGain = calculateCombatExp(enemyLevel, true);
+        const pointsGain = calculateCombatPoints(enemyLevel, s.state.attributes.luck);
+        const levelResult = gainExp(s.state, expGain);
+        gainMistPoints(s.state, pointsGain);
+        s.state.combatKills += 1;
+        s.state.runStats.kills += 1;
+        // 应用掉落
+        if (r.result.loot) {
+          for (const [itemId, amount] of Object.entries(r.result.loot)) {
+            s.state.inventory[itemId] = (s.state.inventory[itemId] ?? 0) + amount;
+          }
+          const lootText = Object.entries(r.result.loot)
+            .map(([id, amt]) => `${id}×${amt}`)
+            .join(', ');
+          if (lootText) pushLog(`掉落：${lootText}`, 'result');
+        }
+        pushLog(`获得经验 +${expGain}，迷雾积分 +${pointsGain}`, 'system');
+        if (levelResult.leveledUp) {
+          pushLog(`【升级】等级提升到 ${levelResult.newLevel}！获得1属性点+1技能点，生命上限+10`, 'system');
+          showToast(`升级！Lv.${levelResult.newLevel}`);
+        }
+        // 检查称号
+        const newTitles = checkTitles(s.state);
+        for (const t of newTitles) {
+          pushLog(`【称号解锁】${t}`, 'system');
+        }
       } else {
         showToast('战斗失败！');
         pushLog('你在战斗中落败...', 'system');
+        // 战斗失败也获得少量经验
+        const enemyLevel = 1;
+        gainExp(s.state, calculateCombatExp(enemyLevel, false));
       }
       delete s.state.combat;
     }
