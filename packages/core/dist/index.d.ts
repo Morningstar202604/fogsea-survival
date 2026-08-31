@@ -20,4 +20,5 @@ export * from './companions.js';
 export * from './gameConfig.js';
 export * from './content/phase1.js';
 export * from './content/phase2.js';
+export * from './content/phase3.js';
 //# sourceMappingURL=index.d.ts.map
