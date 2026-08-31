@@ -4,13 +4,15 @@ import { rollD100 } from './dice.js';
 import { createInitialBase, processDailyProduction } from './base.js';
 import { createInitialSkillTree, gainSkillPoints } from './skills.js';
 import { createInitialProgressionState, checkProgression, evaluateCatastrophe, resolveCatastrophe } from './progression.js';
-import { createInitialEconomy, ITEM_DATABASE } from './economy.js';
+import { createInitialEconomy, ITEM_DATABASE, updateMarketPrices } from './economy.js';
 import { applyTalent } from './talents.js';
 import { applyCompanionDaily } from './companions.js';
 import { rankMessage } from './ranking.js';
 import { processSignin } from './signin.js';
 import { maybeStartEncounter, initiateCombat, getAvailableMonsters } from './combat.js';
 import { checkAchievements } from './achievements.js';
+// v3.0 新增：统一配置与公式
+import { getPhaseByDay, calculateExpRequired, TITLES, calculateDailyWeather, calculateMistDensity, calculateDangerLevel, getMajorEventByDay, assessMajorEventDifficulty, getUnlockedZones, } from './gameConfig.js';
 /** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
 export function createInitialState(content, meta, talentId) {
     const initial = content.storyline.initialScene;
@@ -42,6 +44,53 @@ export function createInitialState(content, meta, talentId) {
             intelligence: 10,
             luck: 10,
         },
+        // v3.0 新增：等级/经验/属性点/称号系统
+        level: 1,
+        exp: 0,
+        expToNext: calculateExpRequired(1),
+        attributePoints: 0,
+        skillPoints: 0,
+        titles: [],
+        activeTitle: null,
+        combatKills: 0,
+        currentPhase: 1,
+        mistPoints: 0,
+        // v0.5.0 新增系统初始化
+        dailyPanel: {
+            weather: 'foggy',
+            mistDensity: 'normal',
+            dangerLevel: 'low',
+            specialHint: null,
+            dayOfPhase: 1,
+        },
+        npcRelations: {},
+        causalTracker: {
+            triggeredCauses: [],
+            pendingEffects: [],
+            consequenceLog: [],
+        },
+        growthPath: {
+            primary: null,
+            scores: {},
+            lastAssessmentDay: 0,
+        },
+        majorEvents: {},
+        buildings: {},
+        awakening: {
+            isAwakened: false,
+            abilityType: null,
+            abilityLevel: 0,
+            awakeningProgress: 0,
+        },
+        reputation: {
+            overall: 0,
+            amongSurvivors: 0,
+            amongFactions: 0,
+            fame: 0,
+            infamy: 0,
+        },
+        unlockedZones: ['safe_house', 'nearby_ruins'],
+        gameVersion: '0.5.0',
     };
     if (talentId)
         applyTalent(state, talentId);
@@ -211,6 +260,11 @@ export function applyChoice(content, state, choice, rng) {
                 next = eff.onFail ?? next;
                 if (eff.lethal && res.tier === 'crit_fail')
                     state.resources.health.current = 0;
+                if (eff.failEffects) {
+                    for (const fe of eff.failEffects) {
+                        systemMessages.push(...applyEffect(state, fe));
+                    }
+                }
             }
         }
         else if (eff.kind === 'jump') {
@@ -299,8 +353,157 @@ export function scheduleLine(content, state) {
 /**
  * 推进一天 v2.0：集成基地生产、技能成长、推进机制
  */
+// ============================================================
+// v0.5.0 每日系统、大事件检验、因果追踪
+// ============================================================
+/** 刷新每日面板（天气、迷雾浓度、危险等级、隐藏提示） */
+export function refreshDailyPanel(state, rng) {
+    const messages = [];
+    const day = state.day;
+    // 计算天气
+    const weather = calculateDailyWeather(day, () => rng.next());
+    const mistDensity = calculateMistDensity(day, weather);
+    const dangerLevel = calculateDangerLevel(day, mistDensity, weather);
+    // 计算当前阶段的第几天
+    const phase = getPhaseByDay(day);
+    const dayOfPhase = day - phase.dayRange[0] + 1;
+    // 生成隐藏提示（金手指，有概率触发）
+    let specialHint = null;
+    if (rng.next() < 0.3) {
+        const hints = [
+            '附近废墟中有物资',
+            '今天适合外出探索',
+            '注意保存体力',
+            '水源地附近有野兽出没',
+            '迷雾浓度正在上升',
+            '庇护所的防御需要加固',
+            '今天可能会遇到幸存者',
+            '深处的废墟有稀有物品',
+        ];
+        specialHint = hints[Math.floor(rng.next() * hints.length)];
+    }
+    // 更新面板
+    state.dailyPanel = {
+        weather,
+        mistDensity,
+        dangerLevel,
+        specialHint,
+        dayOfPhase,
+    };
+    // 生成消息
+    const weatherNames = {
+        clear: '晴朗', foggy: '浓雾', rainy: '阴雨', stormy: '暴风',
+        bloody_moon: '血月', mist_tide: '迷雾潮汐',
+    };
+    const densityNames = {
+        thin: '稀薄', normal: '正常', thick: '浓厚', impenetrable: '伸手不见五指',
+    };
+    const dangerNames = {
+        safe: '安全', low: '低', moderate: '中等', high: '高', extreme: '极高',
+    };
+    messages.push(`【第${day}天】天气：${weatherNames[weather] || weather}，迷雾浓度：${densityNames[mistDensity] || mistDensity}，危险等级：${dangerNames[dangerLevel] || dangerLevel}`);
+    if (specialHint) {
+        messages.push(`【隐藏提示】${specialHint}`);
+    }
+    // 特殊天气警告
+    if (weather === 'bloody_moon') {
+        messages.push('【警告】血月降临！迷雾中的生物变得异常狂暴，今晚极度危险！');
+    }
+    if (weather === 'stormy') {
+        messages.push('【警告】暴风天气！户外行动极其危险，建议待在庇护所。');
+    }
+    if (mistDensity === 'impenetrable') {
+        messages.push('【警告】迷雾浓度极高！能见度不足两米，外出可能迷失方向。');
+    }
+    return messages;
+}
+/** 检查并触发大事件 */
+export function checkAndTriggerMajorEvent(state) {
+    const messages = [];
+    const majorEvent = getMajorEventByDay(state.day);
+    if (!majorEvent) {
+        return { triggered: false, messages };
+    }
+    // 检查是否已经完成
+    if (state.majorEvents[majorEvent.name]?.completed) {
+        return { triggered: false, messages };
+    }
+    // 评估难度
+    const assessment = assessMajorEventDifficulty(majorEvent, {
+        attributes: state.attributes,
+        resources: state.resources,
+        inventory: state.inventory,
+        baseLevel: state.base?.level ?? 0,
+        allyCount: Object.keys(state.npcRelations).filter(id => state.npcRelations[id].isAlive && state.npcRelations[id].affection > 30).length,
+        level: state.level,
+    });
+    messages.push(`【大事件】${majorEvent.name}！`);
+    messages.push(majorEvent.description);
+    messages.push(`【难度评估】${assessment.difficulty}（存活概率：${Math.round(assessment.survivalChance * 100)}%）`);
+    // 显示评估依据
+    if (assessment.assessedFactors.length > 0) {
+        const factorText = assessment.assessedFactors.map(f => `${f.factor}:${f.value}${f.pass ? '✓' : '✗'}`).join(', ');
+        messages.push(`【评估依据】${factorText}`);
+    }
+    return {
+        triggered: true,
+        event: majorEvent,
+        assessment,
+        messages,
+    };
+}
+/** 更新已解锁区域 */
+export function updateUnlockedZones(state) {
+    const unlocked = getUnlockedZones(state.day);
+    const newZones = unlocked.filter(z => !state.unlockedZones.includes(z.id));
+    for (const zone of newZones) {
+        state.unlockedZones.push(zone.id);
+    }
+    return newZones.map(z => z.name);
+}
+/** 处理待生效的因果效果 */
+export function processPendingCausalEffects(state) {
+    const messages = [];
+    const toTrigger = state.causalTracker.pendingEffects.filter(e => e.triggerDay <= state.day);
+    for (const effect of toTrigger) {
+        if (Math.random() < effect.probability) {
+            messages.push(`【因果报应】${effect.effectDescription}`);
+            state.causalTracker.consequenceLog.push({
+                day: state.day,
+                cause: effect.causalId,
+                effect: effect.effectDescription,
+            });
+        }
+    }
+    // 移除已处理的效果
+    state.causalTracker.pendingEffects = state.causalTracker.pendingEffects.filter(e => e.triggerDay > state.day);
+    return messages;
+}
+/** 记录因果关系 */
+export function recordCausalRelation(state, causeId, effectDescription, delayDays = 0, probability = 1) {
+    if (!state.causalTracker.triggeredCauses.includes(causeId)) {
+        state.causalTracker.triggeredCauses.push(causeId);
+    }
+    if (delayDays > 0 || probability < 1) {
+        state.causalTracker.pendingEffects.push({
+            causalId: causeId,
+            effectDescription,
+            triggerDay: state.day + delayDays,
+            probability,
+        });
+    }
+}
 export function runDaily(content, state, rng) {
     const messages = [];
+    // v0.5.0: 每日面板刷新（天气、迷雾浓度、危险等级）
+    messages.push(...refreshDailyPanel(state, rng));
+    // v0.5.0: 处理待生效的因果效果
+    messages.push(...processPendingCausalEffects(state));
+    // v0.5.0: 更新已解锁区域
+    const newZones = updateUnlockedZones(state);
+    if (newZones.length > 0) {
+        messages.push(`【新区域解锁】${newZones.join('、')}`);
+    }
     // 0. 每日签到（连签递进奖励）
     messages.push(processSignin(state));
     // 1. 基地每日生产
@@ -323,14 +526,32 @@ export function runDaily(content, state, rng) {
     const inc = applyIncome(state, content.income);
     messages.push(...inc.messages);
     if (inc.dead) {
-        finalizeDeath(state, content);
+        // 判断死因
+        let cause = 'health';
+        if (state.resources.water.current <= 0)
+            cause = 'thirst';
+        else if (state.resources.food.current <= 0)
+            cause = 'hunger';
+        finalizeDeath(state, content, cause);
         return { dead: true, messages, event: null };
     }
     // 3. 检查生存状态
     const starv = applyStarvation(state);
     messages.push(...starv);
+    // 3a. 理智归零：精神崩溃，持续流失生命
+    if (state.resources.sanity.current <= 0) {
+        deltaResource(state.resources.health, -8);
+        messages.push('理智彻底耗尽——迷雾中的低语钻进了你的骨头，你开始分不清现实和幻觉（生命-8）。');
+    }
     if (state.resources.health.current <= 0) {
-        finalizeDeath(state, content);
+        let cause = 'health';
+        if (state.resources.sanity.current <= 0)
+            cause = 'sanity';
+        else if (state.resources.food.current <= 0)
+            cause = 'hunger';
+        else if (state.resources.water.current <= 0)
+            cause = 'thirst';
+        finalizeDeath(state, content, cause);
         return { dead: true, messages, event: null };
     }
     // 4. 天数递增 + 晨间刷新行动点
@@ -357,14 +578,9 @@ export function runDaily(content, state, rng) {
         }
     }
     // 8. 检查推进机制（世界等级、天灾预警、剧情触发）
+    //    checkProgression 内部已生成 messages，此处不再重复推送
     const progressionCheck = checkProgression(state, content);
     messages.push(...progressionCheck.messages);
-    if (progressionCheck.tierUpgrade) {
-        messages.push(`【世界升级】${progressionCheck.tierUpgrade.tierInfo.name}！`);
-    }
-    if (progressionCheck.catastropheWarning) {
-        messages.push(`【天灾预警】${progressionCheck.catastropheWarning.name}将在${progressionCheck.catastropheWarning.warningDays}天后降临！`);
-    }
     // 9b. 天灾结算：核对准备情况，发放奖励或施加惩罚
     if (progressionCheck.catastropheTrigger) {
         const event = progressionCheck.catastropheTrigger;
@@ -380,6 +596,26 @@ export function runDaily(content, state, rng) {
     for (const a of checkAchievements(state)) {
         messages.push(`【成就达成】${a.name}：${a.desc}`);
     }
+    // 11a. 更新当前游戏阶段
+    const oldPhase = state.currentPhase;
+    updateCurrentPhase(state);
+    if (state.currentPhase !== oldPhase) {
+        const phase = getPhaseByDay(state.day);
+        messages.push(`【阶段进入】${phase.name}：${phase.description}`);
+    }
+    // 11b. 称号检查
+    const newTitles = checkTitles(state);
+    for (const t of newTitles) {
+        messages.push(`【称号解锁】${t}`);
+    }
+    // 12. 每日市场价格更新（经济系统接入）
+    updateMarketPrices(state, state.day);
+    // 13. 好结局/隐藏结局触发检查
+    const goodEnding = checkGoodEndings(state, content);
+    if (goodEnding) {
+        messages.push(`【结局达成】${goodEnding.title}`);
+        return { dead: true, messages, event: null };
+    }
     return {
         dead: false,
         messages,
@@ -387,12 +623,162 @@ export function runDaily(content, state, rng) {
         progression: progressionCheck,
     };
 }
-/** 生命归零时结算死亡结局（优先取 category=death 的结局定义）。 */
-function finalizeDeath(state, content) {
-    const death = Object.values(content.storyline.endings).find((e) => e.category === 'death') ??
+// ============================================================
+// v3.0 等级/经验/属性点/称号系统
+// ============================================================
+/** 获得经验值，自动检查升级 */
+export function gainExp(state, amount) {
+    state.exp += amount;
+    let leveledUp = false;
+    while (state.exp >= state.expToNext && state.level < 30) {
+        state.exp -= state.expToNext;
+        state.level += 1;
+        state.expToNext = calculateExpRequired(state.level);
+        // 升级奖励
+        state.attributePoints += 1;
+        state.skillPoints += 1;
+        state.resources.health.max += 10;
+        state.resources.health.current = Math.min(state.resources.health.max, state.resources.health.current + 10);
+        leveledUp = true;
+    }
+    return { leveledUp, newLevel: state.level };
+}
+/** 分配属性点 */
+export function allocateAttribute(state, attr) {
+    if (state.attributePoints <= 0)
+        return false;
+    state.attributes[attr] += 1;
+    state.attributePoints -= 1;
+    return true;
+}
+/** 获得迷雾积分 */
+export function gainMistPoints(state, amount) {
+    state.mistPoints += amount;
+}
+/** 检查并解锁称号 */
+export function checkTitles(state) {
+    const newlyUnlocked = [];
+    for (const title of TITLES) {
+        if (state.titles.includes(title.id))
+            continue;
+        let unlocked = false;
+        switch (title.unlockCondition.type) {
+            case 'day':
+                unlocked = state.day >= title.unlockCondition.value;
+                break;
+            case 'combat':
+                unlocked = state.combatKills >= title.unlockCondition.value;
+                break;
+            case 'explore':
+                unlocked = state.visitedScenes.length >= title.unlockCondition.value;
+                break;
+            case 'special':
+                unlocked = !!state.flags[title.unlockCondition.value];
+                break;
+        }
+        if (unlocked) {
+            state.titles.push(title.id);
+            newlyUnlocked.push(title.name);
+            // 自动装备第一个解锁的称号
+            if (!state.activeTitle)
+                state.activeTitle = title.id;
+        }
+    }
+    return newlyUnlocked;
+}
+/** 获取当前称号的属性加成 */
+export function getActiveTitleBonuses(state) {
+    if (!state.activeTitle)
+        return {};
+    const title = TITLES.find(t => t.id === state.activeTitle);
+    if (!title)
+        return {};
+    return title.bonuses;
+}
+/** 更新当前游戏阶段 */
+export function updateCurrentPhase(state) {
+    const phase = getPhaseByDay(state.day);
+    if (phase.id !== state.currentPhase) {
+        state.currentPhase = phase.id;
+    }
+}
+/** 生命归零时结算死亡结局（根据死因选择对应结局）。 */
+function finalizeDeath(state, content, cause) {
+    const deathEndings = Object.values(content.storyline.endings).filter((e) => e.category === 'death');
+    // 默认死亡结局：E10 病榻（生命归零的通用结局）
+    let death = deathEndings.find(e => e.id === 'E10') ?? deathEndings[0] ??
         { id: 'death', title: '死亡', desc: '你在迷雾中倒下。', category: 'death' };
+    // 根据死因选择对应结局
+    if (cause === 'sanity') {
+        death = deathEndings.find(e => e.id === 'E07') ?? death; // 走进雾里
+    }
+    else if (cause === 'thirst') {
+        death = deathEndings.find(e => e.id === 'E08') ?? death; // 干渴
+    }
+    else if (cause === 'hunger') {
+        death = deathEndings.find(e => e.id === 'E09') ?? death; // 饥饿
+    }
+    else if (cause === 'combat') {
+        death = deathEndings.find(e => e.id === 'E11') ?? death; // 夜访者
+    }
+    else if (cause === 'beast_wave') {
+        death = deathEndings.find(e => e.id === 'E12') ?? death; // 兽潮之夜
+    }
     const outcome = { type: 'death', id: death.id, title: death.title, desc: death.desc };
     state.outcome = outcome;
     state.meta.bestDays = Math.max(state.meta.bestDays, state.day);
+}
+/**
+ * 检查好结局/隐藏结局触发条件。
+ * 在每日结算后调用，满足条件则触发对应结局。
+ */
+function checkGoodEndings(state, content) {
+    const day = state.day;
+    const flags = state.flags;
+    const inv = state.inventory;
+    // 好结局均在第30天以后触发（保证游戏有足够长度）
+    if (day < 30)
+        return null;
+    // E05 迷雾之眼：收集3块结晶
+    if ((inv['purple_crystal'] ?? 0) >= 1 && (inv['red_crystal'] ?? 0) >= 1 && (inv['blue_crystal'] ?? 0) >= 1) {
+        return triggerEnding(content, state, 'E05');
+    }
+    // E01 直升机的轰鸣：修好无线电
+    if (flags['radio_fixed']) {
+        return triggerEnding(content, state, 'E01');
+    }
+    // E02 冲天信号弹：获得信号弹
+    if ((inv['signal_flare'] ?? 0) > 0) {
+        return triggerEnding(content, state, 'E02');
+    }
+    // E06 同行者：老K同行
+    if (flags['laok_ally'] && flags['laok_trust']) {
+        return triggerEnding(content, state, 'E06');
+    }
+    // E14 不散的篝火：朵朵存活
+    if (flags['kid_saved']) {
+        return triggerEnding(content, state, 'E14');
+    }
+    // E13 守望者的日记：探索次数多
+    if (state.visitedScenes.length >= 15) {
+        return triggerEnding(content, state, 'E13');
+    }
+    // E03 篝火长明：温暖度保持良好
+    if (state.resources.warmth.current >= 50) {
+        return triggerEnding(content, state, 'E03');
+    }
+    // E04 平凡的等待：无特殊条件（最基础的好结局）
+    return triggerEnding(content, state, 'E04');
+}
+/** 触发指定结局并写入状态。 */
+function triggerEnding(content, state, endingId) {
+    const ed = findEnding(content, endingId);
+    if (!ed)
+        return null;
+    const outcome = { type: 'ending', id: ed.id, title: ed.title, desc: ed.desc };
+    state.outcome = outcome;
+    state.meta.unlockedEndings = Array.from(new Set([...state.meta.unlockedEndings, ed.id]));
+    state.meta.bestDays = Math.max(state.meta.bestDays, state.day);
+    return outcome;
 }
 //# sourceMappingURL=engine.js.map

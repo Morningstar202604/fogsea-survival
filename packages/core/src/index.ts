@@ -27,3 +27,4 @@ export * from './companions.js';
 export * from './gameConfig.js';
 // v0.5.0 第一阶段内容
 export * from './content/phase1.js';
+export * from './content/phase2.js';

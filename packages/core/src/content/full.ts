@@ -1,5 +1,6 @@
 import type { ContentPack } from '../types.js';
 import { PHASE1_SCENES, PHASE1_EVENTS } from './phase1.js';
+import { PHASE2_SCENES, PHASE2_EVENTS } from "./phase2.js";
 
 // 自动生成（scripts/migrate.mjs）：旧版 44 场 + 事件池 + 14 结局 迁移至新 ContentPack。
 // 主线为合成生存循环；6 条旧剧情线作为触发式支线(lines)。精简模型已丢弃关系/道德/雾压/天赋等字段。
@@ -24858,6 +24859,7 @@ export const fullContent: ContentPack = {
 fullContent.storyline.scenes = {
   ...fullContent.storyline.scenes,
   ...PHASE1_SCENES,
+  ...PHASE2_SCENES,
 };
 if (!fullContent.randomEvents) fullContent.randomEvents = [];
-fullContent.randomEvents = [...fullContent.randomEvents, ...PHASE1_EVENTS];
+fullContent.randomEvents = [...fullContent.randomEvents, ...PHASE1_EVENTS, ...PHASE2_EVENTS];

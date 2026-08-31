@@ -50,6 +50,8 @@ export interface ChoiceEffect {
     monster?: string;
     /** 检定成功后附加的额外效果（可嵌套 resource/flag/item） */
     successEffects?: ChoiceEffect[];
+    /** 检定失败后附加的额外效果（可嵌套 resource/flag/item） */
+    failEffects?: ChoiceEffect[];
 }
 export interface Choice {
     id: string;
@@ -232,6 +234,97 @@ export interface GameState {
     attributes: PlayerAttributes;
     /** 每日行动点（晨间刷新为 3；hub 行动消耗） */
     ap: number;
+    /** 玩家等级 */
+    level: number;
+    /** 当前经验值 */
+    exp: number;
+    /** 升级所需经验 */
+    expToNext: number;
+    /** 未分配的属性点 */
+    attributePoints: number;
+    /** 未分配的技能点 */
+    skillPoints: number;
+    /** 已解锁称号ID列表 */
+    titles: string[];
+    /** 当前装备的称号ID */
+    activeTitle: string | null;
+    /** 累计击杀数 */
+    combatKills: number;
+    /** 当前游戏阶段（1-10，十阶势力发展体系） */
+    currentPhase: number;
+    /** 迷雾积分（通用货币） */
+    mistPoints: number;
+    /** 每日面板信息（晨间刷新） */
+    dailyPanel: {
+        weather: string;
+        mistDensity: string;
+        dangerLevel: string;
+        specialHint: string | null;
+        dayOfPhase: number;
+    };
+    /** NPC关系系统 */
+    npcRelations: Record<string, {
+        affection: number;
+        relationship: string;
+        trust: number;
+        fear: number;
+        personalQuestStage: number;
+        isAlive: boolean;
+        deathCause?: string;
+        lastInteractionDay: number;
+    }>;
+    /** 因果追踪系统 */
+    causalTracker: {
+        triggeredCauses: string[];
+        pendingEffects: Array<{
+            causalId: string;
+            effectDescription: string;
+            triggerDay: number;
+            probability: number;
+        }>;
+        consequenceLog: Array<{
+            day: number;
+            cause: string;
+            effect: string;
+        }>;
+    };
+    /** 成长方向 */
+    growthPath: {
+        primary: string | null;
+        scores: Record<string, number>;
+        lastAssessmentDay: number;
+    };
+    /** 大事件记录 */
+    majorEvents: Record<string, {
+        completed: boolean;
+        day: number;
+        difficulty: string;
+        survivalChance: number;
+        outcome: string;
+        rewards: Record<string, number>;
+        penalties: string[];
+    }>;
+    /** 基地建筑系统 */
+    buildings: Record<string, number>;
+    /** 觉醒/能力系统 */
+    awakening: {
+        isAwakened: boolean;
+        abilityType: string | null;
+        abilityLevel: number;
+        awakeningProgress: number;
+    };
+    /** 声望系统 */
+    reputation: {
+        overall: number;
+        amongSurvivors: number;
+        amongFactions: number;
+        fame: number;
+        infamy: number;
+    };
+    /** 已解锁区域 */
+    unlockedZones: string[];
+    /** 游戏版本 */
+    gameVersion: string;
 }
 /** 玩家基础属性 */
 export interface PlayerAttributes {
