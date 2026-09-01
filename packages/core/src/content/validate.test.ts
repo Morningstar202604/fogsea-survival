@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { demoContent } from './index.js';
 import { fullContent } from './full.js';
 import { validateContentPack } from './validate.js';
+import { CAUSAL_RELATIONS } from '../gameConfig.js';
 
 describe('content validator', () => {
   it('demoContent 全部校验通过', () => {
@@ -17,5 +18,17 @@ describe('content validator', () => {
     console.log('[validator] fullContent issues by code:', Object.fromEntries(byCode));
     console.log('[validator] first 30:', issues.slice(0, 30).map((i) => `${i.code} ${i.path} ${i.msg}`));
     expect(issues).toEqual([]);
+  });
+
+  it('因果关系 event_trigger 引用的事件必须存在于内容包', () => {
+    const eventIds = new Set(fullContent.randomEvents.map((e) => e.id));
+    const dangling: string[] = [];
+    for (const causal of CAUSAL_RELATIONS) {
+      const target = causal.effect.parameters?.event;
+      if (causal.effect.type === 'event_trigger' && target && !eventIds.has(target)) {
+        dangling.push(`${causal.id} -> ${target}`);
+      }
+    }
+    expect(dangling).toEqual([]);
   });
 });

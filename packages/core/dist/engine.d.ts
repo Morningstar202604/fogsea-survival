@@ -98,7 +98,7 @@ export declare function applyBuildingDailyEffects(state: GameState): string[];
  * 自动检查并触发因果关系
  * 根据玩家当前状态和行为，匹配因果关系并触发效果
  */
-export declare function autoCheckCausalRelations(state: GameState): string[];
+export declare function autoCheckCausalRelations(state: GameState, content: ContentPack): string[];
 /**
  * 记录玩家的选择因果（在applyChoice中调用）
  * 根据玩家选择的flag，自动记录相关因果关系
