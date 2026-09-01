@@ -12,7 +12,7 @@ import { processSignin } from './signin.js';
 import { maybeStartEncounter, initiateCombat, getAvailableMonsters } from './combat.js';
 import { checkAchievements } from './achievements.js';
 // v3.0 新增：统一配置与公式
-import { getPhaseByDay, calculateExpRequired, TITLES, BASE_CONFIG, calculateDailyWeather, calculateMistDensity, calculateDangerLevel, getMajorEventByDay, assessMajorEventDifficulty, getUnlockedZones, calculateBaseDefense, } from './gameConfig.js';
+import { getPhaseByDay, calculateExpRequired, TITLES, BASE_CONFIG, CAUSAL_RELATIONS, calculateDailyWeather, calculateMistDensity, calculateDangerLevel, getMajorEventByDay, assessMajorEventDifficulty, getUnlockedZones, calculateBaseDefense, } from './gameConfig.js';
 /** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
 export function createInitialState(content, meta, talentId) {
     const initial = content.storyline.initialScene;
@@ -294,6 +294,8 @@ export function applyChoice(content, state, choice, rng) {
         if (!state.visitedScenes.includes(next))
             state.visitedScenes.push(next);
     }
+    // v1.0.0: 记录玩家选择的因果关系
+    recordChoiceCausality(state, choice);
     return { state, resultText, outcome, next, systemMessages };
 }
 /** 应用事件选项：处理完后从 pendingEvents 弹出并记入 triggeredEvents。 */
@@ -499,6 +501,8 @@ export function runDaily(content, state, rng) {
     messages.push(...refreshDailyPanel(state, rng));
     // v0.5.0: 处理待生效的因果效果
     messages.push(...processPendingCausalEffects(state));
+    // v1.0.0: 自动检查并触发因果关系
+    messages.push(...autoCheckCausalRelations(state));
     // v0.5.0: 更新已解锁区域
     const newZones = updateUnlockedZones(state);
     if (newZones.length > 0) {
@@ -966,5 +970,323 @@ export function applyBuildingDailyEffects(state) {
         messages.push(`【基地防御】当前防御力：${totalDefense}`);
     }
     return messages;
+}
+// ============================================================
+// 因果系统自动触发逻辑
+// ============================================================
+/**
+ * 自动检查并触发因果关系
+ * 根据玩家当前状态和行为，匹配因果关系并触发效果
+ */
+export function autoCheckCausalRelations(state) {
+    const messages = [];
+    const triggeredToday = [];
+    for (const causal of CAUSAL_RELATIONS) {
+        // 跳过已经触发过的因果关系（一次性的）
+        if (state.causalTracker.triggeredCauses.includes(causal.id) && causal.effect.delay === 0 && causal.effect.probability === 1) {
+            continue;
+        }
+        let shouldTrigger = false;
+        // 根据因果类型检查触发条件
+        switch (causal.cause.type) {
+            case 'state':
+                shouldTrigger = checkStateCausalCondition(state, causal.cause.description);
+                break;
+            case 'action':
+            case 'choice':
+                shouldTrigger = checkChoiceCausalCondition(state, causal.cause.description);
+                break;
+            case 'npc_action':
+                shouldTrigger = checkNpcCausalCondition(state, causal.cause.description);
+                break;
+            default:
+                break;
+        }
+        if (shouldTrigger && !triggeredToday.includes(causal.id)) {
+            // 检查概率
+            const probability = causal.effect.probability ?? 1;
+            if (Math.random() < probability) {
+                // 触发因果效果
+                const effectMessage = applyCausalEffect(state, causal);
+                if (effectMessage) {
+                    messages.push(effectMessage);
+                    triggeredToday.push(causal.id);
+                }
+            }
+        }
+    }
+    return messages;
+}
+/** 检查状态类因果条件 */
+function checkStateCausalCondition(state, description) {
+    // 食物不足
+    if (description.includes('食物') && description.includes('不足')) {
+        return state.resources.food.current < 20;
+    }
+    // 水不足
+    if (description.includes('水') && description.includes('不足')) {
+        return state.resources.water.current < 20;
+    }
+    // 体力耗尽
+    if (description.includes('体力耗尽')) {
+        return state.resources.energy.current <= 0;
+    }
+    // 受伤
+    if (description.includes('受伤')) {
+        return state.resources.health.current < 50;
+    }
+    // 理智低
+    if (description.includes('理智') && (description.includes('低') || description.includes('低于'))) {
+        return state.resources.sanity.current < 30;
+    }
+    // 浓厚迷雾暴露
+    if (description.includes('浓厚迷雾')) {
+        return state.dailyPanel.mistDensity === 'thick' || state.dailyPanel.mistDensity === 'impenetrable';
+    }
+    // 基地防御
+    if (description.includes('基地防御')) {
+        const defense = calculateBaseDefense(state.base?.level ?? 1, state.buildings);
+        if (description.includes('高'))
+            return defense > 30;
+        if (description.includes('低'))
+            return defense < 10;
+    }
+    // 资源匮乏
+    if (description.includes('资源匮乏') || description.includes('资源短缺')) {
+        const totalResources = state.resources.food.current + state.resources.water.current;
+        return totalResources < 50;
+    }
+    // 长期不维护基地
+    if (description.includes('不维护基地')) {
+        const buildingCount = Object.keys(state.buildings).length;
+        return buildingCount > 0 && state.day > 30 && !state.flags['base_maintained'];
+    }
+    // 食物充足
+    if (description.includes('食物充足') || description.includes('食物和水的充足')) {
+        return state.resources.food.current > 50 && state.resources.water.current > 50;
+    }
+    // 积累大量积分
+    if (description.includes('大量迷雾积分') || description.includes('积累大量')) {
+        return state.mistPoints > 500;
+    }
+    // 积分不足
+    if (description.includes('积分不足') || description.includes('资源匮乏')) {
+        return state.mistPoints < 50;
+    }
+    // NPC好感度低
+    if (description.includes('NPC好感度低于')) {
+        const lowAffectionNpcs = Object.values(state.npcRelations).filter(n => n.affection < 20);
+        return lowAffectionNpcs.length > 0;
+    }
+    // NPC好感度高
+    if (description.includes('NPC好感度高于')) {
+        const highAffectionNpcs = Object.values(state.npcRelations).filter(n => n.affection > 80);
+        return highAffectionNpcs.length > 0;
+    }
+    return false;
+}
+/** 检查选择类因果条件 */
+function checkChoiceCausalCondition(state, description) {
+    // 通过flag判断玩家是否做过某个选择
+    const flagMap = {
+        '救了朵朵': 'kid_saved',
+        '抛弃了朵朵': 'kid_abandoned',
+        '救了老K': 'laok_saved',
+        '帮助老K复仇': 'laok_revenge_helped',
+        '背叛了老K': 'laok_betrayed',
+        '帮助了商人老张': 'zhang_helped',
+        '欺骗了商人老张': 'zhang_cheated',
+        '善待陈静医生': 'doctor_trusted',
+        '忽视陈静医生': 'doctor_ignored',
+        '支持小杨的发明': 'yang_supported',
+        '救了林小雨': 'xiaoyu_saved',
+        '尊重赵明': 'zhao_respected',
+        '轻视赵明': 'zhao_disrespected',
+        '与铁山建立兄弟关系': 'tieshan_brother',
+        '与林鹰建立深度联盟': 'linying_allied',
+        '信任老狐狸': 'laohuli_trusted',
+        '感化黑鸦': 'blackcrow_converted',
+        '杀死黑鸦': 'blackcrow_killed',
+        '与先知谈判': 'prophet_negotiated',
+        '消灭先知': 'prophet_destroyed',
+        '继承先知': 'prophet_inherited',
+        '无私帮助陌生幸存者': 'helped_stranger',
+        '抢劫或伤害无辜幸存者': 'robbed_stranger',
+        '分享食物给同伴': 'shared_food',
+        '囤积食物': 'hoarded_food',
+        '信守承诺': 'kept_promise',
+        '违背承诺': 'broke_promise',
+        '放过投降的敌人': 'spared_enemy',
+        '处决投降的敌人': 'executed_enemy',
+        '建造并升级农田': 'farm_built',
+        '建造并升级医疗室': 'infirmary_built',
+        '建造并升级工坊': 'workshop_built',
+        '建造并升级围墙': 'wall_built',
+        '建造并升级图书室': 'library_built',
+        '建造并升级兵营': 'barracks_built',
+        '建造迷雾祭坛室': 'altar_built',
+    };
+    for (const [keyword, flag] of Object.entries(flagMap)) {
+        if (description.includes(keyword)) {
+            return !!state.flags[flag];
+        }
+    }
+    return false;
+}
+/** 检查NPC类因果条件 */
+function checkNpcCausalCondition(state, description) {
+    // 检查特定NPC的状态
+    if (description.includes('玩家处于致命危险')) {
+        return state.resources.health.current < 20;
+    }
+    return false;
+}
+/** 应用因果效果 */
+function applyCausalEffect(state, causal) {
+    const effect = causal.effect;
+    let message = `【因果报应】${effect.description}`;
+    // 记录因果关系
+    if (!state.causalTracker.triggeredCauses.includes(causal.id)) {
+        state.causalTracker.triggeredCauses.push(causal.id);
+    }
+    state.causalTracker.consequenceLog.push({
+        day: state.day,
+        cause: causal.cause.description,
+        effect: effect.description,
+    });
+    // 根据效果类型应用具体效果
+    switch (effect.type) {
+        case 'attribute_change':
+            if (effect.parameters) {
+                if (effect.parameters.strength)
+                    state.attributes.strength += effect.parameters.strength;
+                if (effect.parameters.agility)
+                    state.attributes.agility += effect.parameters.agility;
+                if (effect.parameters.intelligence)
+                    state.attributes.intelligence += effect.parameters.intelligence;
+                if (effect.parameters.luck)
+                    state.attributes.luck += effect.parameters.luck;
+            }
+            break;
+        case 'resource_change':
+            if (effect.parameters) {
+                if (effect.parameters.health)
+                    deltaResource(state.resources.health, effect.parameters.health);
+                if (effect.parameters.sanity)
+                    deltaResource(state.resources.sanity, effect.parameters.sanity);
+                if (effect.parameters.energy)
+                    deltaResource(state.resources.energy, effect.parameters.energy);
+                if (effect.parameters.food)
+                    deltaResource(state.resources.food, effect.parameters.food);
+                if (effect.parameters.water)
+                    deltaResource(state.resources.water, effect.parameters.water);
+            }
+            break;
+        case 'state_change':
+            if (effect.parameters) {
+                // 设置状态flag
+                if (effect.parameters.status)
+                    state.flags[effect.parameters.status] = true;
+                if (effect.parameters.mist_dispersal)
+                    state.flags['mist_dispelled'] = true;
+                if (effect.parameters.awakening)
+                    state.flags['awakened'] = true;
+                if (effect.parameters.hallucination)
+                    state.flags['hallucinating'] = true;
+            }
+            break;
+        case 'npc_relation':
+            if (effect.parameters) {
+                // 提升所有NPC好感度
+                if (effect.parameters.npc_affection) {
+                    for (const npcId of Object.keys(state.npcRelations)) {
+                        state.npcRelations[npcId].affection = Math.min(100, state.npcRelations[npcId].affection + effect.parameters.npc_affection);
+                    }
+                }
+                // 声望变化
+                if (effect.parameters.reputation) {
+                    state.reputation.overall += effect.parameters.reputation;
+                    if (effect.parameters.reputation > 0) {
+                        state.reputation.fame += effect.parameters.reputation;
+                    }
+                    else {
+                        state.reputation.infamy += Math.abs(effect.parameters.reputation);
+                    }
+                }
+            }
+            break;
+        case 'unlock':
+            if (effect.parameters) {
+                // 解锁内容
+                if (effect.parameters.tech_unlock)
+                    state.flags['tech_unlocked'] = true;
+                if (effect.parameters.crafting_unlock)
+                    state.flags['crafting_unlocked'] = true;
+                if (effect.parameters.hidden_ending)
+                    state.flags[effect.parameters.hidden_ending] = true;
+                if (effect.parameters.ending)
+                    state.flags[`ending_${effect.parameters.ending}`] = true;
+                if (effect.parameters.special_item)
+                    state.inventory[effect.parameters.special_item] = 1;
+            }
+            break;
+        case 'event_trigger':
+            if (effect.parameters && effect.parameters.event) {
+                state.pendingEvents.push(effect.parameters.event);
+                message += `（触发事件：${effect.parameters.event}）`;
+            }
+            break;
+        default:
+            break;
+    }
+    return message;
+}
+/**
+ * 记录玩家的选择因果（在applyChoice中调用）
+ * 根据玩家选择的flag，自动记录相关因果关系
+ */
+export function recordChoiceCausality(state, choice) {
+    // 检查选择的effects中是否有flag设置
+    for (const eff of choice.effects) {
+        if (eff.kind === 'flag' && eff.flag) {
+            // 根据flag匹配因果关系
+            for (const causal of CAUSAL_RELATIONS) {
+                if ((causal.cause.type === 'choice' || causal.cause.type === 'action') &&
+                    !state.causalTracker.triggeredCauses.includes(causal.id)) {
+                    // 检查描述中是否包含与flag相关的关键词
+                    const flagKeywords = {
+                        'kid_saved': ['救了朵朵', '救了女孩'],
+                        'laok_saved': ['救了老K', '帮助老K'],
+                        'zhang_helped': ['帮助了商人老张', '帮助老张'],
+                        'doctor_trusted': ['善待陈静医生', '信任医生'],
+                        'yang_supported': ['支持小杨的发明', '支持小杨'],
+                        'helped_stranger': ['无私帮助陌生幸存者', '帮助陌生人'],
+                        'shared_food': ['分享食物给同伴', '分享食物'],
+                        'kept_promise': ['信守承诺', '遵守承诺'],
+                        'spared_enemy': ['放过投降的敌人', '放过敌人'],
+                        'farm_built': ['建造并升级农田', '建造农田'],
+                        'infirmary_built': ['建造并升级医疗室', '建造医疗室'],
+                    };
+                    for (const [flag, keywords] of Object.entries(flagKeywords)) {
+                        if (eff.flag === flag) {
+                            for (const keyword of keywords) {
+                                if (causal.cause.description.includes(keyword)) {
+                                    // 记录因果关系，如果有延迟则加入待生效队列
+                                    if (causal.effect.delay && causal.effect.delay > 0) {
+                                        recordCausalRelation(state, causal.id, causal.effect.description, causal.effect.delay, causal.effect.probability ?? 1);
+                                    }
+                                    else {
+                                        // 立即触发
+                                        state.causalTracker.triggeredCauses.push(causal.id);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 //# sourceMappingURL=engine.js.map
