@@ -2,7 +2,7 @@ import type { GameState, IncomeRule, Resource, ResourceKey, Resources } from './
 /** 资源键全集（游戏内实际结算的 5 类资源，warmth 由基地/装备系统处理） */
 export declare const RESOURCE_KEYS: ResourceKey[];
 /** 各资源上限默认值 */
-export declare const RESOURCE_DEFAULTS: Record<Exclude<ResourceKey, 'warmth'>, number>;
+export declare const RESOURCE_DEFAULTS: Record<ResourceKey, number>;
 /** 资源中文名 */
 export declare const RESOURCE_LABELS: Record<ResourceKey, string>;
 /** 创建默认资源表 */

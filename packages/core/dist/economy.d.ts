@@ -17,6 +17,8 @@ export interface ItemDef {
     basePrice: number;
     stackable: boolean;
     maxStack?: number;
+    attack?: number;
+    defense?: number;
 }
 /** 市场价格记录 */
 export interface MarketPrice {

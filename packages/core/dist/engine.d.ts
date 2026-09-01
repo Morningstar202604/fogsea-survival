@@ -43,10 +43,40 @@ export declare function scheduleLine(content: ContentPack, state: GameState): vo
 /**
  * 推进一天 v2.0：集成基地生产、技能成长、推进机制
  */
+/** 刷新每日面板（天气、迷雾浓度、危险等级、隐藏提示） */
+export declare function refreshDailyPanel(state: GameState, rng: Rng): string[];
+/** 检查并触发大事件 */
+export declare function checkAndTriggerMajorEvent(state: GameState): {
+    triggered: boolean;
+    event?: any;
+    assessment?: any;
+    messages: string[];
+};
+/** 更新已解锁区域 */
+export declare function updateUnlockedZones(state: GameState): string[];
+/** 处理待生效的因果效果 */
+export declare function processPendingCausalEffects(state: GameState): string[];
+/** 记录因果关系 */
+export declare function recordCausalRelation(state: GameState, causeId: string, effectDescription: string, delayDays?: number, probability?: number): void;
 export declare function runDaily(content: ContentPack, state: GameState, rng: Rng): {
     dead: boolean;
     messages: string[];
     event: RandomEventDef | null;
     progression?: any;
 };
+/** 获得经验值，自动检查升级 */
+export declare function gainExp(state: GameState, amount: number): {
+    leveledUp: boolean;
+    newLevel: number;
+};
+/** 分配属性点 */
+export declare function allocateAttribute(state: GameState, attr: 'strength' | 'agility' | 'intelligence' | 'luck'): boolean;
+/** 获得迷雾积分 */
+export declare function gainMistPoints(state: GameState, amount: number): void;
+/** 检查并解锁称号 */
+export declare function checkTitles(state: GameState): string[];
+/** 获取当前称号的属性加成 */
+export declare function getActiveTitleBonuses(state: GameState): Record<string, number>;
+/** 更新当前游戏阶段 */
+export declare function updateCurrentPhase(state: GameState): void;
 //# sourceMappingURL=engine.d.ts.map

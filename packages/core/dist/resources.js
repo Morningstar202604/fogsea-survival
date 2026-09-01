@@ -1,7 +1,7 @@
 import { DEFAULT_WORLD_TIERS } from './progression.js';
 import { calculateSkillBonuses } from './skills.js';
 /** 资源键全集（游戏内实际结算的 5 类资源，warmth 由基地/装备系统处理） */
-export const RESOURCE_KEYS = ['food', 'water', 'health', 'sanity', 'energy'];
+export const RESOURCE_KEYS = ['food', 'water', 'health', 'sanity', 'energy', 'warmth'];
 /** 各资源上限默认值 */
 export const RESOURCE_DEFAULTS = {
     food: 100,
@@ -9,6 +9,7 @@ export const RESOURCE_DEFAULTS = {
     health: 100,
     sanity: 100,
     energy: 100,
+    warmth: 100,
 };
 /** 资源中文名 */
 export const RESOURCE_LABELS = {
@@ -93,7 +94,7 @@ export function assertResourcesValid(state) {
 export const DAILY_CONSUMPTION_BASE = {
     food: 10,
     water: 8,
-    sanity: 5,
+    sanity: 3,
     energy: 3,
 };
 /** 根据世界等级修正的每日消耗速率 */
