@@ -3,6 +3,7 @@ import { PHASE2_SCENES, PHASE2_EVENTS } from "./phase2.js";
 import { PHASE3_SCENES, PHASE3_EVENTS } from "./phase3.js";
 import { PHASE4_SCENES, PHASE4_EVENTS } from "./phase4.js";
 import { PHASE5_SCENES, PHASE5_EVENTS } from "./phase5.js";
+import { PHASE6_SCENES, PHASE6_EVENTS } from "./phase6.js";
 // 自动生成（scripts/migrate.mjs）：旧版 44 场 + 事件池 + 14 结局 迁移至新 ContentPack。
 // 主线为合成生存循环；6 条旧剧情线作为触发式支线(lines)。精简模型已丢弃关系/道德/雾压/天赋等字段。
 export const fullContent = {
@@ -24863,8 +24864,9 @@ fullContent.storyline.scenes = {
     ...PHASE3_SCENES,
     ...PHASE4_SCENES,
     ...PHASE5_SCENES,
+    ...PHASE6_SCENES,
 };
 if (!fullContent.randomEvents)
     fullContent.randomEvents = [];
-fullContent.randomEvents = [...fullContent.randomEvents, ...PHASE1_EVENTS, ...PHASE2_EVENTS, ...PHASE3_EVENTS, ...PHASE4_EVENTS, ...PHASE5_EVENTS];
+fullContent.randomEvents = [...fullContent.randomEvents, ...PHASE1_EVENTS, ...PHASE2_EVENTS, ...PHASE3_EVENTS, ...PHASE4_EVENTS, ...PHASE5_EVENTS, ...PHASE6_EVENTS];
 //# sourceMappingURL=full.js.map
