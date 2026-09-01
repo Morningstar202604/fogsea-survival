@@ -30,6 +30,9 @@ import { checkAchievements } from './achievements.js';
 import {
   getPhaseByDay, calculateExpRequired,
   TITLES,
+  calculateDailyWeather, calculateMistDensity, calculateDangerLevel,
+  getMajorEventByDay, assessMajorEventDifficulty,
+  getUnlockedZones,
 } from './gameConfig.js';
 
 /** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
@@ -79,6 +82,43 @@ export function createInitialState(
     combatKills: 0,
     currentPhase: 1,
     mistPoints: 0,
+
+    // v0.5.0 新增系统初始化
+    dailyPanel: {
+      weather: 'foggy',
+      mistDensity: 'normal',
+      dangerLevel: 'low',
+      specialHint: null,
+      dayOfPhase: 1,
+    },
+    npcRelations: {},
+    causalTracker: {
+      triggeredCauses: [],
+      pendingEffects: [],
+      consequenceLog: [],
+    },
+    growthPath: {
+      primary: null,
+      scores: {},
+      lastAssessmentDay: 0,
+    },
+    majorEvents: {},
+    buildings: {},
+    awakening: {
+      isAwakened: false,
+      abilityType: null,
+      abilityLevel: 0,
+      awakeningProgress: 0,
+    },
+    reputation: {
+      overall: 0,
+      amongSurvivors: 0,
+      amongFactions: 0,
+      fame: 0,
+      infamy: 0,
+    },
+    unlockedZones: ['safe_house', 'nearby_ruins'],
+    gameVersion: '0.5.0',
   };
   if (talentId) applyTalent(state, talentId);
   return state;
@@ -325,12 +365,199 @@ export function scheduleLine(content: ContentPack, state: GameState): void {
 /**
  * 推进一天 v2.0：集成基地生产、技能成长、推进机制
  */
+// ============================================================
+// v0.5.0 每日系统、大事件检验、因果追踪
+// ============================================================
+
+/** 刷新每日面板（天气、迷雾浓度、危险等级、隐藏提示） */
+export function refreshDailyPanel(state: GameState, rng: Rng): string[] {
+  const messages: string[] = [];
+  const day = state.day;
+
+  // 计算天气
+  const weather = calculateDailyWeather(day, () => rng.next());
+  const mistDensity = calculateMistDensity(day, weather);
+  const dangerLevel = calculateDangerLevel(day, mistDensity, weather);
+
+  // 计算当前阶段的第几天
+  const phase = getPhaseByDay(day);
+  const dayOfPhase = day - phase.dayRange[0] + 1;
+
+  // 生成隐藏提示（金手指，有概率触发）
+  let specialHint: string | null = null;
+  if (rng.next() < 0.3) {
+    const hints = [
+      '附近废墟中有物资',
+      '今天适合外出探索',
+      '注意保存体力',
+      '水源地附近有野兽出没',
+      '迷雾浓度正在上升',
+      '庇护所的防御需要加固',
+      '今天可能会遇到幸存者',
+      '深处的废墟有稀有物品',
+    ];
+    specialHint = hints[Math.floor(rng.next() * hints.length)];
+  }
+
+  // 更新面板
+  state.dailyPanel = {
+    weather,
+    mistDensity,
+    dangerLevel,
+    specialHint,
+    dayOfPhase,
+  };
+
+  // 生成消息
+  const weatherNames: Record<string, string> = {
+    clear: '晴朗', foggy: '浓雾', rainy: '阴雨', stormy: '暴风',
+    bloody_moon: '血月', mist_tide: '迷雾潮汐',
+  };
+  const densityNames: Record<string, string> = {
+    thin: '稀薄', normal: '正常', thick: '浓厚', impenetrable: '伸手不见五指',
+  };
+  const dangerNames: Record<string, string> = {
+    safe: '安全', low: '低', moderate: '中等', high: '高', extreme: '极高',
+  };
+
+  messages.push(`【第${day}天】天气：${weatherNames[weather] || weather}，迷雾浓度：${densityNames[mistDensity] || mistDensity}，危险等级：${dangerNames[dangerLevel] || dangerLevel}`);
+
+  if (specialHint) {
+    messages.push(`【隐藏提示】${specialHint}`);
+  }
+
+  // 特殊天气警告
+  if (weather === 'bloody_moon') {
+    messages.push('【警告】血月降临！迷雾中的生物变得异常狂暴，今晚极度危险！');
+  }
+  if (weather === 'stormy') {
+    messages.push('【警告】暴风天气！户外行动极其危险，建议待在庇护所。');
+  }
+  if (mistDensity === 'impenetrable') {
+    messages.push('【警告】迷雾浓度极高！能见度不足两米，外出可能迷失方向。');
+  }
+
+  return messages;
+}
+
+/** 检查并触发大事件 */
+export function checkAndTriggerMajorEvent(state: GameState): {
+  triggered: boolean;
+  event?: any;
+  assessment?: any;
+  messages: string[];
+} {
+  const messages: string[] = [];
+  const majorEvent = getMajorEventByDay(state.day);
+
+  if (!majorEvent) {
+    return { triggered: false, messages };
+  }
+
+  // 检查是否已经完成
+  if (state.majorEvents[majorEvent.name]?.completed) {
+    return { triggered: false, messages };
+  }
+
+  // 评估难度
+  const assessment = assessMajorEventDifficulty(majorEvent, {
+    attributes: state.attributes,
+    resources: state.resources as any,
+    inventory: state.inventory,
+    baseLevel: state.base?.level ?? 0,
+    allyCount: Object.keys(state.npcRelations).filter(id => state.npcRelations[id].isAlive && state.npcRelations[id].affection > 30).length,
+    level: state.level,
+  });
+
+  messages.push(`【大事件】${majorEvent.name}！`);
+  messages.push(majorEvent.description);
+  messages.push(`【难度评估】${assessment.difficulty}（存活概率：${Math.round(assessment.survivalChance * 100)}%）`);
+
+  // 显示评估依据
+  if (assessment.assessedFactors.length > 0) {
+    const factorText = assessment.assessedFactors.map(f =>
+      `${f.factor}:${f.value}${f.pass ? '✓' : '✗'}`
+    ).join(', ');
+    messages.push(`【评估依据】${factorText}`);
+  }
+
+  return {
+    triggered: true,
+    event: majorEvent,
+    assessment,
+    messages,
+  };
+}
+
+/** 更新已解锁区域 */
+export function updateUnlockedZones(state: GameState): string[] {
+  const unlocked = getUnlockedZones(state.day);
+  const newZones = unlocked.filter(z => !state.unlockedZones.includes(z.id));
+  for (const zone of newZones) {
+    state.unlockedZones.push(zone.id);
+  }
+  return newZones.map(z => z.name);
+}
+
+/** 处理待生效的因果效果 */
+export function processPendingCausalEffects(state: GameState): string[] {
+  const messages: string[] = [];
+  const toTrigger = state.causalTracker.pendingEffects.filter(
+    e => e.triggerDay <= state.day
+  );
+
+  for (const effect of toTrigger) {
+    if (Math.random() < effect.probability) {
+      messages.push(`【因果报应】${effect.effectDescription}`);
+      state.causalTracker.consequenceLog.push({
+        day: state.day,
+        cause: effect.causalId,
+        effect: effect.effectDescription,
+      });
+    }
+  }
+
+  // 移除已处理的效果
+  state.causalTracker.pendingEffects = state.causalTracker.pendingEffects.filter(
+    e => e.triggerDay > state.day
+  );
+
+  return messages;
+}
+
+/** 记录因果关系 */
+export function recordCausalRelation(state: GameState, causeId: string, effectDescription: string, delayDays: number = 0, probability: number = 1): void {
+  if (!state.causalTracker.triggeredCauses.includes(causeId)) {
+    state.causalTracker.triggeredCauses.push(causeId);
+  }
+  if (delayDays > 0 || probability < 1) {
+    state.causalTracker.pendingEffects.push({
+      causalId: causeId,
+      effectDescription,
+      triggerDay: state.day + delayDays,
+      probability,
+    });
+  }
+}
+
 export function runDaily(
   content: ContentPack,
   state: GameState,
   rng: Rng,
 ): { dead: boolean; messages: string[]; event: RandomEventDef | null; progression?: any } {
   const messages: string[] = [];
+
+  // v0.5.0: 每日面板刷新（天气、迷雾浓度、危险等级）
+  messages.push(...refreshDailyPanel(state, rng));
+
+  // v0.5.0: 处理待生效的因果效果
+  messages.push(...processPendingCausalEffects(state));
+
+  // v0.5.0: 更新已解锁区域
+  const newZones = updateUnlockedZones(state);
+  if (newZones.length > 0) {
+    messages.push(`【新区域解锁】${newZones.join('、')}`);
+  }
 
   // 0. 每日签到（连签递进奖励）
   messages.push(processSignin(state));
