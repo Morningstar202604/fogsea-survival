@@ -79,4 +79,19 @@ export declare function checkTitles(state: GameState): string[];
 export declare function getActiveTitleBonuses(state: GameState): Record<string, number>;
 /** 更新当前游戏阶段 */
 export declare function updateCurrentPhase(state: GameState): void;
+/** 检查是否可以建造指定建筑 */
+export declare function canBuildBuilding(state: GameState, buildingId: string): {
+    canBuild: boolean;
+    reason?: string;
+    cost?: Record<string, number>;
+};
+/** 建造或升级建筑 */
+export declare function buildOrUpgradeBuilding(state: GameState, buildingId: string): {
+    success: boolean;
+    message: string;
+};
+/** 获取所有建筑的总效果 */
+export declare function getBuildingEffects(state: GameState): Record<string, number>;
+/** 每日应用建筑效果（在 runDaily 中调用） */
+export declare function applyBuildingDailyEffects(state: GameState): string[];
 //# sourceMappingURL=engine.d.ts.map

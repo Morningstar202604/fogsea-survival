@@ -12,7 +12,7 @@ import { processSignin } from './signin.js';
 import { maybeStartEncounter, initiateCombat, getAvailableMonsters } from './combat.js';
 import { checkAchievements } from './achievements.js';
 // v3.0 新增：统一配置与公式
-import { getPhaseByDay, calculateExpRequired, TITLES, calculateDailyWeather, calculateMistDensity, calculateDangerLevel, getMajorEventByDay, assessMajorEventDifficulty, getUnlockedZones, } from './gameConfig.js';
+import { getPhaseByDay, calculateExpRequired, TITLES, BASE_CONFIG, calculateDailyWeather, calculateMistDensity, calculateDangerLevel, getMajorEventByDay, assessMajorEventDifficulty, getUnlockedZones, calculateBaseDefense, } from './gameConfig.js';
 /** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
 export function createInitialState(content, meta, talentId) {
     const initial = content.storyline.initialScene;
@@ -90,7 +90,7 @@ export function createInitialState(content, meta, talentId) {
             infamy: 0,
         },
         unlockedZones: ['safe_house', 'nearby_ruins'],
-        gameVersion: '0.5.0',
+        gameVersion: '1.0.0',
     };
     if (talentId)
         applyTalent(state, talentId);
@@ -509,6 +509,8 @@ export function runDaily(content, state, rng) {
     // 1. 基地每日生产
     const production = processDailyProduction(state);
     messages.push(...production.messages.map(m => `[生产] ${m}`));
+    // 1a. 基地建筑每日效果
+    messages.push(...applyBuildingDailyEffects(state));
     // 1a. 自动进食：背包食物/水在低存量时转化为生存资源
     messages.push(...autoProvision(state));
     // 1a++. 同伴每日被动
@@ -675,6 +677,19 @@ export function checkTitles(state) {
             case 'special':
                 unlocked = !!state.flags[title.unlockCondition.value];
                 break;
+            case 'npc':
+                // 拥有指定数量以上的NPC同伴（好感度>30且存活）
+                const npcCount = Object.keys(state.npcRelations).filter(id => state.npcRelations[id].isAlive && state.npcRelations[id].affection >= title.unlockCondition.value).length;
+                unlocked = npcCount >= title.unlockCondition.value;
+                break;
+            case 'phase':
+                // 达到指定游戏阶段
+                unlocked = state.currentPhase >= title.unlockCondition.value;
+                break;
+            case 'achievement':
+                // 达成指定成就
+                unlocked = (state.meta.unlockedAchievements ?? []).includes(title.unlockCondition.value);
+                break;
         }
         if (unlocked) {
             state.titles.push(title.id);
@@ -731,44 +746,80 @@ function finalizeDeath(state, content, cause) {
 /**
  * 检查好结局/隐藏结局触发条件。
  * 在每日结算后调用，满足条件则触发对应结局。
+ * 注意：不满足任何结局条件时返回 null，继续游戏，不强制触发结局。
  */
 function checkGoodEndings(state, content) {
     const day = state.day;
     const flags = state.flags;
     const inv = state.inventory;
+    // === 后期结局（第150天以后触发）===
+    if (day >= 150) {
+        // E18 人类末日：最终决战失败
+        if (flags['final_battle_failed']) {
+            return triggerEnding(content, state, 'E18');
+        }
+        // E15 文明重生：建立联邦，迷雾消散
+        if (flags['civilization_rebuilt'] && flags['mist_dispelled']) {
+            return triggerEnding(content, state, 'E15');
+        }
+        // E16 迷雾之主：继承先知的力量
+        if (flags['mist_lord_ending']) {
+            return triggerEnding(content, state, 'E16');
+        }
+        // E17 独裁者：建立帝国，成为独裁者
+        if (flags['dictator_ending']) {
+            return triggerEnding(content, state, 'E17');
+        }
+        // 隐藏结局：爱的进化（与先知和解）
+        if (flags['love_evolution_ending']) {
+            return triggerEnding(content, state, 'E05');
+        }
+    }
+    // === 中期结局（第60-149天触发）===
+    if (day >= 60 && day < 150) {
+        // E04 平凡的等待：迷雾自然消散（需要特定flag）
+        if (flags['mist_naturally_dispelled']) {
+            return triggerEnding(content, state, 'E04');
+        }
+    }
+    // === 早期结局（第30-59天触发）===
     // 好结局均在第30天以后触发（保证游戏有足够长度）
-    if (day < 30)
-        return null;
-    // E05 迷雾之眼：收集3块结晶
-    if ((inv['purple_crystal'] ?? 0) >= 1 && (inv['red_crystal'] ?? 0) >= 1 && (inv['blue_crystal'] ?? 0) >= 1) {
-        return triggerEnding(content, state, 'E05');
+    if (day >= 30 && day < 60) {
+        // E05 迷雾之眼：收集3块结晶
+        if ((inv['purple_crystal'] ?? 0) >= 1 && (inv['red_crystal'] ?? 0) >= 1 && (inv['blue_crystal'] ?? 0) >= 1) {
+            return triggerEnding(content, state, 'E05');
+        }
+        // E01 直升机的轰鸣：修好无线电
+        if (flags['radio_fixed']) {
+            return triggerEnding(content, state, 'E01');
+        }
+        // E02 冲天信号弹：获得信号弹
+        if ((inv['signal_flare'] ?? 0) > 0) {
+            return triggerEnding(content, state, 'E02');
+        }
+        // E06 同行者：老K同行
+        if (flags['laok_ally'] && flags['laok_trust']) {
+            return triggerEnding(content, state, 'E06');
+        }
+        // E14 不散的篝火：朵朵存活
+        if (flags['kid_saved']) {
+            return triggerEnding(content, state, 'E14');
+        }
+        // E13 守望者的日记：探索次数多
+        if (state.visitedScenes.length >= 15) {
+            return triggerEnding(content, state, 'E13');
+        }
+        // E03 篝火长明：温暖度保持良好
+        if (state.resources.warmth.current >= 50) {
+            return triggerEnding(content, state, 'E03');
+        }
+        // E04 平凡的等待：无特殊条件（最基础的好结局，仅在第50-59天触发）
+        if (day >= 50) {
+            return triggerEnding(content, state, 'E04');
+        }
     }
-    // E01 直升机的轰鸣：修好无线电
-    if (flags['radio_fixed']) {
-        return triggerEnding(content, state, 'E01');
-    }
-    // E02 冲天信号弹：获得信号弹
-    if ((inv['signal_flare'] ?? 0) > 0) {
-        return triggerEnding(content, state, 'E02');
-    }
-    // E06 同行者：老K同行
-    if (flags['laok_ally'] && flags['laok_trust']) {
-        return triggerEnding(content, state, 'E06');
-    }
-    // E14 不散的篝火：朵朵存活
-    if (flags['kid_saved']) {
-        return triggerEnding(content, state, 'E14');
-    }
-    // E13 守望者的日记：探索次数多
-    if (state.visitedScenes.length >= 15) {
-        return triggerEnding(content, state, 'E13');
-    }
-    // E03 篝火长明：温暖度保持良好
-    if (state.resources.warmth.current >= 50) {
-        return triggerEnding(content, state, 'E03');
-    }
-    // E04 平凡的等待：无特殊条件（最基础的好结局）
-    return triggerEnding(content, state, 'E04');
+    // 不满足任何结局条件，继续游戏
+    return null;
 }
 /** 触发指定结局并写入状态。 */
 function triggerEnding(content, state, endingId) {
@@ -780,5 +831,140 @@ function triggerEnding(content, state, endingId) {
     state.meta.unlockedEndings = Array.from(new Set([...state.meta.unlockedEndings, ed.id]));
     state.meta.bestDays = Math.max(state.meta.bestDays, state.day);
     return outcome;
+}
+// ============================================================
+// 基地建筑系统（建造/升级/效果应用）
+// ============================================================
+/** 检查是否可以建造指定建筑 */
+export function canBuildBuilding(state, buildingId) {
+    const building = BASE_CONFIG.buildings.find(b => b.id === buildingId);
+    if (!building)
+        return { canBuild: false, reason: '建筑不存在' };
+    // 检查阶段解锁
+    const phase = getPhaseByDay(state.day);
+    if (phase.id < building.unlockPhase) {
+        return { canBuild: false, reason: `需要第${building.unlockPhase}阶段才能建造` };
+    }
+    // 检查是否已达到最高等级
+    const currentLevel = state.buildings[buildingId] ?? 0;
+    if (currentLevel >= building.maxLevel) {
+        return { canBuild: false, reason: '已达到最高等级' };
+    }
+    // 计算建造成本（每级递增）
+    const cost = {};
+    const levelMultiplier = Math.pow(1.5, currentLevel);
+    for (const [item, baseCost] of Object.entries(building.cost)) {
+        cost[item] = Math.floor(baseCost * levelMultiplier);
+    }
+    // 检查资源是否足够（简化：检查迷雾积分和关键物资）
+    // 实际项目中应该检查具体的物资库存
+    const totalCost = Object.values(cost).reduce((a, b) => a + b, 0);
+    if (state.mistPoints < totalCost && currentLevel > 0) {
+        return { canBuild: false, reason: `需要${totalCost}迷雾积分，当前${state.mistPoints}` };
+    }
+    return { canBuild: true, cost };
+}
+/** 建造或升级建筑 */
+export function buildOrUpgradeBuilding(state, buildingId) {
+    const check = canBuildBuilding(state, buildingId);
+    if (!check.canBuild) {
+        return { success: false, message: check.reason ?? '无法建造' };
+    }
+    const building = BASE_CONFIG.buildings.find(b => b.id === buildingId);
+    const currentLevel = state.buildings[buildingId] ?? 0;
+    // 扣除资源（简化：扣除迷雾积分）
+    if (check.cost) {
+        const totalCost = Object.values(check.cost).reduce((a, b) => a + b, 0);
+        if (currentLevel > 0) {
+            state.mistPoints = Math.max(0, state.mistPoints - totalCost);
+        }
+    }
+    // 升级建筑
+    state.buildings[buildingId] = currentLevel + 1;
+    const action = currentLevel === 0 ? '建造' : '升级';
+    return {
+        success: true,
+        message: `${action}${building.name}成功！当前等级：${currentLevel + 1}/${building.maxLevel}`
+    };
+}
+/** 获取所有建筑的总效果 */
+export function getBuildingEffects(state) {
+    const effects = {};
+    for (const [buildingId, level] of Object.entries(state.buildings)) {
+        if (level <= 0)
+            continue;
+        const building = BASE_CONFIG.buildings.find(b => b.id === buildingId);
+        if (!building)
+            continue;
+        for (const [effectKey, effectValue] of Object.entries(building.effects)) {
+            effects[effectKey] = (effects[effectKey] ?? 0) + effectValue * level;
+        }
+    }
+    return effects;
+}
+/** 每日应用建筑效果（在 runDaily 中调用） */
+export function applyBuildingDailyEffects(state) {
+    const messages = [];
+    const effects = getBuildingEffects(state);
+    // 农田：每日食物产出
+    if (effects.food_production && effects.food_production > 0) {
+        const foodGain = effects.food_production;
+        deltaResource(state.resources.food, foodGain);
+        messages.push(`【农田产出】收获了${foodGain}单位食物`);
+    }
+    // 医疗室：每日健康恢复
+    if (effects.healing && effects.healing > 0) {
+        const healthGain = effects.healing;
+        if (state.resources.health.current < state.resources.health.max) {
+            deltaResource(state.resources.health, healthGain);
+            messages.push(`【医疗室】恢复了${healthGain}点生命值`);
+        }
+    }
+    // 工坊：每日制作加成（简化为增加迷雾积分）
+    if (effects.crafting && effects.crafting > 0) {
+        const pointsGain = effects.crafting * 2;
+        state.mistPoints += pointsGain;
+        messages.push(`【工坊产出】制作了物品，获得${pointsGain}迷雾积分`);
+    }
+    // 瞭望塔：提前发现危险（简化为增加理智）
+    if (effects.detection && effects.detection > 0) {
+        const sanityGain = effects.detection;
+        deltaResource(state.resources.sanity, sanityGain);
+        messages.push(`【瞭望塔】提前发现危险，减少了恐慌（理智+${sanityGain}）`);
+    }
+    // 图书室：每日研究加成（简化为增加经验）
+    if (effects.research && effects.research > 0) {
+        const expGain = effects.research * 3;
+        gainExp(state, expGain);
+        messages.push(`【图书室】研究获得了${expGain}点经验`);
+    }
+    // 兵营：每日训练加成（简化为增加战斗击杀数的效率）
+    if (effects.training && effects.training > 0) {
+        // 训练效果在战斗中体现，这里只记录
+        messages.push(`【兵营】战士们进行了日常训练`);
+    }
+    // 迷雾祭坛室：每日神秘研究（简化为增加觉醒进度）
+    if (effects.mystic_research && effects.mystic_research > 0 && !state.awakening.isAwakened) {
+        const progressGain = effects.mystic_research * 2;
+        state.awakening.awakeningProgress = Math.min(100, state.awakening.awakeningProgress + progressGain);
+        messages.push(`【迷雾祭坛室】研究迷雾，觉醒进度+${progressGain}（当前：${state.awakening.awakeningProgress}%）`);
+        // 觉醒进度达到100%时触发觉醒
+        if (state.awakening.awakeningProgress >= 100 && !state.awakening.isAwakened) {
+            state.awakening.isAwakened = true;
+            state.awakening.abilityLevel = 1;
+            // 随机选择一种超能力
+            const abilities = ['strength', 'speed', 'energy', 'perception', 'regeneration'];
+            state.awakening.abilityType = abilities[Math.floor(Math.random() * abilities.length)];
+            messages.push(`【觉醒！】你感受到了迷雾的力量，觉醒了超能力：${state.awakening.abilityType}！`);
+            state.flags['awakened'] = true;
+        }
+    }
+    // 围墙：增加基地防御力（在防御事件中体现）
+    if (effects.defense && effects.defense > 0) {
+        // 防御力在兽潮等事件中体现，这里只记录
+        const totalDefense = calculateBaseDefense(state.base?.level ?? 1, state.buildings);
+        messages.push(`【基地防御】当前防御力：${totalDefense}`);
+    }
+    return messages;
 }
 //# sourceMappingURL=engine.js.map
