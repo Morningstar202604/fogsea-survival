@@ -94,4 +94,14 @@ export declare function buildOrUpgradeBuilding(state: GameState, buildingId: str
 export declare function getBuildingEffects(state: GameState): Record<string, number>;
 /** 每日应用建筑效果（在 runDaily 中调用） */
 export declare function applyBuildingDailyEffects(state: GameState): string[];
+/**
+ * 自动检查并触发因果关系
+ * 根据玩家当前状态和行为，匹配因果关系并触发效果
+ */
+export declare function autoCheckCausalRelations(state: GameState): string[];
+/**
+ * 记录玩家的选择因果（在applyChoice中调用）
+ * 根据玩家选择的flag，自动记录相关因果关系
+ */
+export declare function recordChoiceCausality(state: GameState, choice: Choice): void;
 //# sourceMappingURL=engine.d.ts.map

@@ -2357,6 +2357,300 @@ export const CAUSAL_RELATIONS: CausalRelation[] = [
     cause: { type: 'state', description: '基地防御等级高，成功抵御多次兽潮' },
     effect: { type: 'npc_relation', description: '吸引更多幸存者加入，声望提升', delay: 3, probability: 0.8, parameters: { reputation: 20, npc_influx: true } },
   },
+  // ============================================================
+  // NPC相关因果关系（具体剧情因果链）
+  // ============================================================
+  {
+    id: 'saved_duoduo_father_repay',
+    cause: { type: 'choice', description: '救了朵朵' },
+    effect: { type: 'npc_relation', description: '朵朵父亲杜建国后来在关键时刻报恩，提供重要帮助', delay: 50, probability: 0.9, parameters: { npc: 'du_jianguo', affection: 50 } },
+    chain: ['dujianguo_joins'],
+  },
+  {
+    id: 'abandoned_duoduo_consequence',
+    cause: { type: 'choice', description: '抛弃了朵朵' },
+    effect: { type: 'state_change', description: '内心受到谴责，理智持续下降，可能在夜晚听到朵朵的哭声', delay: 3, probability: 0.7, parameters: { sanity: -10, status: 'guilty' } },
+    chain: ['hallucination_event'],
+  },
+  {
+    id: 'saved_oldk_loyalty',
+    cause: { type: 'choice', description: '救了老K或帮助老K复仇' },
+    effect: { type: 'npc_relation', description: '老K成为最忠诚的战友，在关键时刻不惜牺牲自己保护玩家', delay: 10, probability: 0.95, parameters: { npc: 'old_k', affection: 80, loyalty: 'absolute' } },
+  },
+  {
+    id: 'betrayed_oldk_consequence',
+    cause: { type: 'choice', description: '背叛了老K' },
+    effect: { type: 'event_trigger', description: '老K成为敌人，在后续事件中找玩家复仇', delay: 15, probability: 0.8, parameters: { event: 'oldk_revenge' } },
+  },
+  {
+    id: 'helped_zhang_trade_benefit',
+    cause: { type: 'choice', description: '帮助了商人老张' },
+    effect: { type: 'resource_change', description: '老张提供稀有商品和重要情报，交易价格优惠', delay: 5, probability: 0.9, parameters: { trade_discount: 0.3, rare_items: true } },
+  },
+  {
+    id: 'cheated_zhang_consequence',
+    cause: { type: 'choice', description: '欺骗了商人老张' },
+    effect: { type: 'npc_relation', description: '老张断绝贸易关系，其他商人也对玩家提高警惕', delay: 3, probability: 0.85, parameters: { trade_penalty: 0.5, reputation: -20 } },
+  },
+  {
+    id: 'treated_doctor_well_research',
+    cause: { type: 'choice', description: '善待陈静医生，支持她的研究' },
+    effect: { type: 'unlock', description: '陈静研究出治疗迷雾感染的方法，解锁医疗科技', delay: 20, probability: 0.8, parameters: { unlock: 'mist_cure', tech: 'medicine' } },
+  },
+  {
+    id: 'ignored_doctor_consequence',
+    cause: { type: 'choice', description: '忽视陈静医生的警告' },
+    effect: { type: 'state_change', description: '迷雾感染扩散，基地成员健康下降', delay: 10, probability: 0.7, parameters: { health: -15, infection_rate: 0.3 } },
+  },
+  {
+    id: 'trained_with_zhou_skills',
+    cause: { type: 'action', description: '和老周一起狩猎训练' },
+    effect: { type: 'attribute_change', description: '学习老周的狩猎技巧，敏捷和力量提升', delay: 0, probability: 1, parameters: { agility: 1, strength: 1, skill: 'hunting' } },
+  },
+  {
+    id: 'helped_yang_invention',
+    cause: { type: 'choice', description: '支持小杨的发明研究' },
+    effect: { type: 'unlock', description: '小杨发明出战车和迷雾驱散装置，解锁工程科技', delay: 30, probability: 0.85, parameters: { unlock: 'battle_vehicle', tech: 'engineering' } },
+  },
+  {
+    id: 'saved_xiaoyu_trust',
+    cause: { type: 'choice', description: '救了林小雨或帮助她' },
+    effect: { type: 'npc_relation', description: '林小雨成为坚定盟友，希望号安全区提供军事支持', delay: 10, probability: 0.9, parameters: { npc: 'lin_xiaoyu', affection: 60, military_support: true } },
+  },
+  {
+    id: 'respected_zhao_alliance',
+    cause: { type: 'choice', description: '尊重赵明，与希望号建立平等联盟' },
+    effect: { type: 'npc_relation', description: '赵明深度信任，希望号与玩家势力合并，人口和资源大幅增加', delay: 40, probability: 0.8, parameters: { npc: 'zhao_ming', affection: 70, merge: true } },
+  },
+  {
+    id: 'disrespected_zhao_conflict',
+    cause: { type: 'choice', description: '轻视赵明或试图吞并希望号' },
+    effect: { type: 'event_trigger', description: '希望号与玩家势力敌对，爆发冲突战争', delay: 20, probability: 0.75, parameters: { event: 'hope_ship_war' } },
+  },
+  {
+    id: 'befriended_tieshan_brother',
+    cause: { type: 'choice', description: '与铁山建立兄弟关系' },
+    effect: { type: 'npc_relation', description: '铁山带领钢铁兄弟会全力支持，军事力量大幅增强', delay: 15, probability: 0.9, parameters: { npc: 'tie_shan', affection: 80, military_boost: 0.5 } },
+  },
+  {
+    id: 'defeated_tieshan_submit',
+    cause: { type: 'action', description: '在战斗中击败铁山' },
+    effect: { type: 'npc_relation', description: '铁山臣服，钢铁兄弟会成为附庸势力', delay: 0, probability: 0.85, parameters: { npc: 'tie_shan', affection: 40, submit: true } },
+  },
+  {
+    id: 'allied_with_linying_power',
+    cause: { type: 'choice', description: '与林鹰的自由联盟建立深度联盟' },
+    effect: { type: 'npc_relation', description: '自由联盟提供强大军事支持，成为迷雾世界最强大的联盟', delay: 20, probability: 0.85, parameters: { npc: 'lin_ying', affection: 60, super_alliance: true } },
+  },
+  {
+    id: 'trusted_laohuli_intel',
+    cause: { type: 'choice', description: '信任老狐狸，与他建立长期合作' },
+    effect: { type: 'unlock', description: '老狐狸提供关键情报和稀有物资，在关键时刻预警危险', delay: 10, probability: 0.9, parameters: { intel: true, rare_supply: true, early_warning: true } },
+  },
+  {
+    id: 'converted_blackcrow_ally',
+    cause: { type: 'choice', description: '感化黑鸦，让进化者残余成为盟友' },
+    effect: { type: 'npc_relation', description: '黑鸦带领超能力者加入，超能力战力大幅增强', delay: 15, probability: 0.85, parameters: { npc: 'black_crow', affection: 60, superpower_boost: 0.5 } },
+  },
+  {
+    id: 'killed_blackcrow_chaos',
+    cause: { type: 'action', description: '杀死黑鸦，消灭进化者残余' },
+    effect: { type: 'state_change', description: '进化者残余四散，部分成为流寇，部分被其他势力收编', delay: 5, probability: 0.8, parameters: { chaos: true, remnant_scatter: true } },
+  },
+  {
+    id: 'negotiated_prophet_peace',
+    cause: { type: 'choice', description: '与先知谈判，和平解决' },
+    effect: { type: 'unlock', description: '先知成为顾问，提供全部知识和技术，解锁隐藏结局', delay: 0, probability: 0.9, parameters: { advisor: true, all_knowledge: true, hidden_ending: 'love_evolution' } },
+  },
+  {
+    id: 'destroyed_prophet_freedom',
+    cause: { type: 'action', description: '消灭先知的核心意识' },
+    effect: { type: 'state_change', description: '迷雾开始消散，人类获得自由，但失去了先知的知识', delay: 10, probability: 0.95, parameters: { mist_dispersal: true, freedom: true, lost_knowledge: true } },
+  },
+  {
+    id: 'inherited_prophet_power',
+    cause: { type: 'choice', description: '继承先知的力量和意志' },
+    effect: { type: 'unlock', description: '成为新的迷雾之主，获得强大力量，但承担巨大责任', delay: 0, probability: 0.9, parameters: { mist_lord: true, great_power: true, great_responsibility: true, ending: 'E16' } },
+  },
+  // ============================================================
+  // 基地建设相关因果关系
+  // ============================================================
+  {
+    id: 'built_farm_food_surplus',
+    cause: { type: 'action', description: '建造并升级农田' },
+    effect: { type: 'resource_change', description: '食物充足，NPC好感度提升，吸引更多幸存者加入', delay: 5, probability: 0.9, parameters: { food_surplus: true, npc_affection: 10, population_growth: true } },
+  },
+  {
+    id: 'built_infirmary_health_improve',
+    cause: { type: 'action', description: '建造并升级医疗室' },
+    effect: { type: 'state_change', description: '伤病恢复速度提升，疾病死亡率下降，NPC存活率提高', delay: 3, probability: 0.95, parameters: { healing_speed: 1.5, disease_death_rate: -0.5, npc_survival: true } },
+  },
+  {
+    id: 'built_workshop_tech_progress',
+    cause: { type: 'action', description: '建造并升级工坊' },
+    effect: { type: 'unlock', description: '解锁更多制造配方，武器装备品质提升，迷雾积分收入增加', delay: 5, probability: 0.9, parameters: { crafting_unlock: true, weapon_quality: 1, points_income: true } },
+  },
+  {
+    id: 'built_wall_defense_strong',
+    cause: { type: 'action', description: '建造并升级围墙' },
+    effect: { type: 'state_change', description: '基地防御力大幅提升，兽潮伤亡减少，声望提升', delay: 3, probability: 0.95, parameters: { defense: 2, beast_wave_casualties: -0.5, reputation: 10 } },
+  },
+  {
+    id: 'built_library_research_boost',
+    cause: { type: 'action', description: '建造并升级图书室' },
+    effect: { type: 'attribute_change', description: '研究速度提升，智力属性增长加快，解锁更多科技', delay: 7, probability: 0.85, parameters: { research_speed: 1.5, intelligence_growth: 1, tech_unlock: true } },
+  },
+  {
+    id: 'built_barracks_military_strong',
+    cause: { type: 'action', description: '建造并升级兵营' },
+    effect: { type: 'state_change', description: '战士战斗力提升，训练速度加快，军事力量增强', delay: 5, probability: 0.9, parameters: { combat_power: 1.3, training_speed: 1.5, military_strength: true } },
+  },
+  {
+    id: 'built_altar_awakening',
+    cause: { type: 'action', description: '建造迷雾祭坛室' },
+    effect: { type: 'unlock', description: '觉醒进度加速，可能觉醒超能力，但理智流失加快', delay: 10, probability: 0.8, parameters: { awakening_speed: 2, superpower: true, sanity_drain: 1.5 } },
+  },
+  {
+    id: 'neglect_base_decay',
+    cause: { type: 'state', description: '长期不维护基地设施' },
+    effect: { type: 'state_change', description: '基地设施老化损坏，防御力下降，NPC不满情绪增加', delay: 15, probability: 0.7, parameters: { facility_decay: true, defense: -1, npc_dissatisfaction: true } },
+  },
+  // ============================================================
+  // 探索相关因果关系
+  // ============================================================
+  {
+    id: 'explored_ruins_loot',
+    cause: { type: 'action', description: '探索废墟区域' },
+    effect: { type: 'resource_change', description: '发现物资和物品，可能找到有价值的东西', delay: 0, probability: 0.8, parameters: { loot: true, random_items: true } },
+  },
+  {
+    id: 'explored_deep_forest_danger',
+    cause: { type: 'action', description: '深入迷雾森林' },
+    effect: { type: 'event_trigger', description: '遭遇强大野兽或变异生物，可能获得稀有材料', delay: 0, probability: 0.7, parameters: { event: 'deep_forest_danger', rare_materials: true } },
+  },
+  {
+    id: 'explored_research_lab_truth',
+    cause: { type: 'action', description: '探索废弃研究所' },
+    effect: { type: 'unlock', description: '发现迷雾真相的线索，解锁研究资料和科技', delay: 0, probability: 0.85, parameters: { truth_clue: true, research_data: true, tech_unlock: true } },
+  },
+  {
+    id: 'explored_military_base_weapons',
+    cause: { type: 'action', description: '探索军方基地' },
+    effect: { type: 'resource_change', description: '发现武器弹药和军事装备，大幅提升战斗力', delay: 0, probability: 0.8, parameters: { weapons: true, ammo: true, military_gear: true, combat_boost: 0.3 } },
+  },
+  {
+    id: 'explored_mist_altar_power',
+    cause: { type: 'action', description: '探索迷雾祭坛' },
+    effect: { type: 'unlock', description: '获得迷雾晶石和神秘力量，可能觉醒或强化超能力，但理智流失', delay: 0, probability: 0.75, parameters: { mist_crystal: true, mystic_power: true, awakening: true, sanity_drain: true } },
+  },
+  {
+    id: 'explored_anomaly_insanity',
+    cause: { type: 'action', description: '探索异常区域' },
+    effect: { type: 'state_change', description: '看到不可能的景象，理智大幅流失，可能获得特殊能力或物品', delay: 0, probability: 0.7, parameters: { sanity: -20, special_ability: true, rare_items: true } },
+    chain: ['hallucination_event'],
+  },
+  {
+    id: 'explored_mist_core_truth_complete',
+    cause: { type: 'action', description: '到达迷雾核心' },
+    effect: { type: 'unlock', description: '发现迷雾的完整真相，解锁最终结局分支', delay: 0, probability: 0.95, parameters: { complete_truth: true, final_ending: true, special_item: 'mist_core' } },
+  },
+  {
+    id: 'reckless_exploration_death',
+    cause: { type: 'action', description: '在低血量或低理智时深入危险区域' },
+    effect: { type: 'state_change', description: '遭遇致命危险，可能重伤或死亡', delay: 0, probability: 0.6, parameters: { health: -30, death_risk: true } },
+  },
+  // ============================================================
+  // 道德选择相关因果关系
+  // ============================================================
+  {
+    id: 'helped_stranger_reputation',
+    cause: { type: 'choice', description: '无私帮助陌生幸存者' },
+    effect: { type: 'npc_relation', description: '声望提升，更多幸存者愿意加入，NPC好感度普遍提升', delay: 3, probability: 0.9, parameters: { reputation: 15, population_growth: true, npc_affection: 5 } },
+  },
+  {
+    id: 'robbed_stranger_infamy',
+    cause: { type: 'choice', description: '抢劫或伤害无辜幸存者' },
+    effect: { type: 'npc_relation', description: '恶名传播，幸存者避而远之，NPC好感度下降，可能被追杀', delay: 5, probability: 0.85, parameters: { infamy: 20, population_decline: true, npc_affection: -15, bounty: true } },
+  },
+  {
+    id: 'shared_food_loyalty',
+    cause: { type: 'choice', description: '在资源短缺时分享食物给同伴' },
+    effect: { type: 'npc_relation', description: '同伴忠诚度大幅提升，在关键时刻愿意牺牲自己保护玩家', delay: 0, probability: 0.95, parameters: { loyalty: 30, sacrifice_willingness: true } },
+  },
+  {
+    id: 'hoarded_food_betrayal',
+    cause: { type: 'choice', description: '在资源短缺时囤积食物，不顾同伴死活' },
+    effect: { type: 'event_trigger', description: '同伴不满，可能背叛或离开，团队凝聚力下降', delay: 3, probability: 0.75, parameters: { event: 'npc_betrayal', team_cohesion: -30 } },
+  },
+  {
+    id: 'kept_promise_trust',
+    cause: { type: 'choice', description: '信守承诺，完成对NPC的承诺' },
+    effect: { type: 'npc_relation', description: 'NPC信任度大幅提升，愿意分享更多秘密和资源', delay: 0, probability: 0.9, parameters: { trust: 25, secrets: true, resources: true } },
+  },
+  {
+    id: 'broke_promise_distrust',
+    cause: { type: 'choice', description: '违背承诺，欺骗NPC' },
+    effect: { type: 'npc_relation', description: 'NPC信任度大幅下降，可能报复或散布负面消息', delay: 3, probability: 0.85, parameters: { trust: -30, revenge: true, negative_rumor: true } },
+  },
+  {
+    id: 'spared_enemy_mercy',
+    cause: { type: 'choice', description: '放过投降的敌人' },
+    effect: { type: 'npc_relation', description: '仁慈之名传播，部分敌人可能归降，声望提升', delay: 5, probability: 0.7, parameters: { mercy_reputation: 15, enemy_surrender: true, population_growth: true } },
+  },
+  {
+    id: 'executed_enemy_fear',
+    cause: { type: 'choice', description: '处决投降的敌人' },
+    effect: { type: 'npc_relation', description: '恐惧之名传播，敌人战斗更加顽强，部分幸存者恐惧离开', delay: 3, probability: 0.8, parameters: { fear_reputation: 20, enemy_morale: 0.3, population_decline: true } },
+  },
+  // ============================================================
+  // 资源管理相关因果关系
+  // ============================================================
+  {
+    id: 'overtrained_injury',
+    cause: { type: 'action', description: '体力耗尽时继续高强度训练或战斗' },
+    effect: { type: 'state_change', description: '过度疲劳导致受伤，健康下降，可能留下后遗症', delay: 0, probability: 0.7, parameters: { health: -15, status: 'injured', fatigue: true } },
+    chain: ['infection_risk'],
+  },
+  {
+    id: 'ignored_injury_infection',
+    cause: { type: 'state', description: '受伤后不及时治疗' },
+    effect: { type: 'state_change', description: '伤口感染，健康持续下降，可能导致死亡', delay: 3, probability: 0.6, parameters: { health: -25, status: 'infected', death_risk: true } },
+  },
+  {
+    id: 'low_sanity_hallucination',
+    cause: { type: 'state', description: '理智长期低于30' },
+    effect: { type: 'event_trigger', description: '出现幻觉和幻听，可能做出危险行为，甚至走进迷雾深处', delay: 1, probability: 0.6, parameters: { event: 'hallucination', dangerous_behavior: true, death_risk: true } },
+  },
+  {
+    id: 'good_rest_recovery',
+    cause: { type: 'action', description: '在安全的庇护所充分休息' },
+    effect: { type: 'state_change', description: '健康和体力快速恢复，理智恢复，状态提升', delay: 0, probability: 0.95, parameters: { health: 15, energy: 30, sanity: 10, status: 'rested' } },
+  },
+  {
+    id: 'balanced_diet_health',
+    cause: { type: 'state', description: '长期保持食物和水的充足供应' },
+    effect: { type: 'attribute_change', description: '身体素质提升，力量和耐力增长，疾病抵抗力增强', delay: 10, probability: 0.8, parameters: { strength: 1, endurance: 1, disease_resistance: 0.3 } },
+  },
+  {
+    id: 'starvation_decline',
+    cause: { type: 'state', description: '长期食物不足' },
+    effect: { type: 'attribute_change', description: '身体素质下降，力量和耐力减少，疾病抵抗力降低', delay: 7, probability: 0.85, parameters: { strength: -1, endurance: -1, disease_resistance: -0.3, health: -10 } },
+  },
+  {
+    id: 'dehydration_decline',
+    cause: { type: 'state', description: '长期饮水不足' },
+    effect: { type: 'attribute_change', description: '身体机能下降，理智和敏捷减少，可能出现幻觉', delay: 3, probability: 0.9, parameters: { sanity: -15, agility: -1, hallucination: true, health: -10 } },
+  },
+  {
+    id: 'wealthy_trade_opportunities',
+    cause: { type: 'state', description: '积累大量迷雾积分和物资' },
+    effect: { type: 'unlock', description: '解锁高级贸易和特殊商品，商人主动来访，获得稀有物品', delay: 5, probability: 0.8, parameters: { advanced_trade: true, special_goods: true, merchant_visit: true, rare_items: true } },
+  },
+  {
+    id: 'poverty_vulnerability',
+    cause: { type: 'state', description: '长期资源匮乏，积分不足' },
+    effect: { type: 'state_change', description: '无法购买关键物资，在危机中更加脆弱，NPC可能离开', delay: 10, probability: 0.7, parameters: { vulnerability: true, npc_leaving: true, crisis_risk: true } },
+  },
 ];
 
 /** 检查因果关系是否触发 */
