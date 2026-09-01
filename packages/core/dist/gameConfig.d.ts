@@ -378,7 +378,106 @@ export interface EndingDetail {
     epilogue: string;
 }
 export declare const ENDINGS: EndingDetail[];
-export declare const GAME_VERSION = "0.5.0";
-export declare const GAME_VERSION_NAME = "\u4F53\u7CFB\u5316\u67B6\u6784\u7248";
-export declare const GAME_VERSION_DESCRIPTION = "\u5341\u9636\u6BB5\u4F53\u7CFB\u3001\u6BCF\u65E5\u7CFB\u7EDF\u3001\u8FF7\u96FE\u89C4\u5219\u3001NPC\u52A8\u6001\u3001\u56E0\u679C\u7CFB\u7EDF\u3001\u6210\u957F\u65B9\u5411\u3001\u5927\u4E8B\u4EF6\u68C0\u9A8C\u3001\u591A\u7ED3\u5C40";
+export interface SuperpowerType {
+    id: string;
+    name: string;
+    description: string;
+    primaryAttribute: string;
+    baseDamage: number;
+    baseDefense: number;
+    baseUtility: number;
+    evolutionPath: string[];
+    失控风险: number;
+}
+export declare const SUPERPOWER_TYPES: SuperpowerType[];
+export interface SuperpowerLevel {
+    level: number;
+    name: string;
+    damageMultiplier: number;
+    defenseMultiplier: number;
+    utilityMultiplier: number;
+    energyCost: number;
+    失控风险Multiplier: number;
+    requiredExp: number;
+}
+export declare const SUPERPOWER_LEVELS: SuperpowerLevel[];
+/** 计算超能力伤害 */
+export declare function calculateSuperpowerDamage(powerType: string, powerLevel: number, primaryAttr: number): number;
+/** 计算超能力失控概率 */
+export declare function calculate失控Chance(powerType: string, powerLevel: number, sanity: number): number;
+/** 计算超能力训练经验获取 */
+export declare function calculateTrainingExp(powerLevel: number, trainingHours: number, intelligence: number): number;
+export interface TechNode {
+    id: string;
+    name: string;
+    description: string;
+    category: 'biology' | 'engineering' | 'military' | 'agriculture' | 'medicine' | 'mystic';
+    tier: number;
+    researchTime: number;
+    cost: Record<string, number>;
+    prerequisites: string[];
+    effects: Record<string, any>;
+    unlockPhase: number;
+}
+export declare const TECH_TREE: TechNode[];
+/** 计算研究时间（受研究员数量和智力影响） */
+export declare function calculateResearchTime(baseTime: number, researcherCount: number, avgIntelligence: number): number;
+/** 检查科技前置条件是否满足 */
+export declare function checkTechPrerequisites(techId: string, researchedTechs: string[]): boolean;
+export interface FactionDef {
+    id: string;
+    name: string;
+    leader: string;
+    population: number;
+    militaryStrength: number;
+    economicStrength: number;
+    description: string;
+    ideology: string;
+    relationshipTypes: string[];
+    tradeGoods: string[];
+    militaryUnits: string[];
+    unlockDay: number;
+    baseRelationship: number;
+}
+export declare const FACTIONS: FactionDef[];
+export interface RelationshipLevel {
+    minValue: number;
+    name: string;
+    description: string;
+    tradeMultiplier: number;
+    militarySupport: number;
+    eventChance: number;
+}
+export declare const RELATIONSHIP_LEVELS: RelationshipLevel[];
+/** 获取关系等级 */
+export declare function getRelationshipLevel(value: number): RelationshipLevel;
+/** 计算贸易价格（受关系影响） */
+export declare function calculateTradePrice(basePrice: number, relationship: number, isBuying: boolean): number;
+/** 计算关系变化（受行动影响） */
+export declare function calculateRelationshipChange(baseChange: number, playerCharisma: number, targetTrust: number): number;
+export interface ReputationLevel {
+    minValue: number;
+    name: string;
+    description: string;
+    effects: Record<string, number>;
+}
+export declare const REPUTATION_LEVELS: ReputationLevel[];
+export interface ReputationSource {
+    id: string;
+    name: string;
+    description: string;
+    baseReputation: number;
+    repeatable: boolean;
+    maxTriggers?: number;
+}
+export declare const REPUTATION_SOURCES: ReputationSource[];
+/** 获取声望等级 */
+export declare function getReputationLevel(reputation: number): ReputationLevel;
+/** 计算声望获取（受魅力和行为影响） */
+export declare function calculateReputationGain(baseReputation: number, playerCharisma: number, actionType: string): number;
+/** 计算声望效果 */
+export declare function calculateReputationEffects(reputation: number): Record<string, number>;
+export declare const GAME_VERSION = "1.0.0";
+export declare const GAME_VERSION_NAME = "\u4F53\u7CFB\u5316\u5B8C\u6574\u7248";
+export declare const GAME_VERSION_DESCRIPTION = "\u5341\u9636\u6BB5\u4F53\u7CFB\u3001\u6BCF\u65E5\u7CFB\u7EDF\u3001\u8FF7\u96FE\u89C4\u5219\u3001NPC\u52A8\u6001\uFF0827\u4E2A\u5B8C\u6574NPC\uFF09\u3001\u56E0\u679C\u7CFB\u7EDF\u3001\u6210\u957F\u65B9\u5411\u3001\u5927\u4E8B\u4EF6\u68C0\u9A8C\u3001\u5C5E\u6027\u516C\u5F0F\u3001\u7B49\u7EA7\u7ECF\u9A8C\u3001\u8D27\u5E01\u3001\u57FA\u5730\u5EFA\u7B51\u3001\u6B66\u5668\u54C1\u8D28\u3001\u79F0\u53F7\u3001\u591A\u7ED3\u5C40\u3001\u8D85\u80FD\u529B\u7CFB\u7EDF\u3001\u79D1\u6280\u6811\u7CFB\u7EDF\u3001\u5916\u4EA4\u52BF\u529B\u7CFB\u7EDF\u3001\u58F0\u671B\u7CFB\u7EDF";
 //# sourceMappingURL=gameConfig.d.ts.map
