@@ -24,4 +24,5 @@ export * from './content/phase3.js';
 export * from './content/phase4.js';
 export * from './content/phase5.js';
 export * from './content/phase6.js';
+export * from './content/phase7.js';
 //# sourceMappingURL=index.d.ts.map
