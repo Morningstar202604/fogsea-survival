@@ -195,9 +195,16 @@ export function executeCombatRound(
   const monster = MONSTER_DATABASE[session.enemyId];
   const log: string[] = [];
   
-  // 计算玩家属性（含技能加成）
+  // 计算玩家属性（含技能加成和装备武器）
   const skillBonuses = calculateSkillBonuses(state as any);
-  const playerAttack = state.attributes.strength * (1 + skillBonuses.combat.damageMultiplier - 1);
+  // 装备武器加成
+  let weaponAttack = 0;
+  if (state.equipment && state.equipment.weapon) {
+    const weaponItem = ITEM_DATABASE[state.equipment.weapon];
+    if (weaponItem && weaponItem.attack) weaponAttack = weaponItem.attack;
+  }
+  // 基础伤害 = 力量 * 1.2 + 武器攻击力，再乘以技能加成
+  const playerAttack = (state.attributes.strength * 1.2 + weaponAttack) * skillBonuses.combat.damageMultiplier;
   const playerDefense = state.attributes.agility * 0.5;
   const playerCritChance = skillBonuses.combat.critChance;
   

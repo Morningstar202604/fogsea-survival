@@ -12,12 +12,30 @@ export const fullContent: ContentPack = {
     "scenes": {
       "start": {
         "id": "start",
-        "text": "迷雾未散。木屋是你的据点——必须撑到救援来临，或揭开雾的真相。",
+        "text": "木屋。火光摇曳。\n\n迷雾已经笼罩了不知道多少天。你靠着墙，听着外面雾里传来的窸窣声。每一天都是生存，但你知道，不能一直这样下去——要么找到出路，要么死在这雾里。\n\n【提示】合理分配行动力。低血量/低体力时做危险的事会真的死掉。",
         "choices": [
+          {
+            "id": "prologue",
+            "text": "📖 序章：迷雾初临 [回顾开场剧情]",
+            "hint": "不消耗行动点。回顾你是如何来到这迷雾世界的。",
+            "apCost": 0,
+            "effects": [],
+            "next": "ch1_wake",
+            "result": ""
+          },
+          {
+            "id": "story_progress",
+            "text": "▶ 推进剧情 [查看当前故事]",
+            "hint": "查看当前章节和可触发的剧情事件",
+            "apCost": 0,
+            "effects": [],
+            "next": "story_hub",
+            "result": ""
+          },
           {
             "id": "search",
             "text": "出门搜寻物资 [食物+12] [水+10]",
-            "hint": "消耗1行动点",
+            "hint": "消耗1行动点。体力低于20时有受伤风险。",
             "apCost": 1,
             "effects": [
               {
@@ -29,44 +47,223 @@ export const fullContent: ContentPack = {
                 "kind": "resource",
                 "resource": "water",
                 "delta": 10
+              },
+              {
+                "kind": "resource",
+                "resource": "energy",
+                "delta": -5
               }
             ],
             "next": "start",
-            "result": "你在雾里翻了三处废墟，收获够撑一天。"
+            "result": "你在雾里翻了三处废墟。灰尘呛得你直咳嗽，但收获够撑一天。"
+          },
+          {
+            "id": "explore_ruins",
+            "text": "探索附近废墟 [可能找到零件/物资]",
+            "hint": "消耗1行动点。危险！低血量时可能遭遇不测。",
+            "apCost": 1,
+            "effects": [
+              {
+                "kind": "roll",
+                "difficulty": 40,
+                "successEffects": [
+                  {
+                    "kind": "item",
+                    "item": "radio_parts",
+                    "amount": 1
+                  },
+                  {
+                    "kind": "item",
+                    "item": "metal",
+                    "amount": 2
+                  },
+                  {
+                    "kind": "resource",
+                    "resource": "food",
+                    "delta": 8
+                  }
+                ],
+                "failEffects": [
+                  {
+                    "kind": "resource",
+                    "resource": "health",
+                    "delta": -5
+                  },
+                  {
+                    "kind": "resource",
+                    "resource": "energy",
+                    "delta": -5
+                  }
+                ]
+              }
+            ],
+            "next": "start",
+            "result": "你走向那栋半塌的建筑。雾里的影子晃了晃，你握紧了手里的棍子……"
           },
           {
             "id": "rest",
-            "text": "在屋里休整 [体力+15]",
-            "hint": "消耗1行动点",
+            "text": "在屋里休整 [体力+15] [理智+3] [生命+5]",
+            "hint": "消耗1行动点。安全的恢复手段。",
             "apCost": 1,
             "effects": [
               {
                 "kind": "resource",
                 "resource": "energy",
                 "delta": 15
+              },
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": 3
+              },
+              {
+                "kind": "resource",
+                "resource": "health",
+                "delta": 5
               }
             ],
             "next": "start",
-            "result": "你靠着墙打了个盹，梦里没有雾。"
+            "result": "你靠着墙打了个盹。梦里没有雾，只有阳光。伤口好像也没那么疼了。"
           },
           {
-            "id": "fortify",
-            "text": "加固门窗 [防御+]",
-            "hint": "消耗1行动点",
+            "id": "craft_fire",
+            "text": "生火取暖 [温暖+25] [理智+5]",
+            "hint": "消耗1行动点，需要木材×3。夜晚前生火更安全。",
+            "apCost": 1,
+            "requires": {
+              "items": {
+                "wood": 3
+              }
+            },
+            "effects": [
+              {
+                "kind": "item",
+                "item": "wood",
+                "amount": -3
+              },
+              {
+                "kind": "resource",
+                "resource": "warmth",
+                "delta": 25
+              },
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": 5
+              },
+              {
+                "kind": "resource",
+                "resource": "health",
+                "delta": 3
+              }
+            ],
+            "next": "start",
+            "result": "火堆噼啪作响。橘色的光把阴影逼到墙角。你伸出手，感觉指节慢慢活了过来。"
+          },
+          {
+            "id": "gather_wood",
+            "text": "砍伐木材 [木材+5]",
+            "hint": "消耗1行动点。体力低于15时会受伤。",
             "apCost": 1,
             "effects": [
               {
-                "kind": "flag",
-                "flag": "fortified"
+                "kind": "item",
+                "item": "wood",
+                "amount": 5
+              },
+              {
+                "kind": "resource",
+                "resource": "energy",
+                "delta": -8
               }
             ],
             "next": "start",
-            "result": "木刺钉进门框，绳结勒紧横梁。今晚野兽得先问过它们。"
+            "result": "你找到几棵枯死的树，抡起斧头砍了半天。木材堆在墙角，心里踏实了不少。"
+          },
+          {
+            "id": "meditate",
+            "text": "静坐冥想 [理智+10] [生命+3]",
+            "hint": "消耗1行动点。平复心神，对抗迷雾侵蚀。",
+            "apCost": 1,
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": 10
+              },
+              {
+                "kind": "resource",
+                "resource": "energy",
+                "delta": -3
+              },
+              {
+                "kind": "resource",
+                "resource": "health",
+                "delta": 3
+              }
+            ],
+            "next": "start",
+            "result": "你闭上眼睛，试着忽略雾里的低语。呼吸慢慢平稳下来，那些幻觉也退散了。"
+          },
+          {
+            "id": "use_bandage",
+            "text": "使用绷带包扎 [生命+20]",
+            "hint": "消耗1行动点，需要绷带×1。重伤时的救命稻草。",
+            "apCost": 1,
+            "requires": {
+              "items": {
+                "bandage": 1
+              }
+            },
+            "effects": [
+              {
+                "kind": "item",
+                "item": "bandage",
+                "amount": -1
+              },
+              {
+                "kind": "resource",
+                "resource": "health",
+                "delta": 20
+              }
+            ],
+            "next": "start",
+            "result": "你咬着牙把绷带缠在伤口上。疼得直冒冷汗，但血总算止住了。"
+          },
+          {
+            "id": "use_herb",
+            "text": "熬制草药 [生命+12] [理智+3]",
+            "hint": "消耗1行动点，需要草药×2。缓慢恢复，还能平复心神。",
+            "apCost": 1,
+            "requires": {
+              "items": {
+                "herb": 2
+              }
+            },
+            "effects": [
+              {
+                "kind": "item",
+                "item": "herb",
+                "amount": -2
+              },
+              {
+                "kind": "resource",
+                "resource": "health",
+                "delta": 12
+              },
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": 3
+              }
+            ],
+            "next": "start",
+            "result": "你把草药扔进铁罐里熬煮。苦涩的味道弥漫开来，但喝下去后，身体确实暖和了一些。"
           },
           {
             "id": "hunt",
-            "text": "夜巡狩猎 [风险：遭遇野兽]",
-            "hint": "消耗1行动点，胜利缴获战利品",
+            "text": "夜巡狩猎 [危险！可能遭遇野兽]",
+            "hint": "消耗1行动点。血量低于30时不要去，真的会死。",
             "apCost": 1,
             "effects": [
               {
@@ -76,11 +273,343 @@ export const fullContent: ContentPack = {
                   {
                     "kind": "combat"
                   }
+                ],
+                "failEffects": [
+                  {
+                    "kind": "resource",
+                    "resource": "energy",
+                    "delta": -5
+                  }
                 ]
               }
             ],
             "next": "start",
             "result": "你握紧木矛走进雾里。黑暗深处，有什么东西也在找你。"
+          },
+          {
+            "id": "repair_radio",
+            "text": "修理无线电 [需要零件×3]",
+            "hint": "消耗1行动点。修好后可发送求救信号，触发好结局。",
+            "apCost": 1,
+            "requires": {
+              "items": {
+                "radio_parts": 3
+              }
+            },
+            "effects": [
+              {
+                "kind": "item",
+                "item": "radio_parts",
+                "amount": -3
+              },
+              {
+                "kind": "flag",
+                "flag": "radio_fixed"
+              }
+            ],
+            "next": "start",
+            "result": "你把最后一个零件焊上去，拧开旋钮——刺啦刺啦的电流声里，似乎有人类的声音。无线电修好了！"
+          },
+          {
+            "id": "train",
+            "text": "锻炼身体 [力量+1] [体力-8]",
+            "hint": "消耗1行动点。永久提升力量，战斗伤害更高。",
+            "apCost": 1,
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "energy",
+                "delta": -8
+              }
+            ],
+            "next": "start",
+            "result": "你用碎石做了个简易哑铃，对着晨光练了一组。胳膊酸得发抖，但你知道这会有用的。"
+          },
+          {
+            "id": "study",
+            "text": "研究地图和线索 [智力+1] [理智+2]",
+            "hint": "消耗1行动点。永久提升智力，检定成功率更高。",
+            "apCost": 1,
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": 2
+              }
+            ],
+            "next": "start",
+            "result": "你把搜来的残破地图摊在地上，用炭笔标出已探索的区域。迷雾的轮廓似乎清晰了一些。"
+          }
+        ]
+      },
+      "story_hub": {
+        "id": "story_hub",
+        "text": "你翻出那本残破的笔记本，上面记录着你来到这迷雾世界后的每一天。\n\n有些记忆已经模糊了，但有些事，你永远不会忘。",
+        "choices": [
+          {
+            "id": "back",
+            "text": "← 回到木屋",
+            "effects": [],
+            "next": "start",
+            "result": ""
+          }
+        ]
+      },
+      "ch1_wake": {
+        "id": "ch1_wake",
+        "text": "你是被冷醒的。\n\n不是冬天那种冷，是一种渗进骨头里的、带着潮湿气息的冷。你睁开眼，发现自己躺在一间陌生的木屋里。天花板的木板在滴水，空气里弥漫着腐叶和铁锈的味道。\n\n窗外是一片浓得化不开的白雾。你什么都看不见，只能听见雾里传来的、若有若无的低语声。\n\n你不记得自己是怎么来到这里的。最后一段记忆，是下班路上的一场大雨，然后……就没有然后了。\n\n你的口袋里有一部没电的手机，一串钥匙，和半包没拆的烟。除此之外，一无所有。",
+        "choices": [
+          {
+            "id": "look_around",
+            "text": "仔细查看木屋",
+            "effects": [
+              {
+                "kind": "item",
+                "item": "wood",
+                "amount": 3
+              },
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": -3
+              }
+            ],
+            "next": "ch1_first_explore",
+            "result": "你扶着墙站起来，腿有点软。木屋里空荡荡的，只有一张破床、一个锈迹斑斑的铁炉，和角落里堆着的几根木柴。你把木柴收起来——至少今晚不会冻死了。\n\n但你注意到，木屋的门是从外面被闩上的。有人，或者有什么东西，把你关在了这里。"
+          },
+          {
+            "id": "panic",
+            "text": "冲出门去",
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": -8
+              },
+              {
+                "kind": "resource",
+                "resource": "health",
+                "delta": -5
+              }
+            ],
+            "next": "ch1_first_explore",
+            "result": "你猛地冲向门口，用肩膀撞开了那扇破旧的木门。雾扑面而来，你踉跄着跑了几步，然后被什么东西绊倒了。\n\n你趴在地上，大口喘着气。雾里的低语声更近了，像是有人贴着你的耳朵在说话。你听不清内容，但那声音让你头皮发麻。\n\n你花了好一会儿才冷静下来。跑是没用的——你根本不知道自己在往哪跑。"
+          },
+          {
+            "id": "calm",
+            "text": "深呼吸，冷静下来",
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": 5
+              }
+            ],
+            "next": "ch1_first_explore",
+            "result": "你闭上眼睛，做了几次深呼吸。 panic 解决不了问题。你告诉自己：不管这是什么地方，先活下来再说。\n\n你睁开眼，感觉冷静了一些。雾还在，低语还在，但你已经不再那么害怕了。"
+          }
+        ]
+      },
+      "ch1_first_explore": {
+        "id": "ch1_first_explore",
+        "text": "你走出木屋。\n\n雾比你想象的更浓。能见度不到五米，你只能看到脚下的碎石路和路边模糊的树影。空气潮湿阴冷，每一口呼吸都像是在喝冰水。\n\n你沿着小路走了大约十分钟，发现了一栋半塌的建筑。看起来像是个便利店——玻璃碎了一地，货架倒了大半，但里面可能还有些能用的东西。\n\n雾里传来了什么声音。像是脚步声，又像是拖拽什么东西的声音。你不确定。",
+        "choices": [
+          {
+            "id": "enter_store",
+            "text": "进入便利店搜索",
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "energy",
+                "delta": -5
+              },
+              {
+                "kind": "roll",
+                "difficulty": 35,
+                "successEffects": [
+                  {
+                    "kind": "resource",
+                    "resource": "food",
+                    "delta": 20
+                  },
+                  {
+                    "kind": "resource",
+                    "resource": "water",
+                    "delta": 15
+                  },
+                  {
+                    "kind": "item",
+                    "item": "bandage",
+                    "amount": 2
+                  }
+                ],
+                "failEffects": [
+                  {
+                    "kind": "resource",
+                    "resource": "health",
+                    "delta": -12
+                  },
+                  {
+                    "kind": "resource",
+                    "resource": "sanity",
+                    "delta": -5
+                  }
+                ]
+              }
+            ],
+            "next": "ch1_night",
+            "result": "你小心翼翼地走进便利店。地上有碎玻璃，你踮着脚走过去。货架上还剩些东西——几包过期的饼干、半瓶矿泉水、还有一卷绷带。\n\n你把东西塞进包里，正准备离开，突然听到身后传来一声低沉的嘶吼。你猛地回头——雾里站着一个人影，不，那不是人。它的四肢扭曲成不正常的角度，皮肤是灰白色的，眼睛里没有瞳孔。\n\n你转身就跑。身后的嘶吼声越来越近，但你不敢回头。你一直跑，直到看到木屋的轮廓，才敢停下来。\n\n你靠在门上，大口喘着气。那东西没有追过来。但你知道，它还在雾里。"
+          },
+          {
+            "id": "avoid_store",
+            "text": "绕开便利店，继续探索",
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "energy",
+                "delta": -8
+              },
+              {
+                "kind": "resource",
+                "resource": "food",
+                "delta": 5
+              },
+              {
+                "kind": "resource",
+                "resource": "water",
+                "delta": 5
+              }
+            ],
+            "next": "ch1_night",
+            "result": "你决定不冒险。便利店看起来太危险了，你绕开它，继续沿着小路走。\n\n你在路边找到了一些野果——不确定能不能吃，但你太饿了，还是摘了几个。你还在一个破桶里接到了一些雨水。\n\n天色渐渐暗了下来。你意识到，必须在天黑前回到木屋。夜晚的雾，看起来比白天更浓了。"
+          },
+          {
+            "id": "investigate_sound",
+            "text": "调查那个声音",
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": -10
+              },
+              {
+                "kind": "roll",
+                "difficulty": 50,
+                "successEffects": [
+                  {
+                    "kind": "item",
+                    "item": "metal",
+                    "amount": 3
+                  },
+                  {
+                    "kind": "resource",
+                    "resource": "sanity",
+                    "delta": -5
+                  }
+                ],
+                "failEffects": [
+                  {
+                    "kind": "resource",
+                    "resource": "health",
+                    "delta": -20
+                  },
+                  {
+                    "kind": "resource",
+                    "resource": "sanity",
+                    "delta": -15
+                  }
+                ]
+              }
+            ],
+            "next": "ch1_night",
+            "result": "你握紧拳头，朝声音传来的方向走去。雾里的影子晃了晃，你看到了——那是一只野狗，不，比野狗大得多。它的皮毛是灰白色的，嘴里滴着涎水，正盯着你看。\n\n你和它对峙了几秒。然后，它扑了过来。\n\n你不知道自己是怎么活下来的。你只记得自己用一根铁棍拼命地挥打，然后那东西哀嚎着跑了。你瘫坐在地上，浑身是伤，手里还攥着那根铁棍。\n\n你活下来了。但你知道，下一次，可能就没这么幸运了。"
+          }
+        ]
+      },
+      "ch1_night": {
+        "id": "ch1_night",
+        "text": "夜幕降临。\n\n你回到木屋，用木柴生了一堆火。火光在墙上跳动，把你的影子拉得很长。外面的雾更浓了，低语声也更清晰了——你甚至能听出那是一个女人的声音，在反复念着什么。\n\n你听不懂，但那声音让你头皮发麻。\n\n你靠在火边，感觉稍微暖和了一些。但你知道，这只是第一个夜晚。在这迷雾里，还有无数个夜晚在等着你。\n\n你必须想办法活下去。",
+        "choices": [
+          {
+            "id": "sleep",
+            "text": "睡觉，保存体力",
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "energy",
+                "delta": 20
+              },
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": -3
+              }
+            ],
+            "next": "start",
+            "result": "你裹着那件破外套，在火边躺了下来。你告诉自己不要睡太死，但疲惫很快就战胜了恐惧。\n\n你做了一个梦。梦里你回到了家，坐在沙发上看电视。一切都很正常，没有雾，没有低语。然后电视突然变成了雪花，屏幕里传出那个女人的声音——\n\n你猛地惊醒。火快灭了，外面的天已经蒙蒙亮。你活过了第一个夜晚。"
+          },
+          {
+            "id": "watch",
+            "text": "守夜，保持警惕",
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "energy",
+                "delta": -10
+              },
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": 3
+              },
+              {
+                "kind": "flag",
+                "flag": "ch1_survived_night"
+              }
+            ],
+            "next": "start",
+            "result": "你决定不睡。你往火里添了根木柴，然后靠在门边，听着外面的动静。\n\n夜很长。雾里的低语声时断时续，有时候像是在叫你的名字。你好几次差点冲出去看看，但都忍住了。\n\n大约凌晨三点的时候，你听到了脚步声——不是一个，是好几个。它们在木屋外面转了一圈，然后离开了。你屏住呼吸，直到脚步声完全消失，才敢大口喘气。\n\n天亮了。你活过了第一个夜晚。而且你知道了一件事——夜里，雾里有东西在游荡。"
+          },
+          {
+            "id": "investigate_whisper",
+            "text": "循着低语声走出去",
+            "effects": [
+              {
+                "kind": "resource",
+                "resource": "sanity",
+                "delta": -20
+              },
+              {
+                "kind": "roll",
+                "difficulty": 60,
+                "successEffects": [
+                  {
+                    "kind": "item",
+                    "item": "radio_parts",
+                    "amount": 1
+                  },
+                  {
+                    "kind": "resource",
+                    "resource": "sanity",
+                    "delta": -10
+                  }
+                ],
+                "failEffects": [
+                  {
+                    "kind": "resource",
+                    "resource": "health",
+                    "delta": -25
+                  },
+                  {
+                    "kind": "resource",
+                    "resource": "sanity",
+                    "delta": -20
+                  }
+                ]
+              }
+            ],
+            "next": "start",
+            "result": "你鬼使神差地推开了门。雾扑面而来，你循着那个女人的声音走去。\n\n雾越来越浓，你已经看不到木屋了。低语声越来越近，你甚至能听出她在念的是一串数字——像是某种坐标。\n\n然后你看到了她。她站在雾里，背对着你，穿着一件白色的连衣裙。她的头发很长，垂到腰际。你想喊她，但发不出声音。\n\n她慢慢地转过身来。你看到了她的脸——没有脸，只有一片空白。\n\n你尖叫着转身就跑。你不知道自己跑了多久，直到你撞到了木屋的门。你瘫在地上，浑身发抖。\n\n但你注意到，你的手里攥着什么东西——是一个电子元件，像是从什么设备上拆下来的。"
           }
         ]
       }
@@ -210,13 +739,13 @@ export const fullContent: ContentPack = {
                   "amount": -1
                 }
               ],
-              "next": "duoduo_s1_meet__gate",
+              "next": "duoduo_s1_meet__name",
               "requires": {
                 "items": {
                   "food_canned": 1
                 }
               },
-              "result": "你蹲下来，把罐头从篱笆缝里递了过去。她扑上来抓过就开，拉环都差点拽断，吃得狼吞虎咽，噎住了也不肯停，直到最后一勺刮干净才停下来喘气。\n然后她站起来，郑重其事地掸掸裤子，朝你鞠了一躬：「我叫朵朵。哥哥你叫什么？」\n【叮！好感度提升：朵朵 +20】\nname"
+              "result": "你蹲下来，把罐头从篱笆缝里递了过去。她扑上来抓过就开，拉环都差点拽断，吃得狼吞虎咽，噎住了也不肯停，直到最后一勺刮干净才停下来喘气。\n然后她站起来，郑重其事地掸掸裤子，朝你鞠了一躬：「我叫朵朵。哥哥你叫什么？」\n【叮！好感度提升：朵朵 +20】"
             },
             {
               "id": "c_1",
@@ -237,13 +766,13 @@ export const fullContent: ContentPack = {
                   "amount": -1
                 }
               ],
-              "next": "duoduo_s1_meet__gate",
+              "next": "duoduo_s1_meet__name",
               "requires": {
                 "items": {
                   "water_clean": 1
                 }
               },
-              "result": "你拧开水壶递过去。她小口小口地抿，喉结一下一下地滚，像在品尝什么失传已久的珍宝。「妈妈说不能大口喝，会呛。」她说这话时眼神很平静，平静得让你心里发堵——她妈妈在哪儿呢？\n你没敢问。\n【叮！好感度提升：朵朵 +15】\nname"
+              "result": "你拧开水壶递过去。她小口小口地抿，喉结一下一下地滚，像在品尝什么失传已久的珍宝。「妈妈说不能大口喝，会呛。」她说这话时眼神很平静，平静得让你心里发堵——她妈妈在哪儿呢？\n你没敢问。\n【叮！好感度提升：朵朵 +15】"
             },
             {
               "id": "c_2",
@@ -259,7 +788,7 @@ export const fullContent: ContentPack = {
                   "flag": "kid_repelled"
                 }
               ],
-              "next": "duoduo_s1_meet__gate",
+              "next": "duoduo_s1_meet__name",
               "result": "「走吧，这儿不留人。」你压低声音说。\n她没有哭，也没有闹，只是安安静静地站起来拍了拍裤子上的土，一步三回头地走进了雾里。走到第三回头的时候，她的身影彻底融进了白色里。\n那天晚上你梦见很白很白的东西，醒来时天还没亮，窗板上全是抓挠般的划痕。\n【叮！好感度下降：朵朵 -15】"
             },
             {
@@ -272,7 +801,7 @@ export const fullContent: ContentPack = {
               "id": "c_4",
               "text": "先观察她：有没有伤，身后有没有跟着东西",
               "effects": [],
-              "next": "duoduo_s1_meet__name"
+              "next": "__return__"
             }
           ]
         },
@@ -303,20 +832,20 @@ export const fullContent: ContentPack = {
                   "delta": 3
                 }
               ],
-              "next": "duoduo_s1_meet__name",
+              "next": "__return__",
               "result": "她愣了一下，随即用力点头，一副「原来如此」的表情：「好！那我也不告诉别人我的名字——只告诉你一个人。这是秘密哦！」\n你们之间有了第一个秘密。在末世里，一个只属于两个人的秘密，比一箱罐头还金贵。"
             },
             {
               "id": "c_2",
               "text": "反问她：「那你叫什么？总得公平交易」",
               "effects": [],
-              "next": "duoduo_s1_meet__name"
+              "next": "__return__"
             },
             {
               "id": "c_3",
               "text": "报一半留一半：「叫我小木就行」",
               "effects": [],
-              "next": "duoduo_s1_meet__name"
+              "next": "__return__"
             }
           ]
         },
@@ -341,7 +870,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把旧外套披到她肩上，再看她走进雾里",
               "effects": [],
-              "next": "duoduo_s1_meet__promise",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "mat_cloth": 1
@@ -352,7 +881,7 @@ export const fullContent: ContentPack = {
               "id": "c_2",
               "text": "教她一句暗号：「夜枭叫两声，就是我」",
               "effects": [],
-              "next": "duoduo_s1_meet__promise"
+              "next": "__return__"
             }
           ]
         },
@@ -377,7 +906,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "天不亮就把双份食物放上石阶",
               "effects": [],
-              "next": "duoduo_s1_meet__repent"
+              "next": "__return__"
             }
           ]
         }
@@ -422,14 +951,14 @@ export const fullContent: ContentPack = {
                   "delta": 4
                 }
               ],
-              "next": "duoduo_s2_frog__gift",
+              "next": "__return__",
               "result": "你没有喊破，只是把纸青蛙摆在窗台正中央，朝着雾的方向。\n第二天，纸青蛙旁边多了一只纸船。第三天是一朵蔫了一半的野花。第四天是一颗磨圆的玻璃珠。\n你们谁都没提这件事，窗台却渐渐变成了一个小小的博物馆。"
             },
             {
               "id": "c_2",
               "text": "削一支炭笔挂在篱笆尖上",
               "effects": [],
-              "next": "duoduo_s2_frog__gift"
+              "next": "__return__"
             }
           ]
         },
@@ -460,14 +989,14 @@ export const fullContent: ContentPack = {
                   "delta": -2
                 }
               ],
-              "next": "duoduo_s2_frog__tea",
+              "next": "__return__",
               "result": "晃着的小腿停住了。\n「妈妈去找爸爸了，让我在这儿等。」她说得很快，眼睛看着自己的鞋尖，然后又飞快地补了一句，像是在说服自己，「他们说好会回来接我的。他们从来不骗人。」\n那之后很久很久，她都没有再提过这件事。"
             },
             {
               "id": "c_2",
               "text": "举起纸青蛙：「这补丁缝得比我的手艺强」",
               "effects": [],
-              "next": "duoduo_s2_frog__tea"
+              "next": "__return__"
             }
           ]
         },
@@ -492,7 +1021,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "在频道匿名回一句：「孩子没事，有人照应」",
               "effects": [],
-              "next": "duoduo_s2_frog__close"
+              "next": "__return__"
             }
           ]
         }
@@ -537,13 +1066,13 @@ export const fullContent: ContentPack = {
                   "amount": -2
                 }
               ],
-              "next": "duoduo_s3_letters__book",
+              "next": "duoduo_s3_letters__read",
               "requires": {
                 "items": {
                   "mat_cloth": 2
                 }
               },
-              "result": "你把布裁成巴掌大的卡片，烧过的炭条写上字，一天教三个。她学得飞快，第二天就追着你要新的，睡觉都要把字卡攥在手心里，攥出一圈汗印子。\n【叮！朵朵学会了识字】——也许有一天，这些字会派上意想不到的用场。\nread"
+              "result": "你把布裁成巴掌大的卡片，烧过的炭条写上字，一天教三个。她学得飞快，第二天就追着你要新的，睡觉都要把字卡攥在手心里，攥出一圈汗印子。\n【叮！朵朵学会了识字】——也许有一天，这些字会派上意想不到的用场。"
             },
             {
               "id": "c_1",
@@ -564,8 +1093,8 @@ export const fullContent: ContentPack = {
                   "amount": 2
                 }
               ],
-              "next": "duoduo_s3_letters__book",
-              "result": "「这个是野兔的脚印，前浅后深说明它在跑；这个果子皮上有白霜的不能吃，吃了肚子会疼得打滚；下套子要卡在它回家的路上，不能卡在出门的路上……」\n她蹲在地上听得眼睛发亮，捡了根树枝在小本本上画得密密麻麻。\n【叮！朵朵学会了看踪迹】——这孩子在雾里活下去的本事，又多了一层。\nread"
+              "next": "duoduo_s3_letters__read",
+              "result": "「这个是野兔的脚印，前浅后深说明它在跑；这个果子皮上有白霜的不能吃，吃了肚子会疼得打滚；下套子要卡在它回家的路上，不能卡在出门的路上……」\n她蹲在地上听得眼睛发亮，捡了根树枝在小本本上画得密密麻麻。\n【叮！朵朵学会了看踪迹】——这孩子在雾里活下去的本事，又多了一层。"
             },
             {
               "id": "c_2",
@@ -577,14 +1106,14 @@ export const fullContent: ContentPack = {
                   "delta": -4
                 }
               ],
-              "next": "duoduo_s3_letters__book",
+              "next": "duoduo_s3_letters__read",
               "result": "她的肩膀肉眼可见地垮了下来。抱着那半本书慢慢往外走，走了三步又停下，回过头来把书放在了你家门口的柴堆上。\n「那……书放你这儿。」她的声音很小，「你想看了就看看。」\n书在你桌上放了很多天。你一个字也没看进去。"
             },
             {
               "id": "c_3",
               "text": "拿浆果当奖品，认对一个给一颗",
               "effects": [],
-              "next": "duoduo_s3_letters__read",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "food_berry": 3
@@ -620,14 +1149,14 @@ export const fullContent: ContentPack = {
                   "delta": 10
                 }
               ],
-              "next": "duoduo_s3_letters__read",
+              "next": "__return__",
               "result": "「这是你！」她举着卡片向你宣布，语气骄傲得像刚铸出一把宝剑。然后她把卡片揣进贴身的口袋，隔着布料拍了拍。\n「这样你就不会丢了。」她一本正经地说，「丢了我也能把你找回来。」\n雾这么大，这话本来是不该信的。可你还是信了。"
             },
             {
               "id": "c_2",
               "text": "故意写错一个字让她来抓",
               "effects": [],
-              "next": "duoduo_s3_letters__read"
+              "next": "__return__"
             }
           ]
         },
@@ -656,13 +1185,13 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把残页夹回课本：「等你认全字，自己念」",
               "effects": [],
-              "next": "duoduo_s3_letters__dusk"
+              "next": "__return__"
             },
             {
               "id": "c_2",
               "text": "把残页凑近火光，辨认水渍下晕开的字",
               "effects": [],
-              "next": "duoduo_s3_letters__dusk"
+              "next": "__return__"
             }
           ]
         },
@@ -692,7 +1221,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "沿篱笆外找一圈，看她脚印的去向",
               "effects": [],
-              "next": "duoduo_s3_letters__sad"
+              "next": "__return__"
             }
           ]
         }
@@ -742,7 +1271,7 @@ export const fullContent: ContentPack = {
                   "toy_bear": 1
                 }
               },
-              "result": "你转身进屋，把那只从废墟货架第二层翻出来的布偶熊递到她面前。\n她整个人僵住了。抱着熊愣了足足五秒钟，然后猛地抬起头看你，眼睛亮得像星星全掉了进去：「这是妈妈！我就知道是妈妈！它一直在找我！」\n你转过身假装添柴，抹了一把脸。火光真烫啊。\nhug"
+              "result": "你转身进屋，把那只从废墟货架第二层翻出来的布偶熊递到她面前。\n她整个人僵住了。抱着熊愣了足足五秒钟，然后猛地抬起头看你，眼睛亮得像星星全掉了进去：「这是妈妈！我就知道是妈妈！它一直在找我！」\n你转过身假装添柴，抹了一把脸。火光真烫啊。"
             },
             {
               "id": "c_1",
@@ -758,7 +1287,7 @@ export const fullContent: ContentPack = {
                   "flag": "bear_promised"
                 }
               ],
-              "next": "duoduo_s4_bear__dream",
+              "next": "__return__",
               "result": "「真的吗？！拉钩！」她伸出小拇指，郑重其事地和你拉了勾，再用两个大拇指盖上印章，「盖了章就不许反悔，骗人的是小狗！」\n从此每次探索废墟，你都会下意识地多看一眼货架的第二层——那里总是放玩具。"
             },
             {
@@ -771,7 +1300,7 @@ export const fullContent: ContentPack = {
                   "delta": -2
                 }
               ],
-              "next": "duoduo_s4_bear__dream",
+              "next": "__return__",
               "result": "她似懂非懂地点点头，抱住膝盖把脸埋了进去，肩膀塌成了小小的弧形。\n有些东西终究要自己去寻，哪怕要穿过一整个梦。这个道理，大人说出来是安慰，孩子听起来，却是任务。"
             }
           ]
@@ -797,13 +1326,13 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "往她碗里也拨了半勺热的",
               "effects": [],
-              "next": "duoduo_s4_bear__hug"
+              "next": "__return__"
             },
             {
               "id": "c_2",
               "text": "郑重其事地给熊也安排岗位：「它管看家」",
               "effects": [],
-              "next": "duoduo_s4_bear__hug"
+              "next": "__return__"
             }
           ]
         },
@@ -828,7 +1357,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把搜来的半截红毛线单独收进内袋",
               "effects": [],
-              "next": "duoduo_s4_bear__late"
+              "next": "__return__"
             }
           ]
         }
@@ -880,7 +1409,7 @@ export const fullContent: ContentPack = {
                   "amount": -1
                 }
               ],
-              "next": "duoduo_s5_play__knock",
+              "next": "duoduo_s5_play__after",
               "requires": {
                 "items": {
                   "food_biscuit": 1
@@ -892,7 +1421,7 @@ export const fullContent: ContentPack = {
               "id": "c_3",
               "text": "改玩室内捉迷藏，输的人洗碗",
               "effects": [],
-              "next": "duoduo_s5_play__knock"
+              "next": "__return__"
             }
           ]
         },
@@ -917,7 +1446,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把这个秘密写进日记，锁进抽屉",
               "effects": [],
-              "next": "duoduo_s5_play__after"
+              "next": "__return__"
             }
           ]
         }
@@ -953,13 +1482,13 @@ export const fullContent: ContentPack = {
                   "delta": 4
                 }
               ],
-              "next": "duoduo_s6_crisis__wake",
+              "next": "duoduo_s6_crisis__barn",
               "requires": {
                 "items": {
                   "tool_torch": 1
                 }
               },
-              "result": "火折子抖了三次才点着。火把撕开一条光的通道，雾在光前面退，又在光后面无声地合拢，像一头巨大的、耐心的兽。\n你循着哭声狂奔，心跳声盖过了自己的脚步声。村西的路你白天走过无数遍，此刻却陌生得像另一个世界。\n【状态：轻伤】\nbarn"
+              "result": "火折子抖了三次才点着。火把撕开一条光的通道，雾在光前面退，又在光后面无声地合拢，像一头巨大的、耐心的兽。\n你循着哭声狂奔，心跳声盖过了自己的脚步声。村西的路你白天走过无数遍，此刻却陌生得像另一个世界。\n【状态：轻伤】"
             },
             {
               "id": "c_1_0",
@@ -999,7 +1528,7 @@ export const fullContent: ContentPack = {
                   "flag": "kid_ignored"
                 }
               ],
-              "next": "duoduo_s6_crisis__wake",
+              "next": "__return__",
               "result": "你退回到床角，用被子蒙住头。\n哭声还在继续，一声，又一声。你开始数数，数到一百的时候哭声弱了，数到五百的时候哭声断了，数到一千的时候，天边泛起了灰白色。\n你睁着眼躺到天明，被子里的空气又闷又冷。\n【好感度暴跌：朵朵 -40】【状态：恐慌】"
             }
           ]
@@ -1070,7 +1599,7 @@ export const fullContent: ContentPack = {
               "id": "c_8",
               "text": "贴墙屏息，数它的脚步找出规律",
               "effects": [],
-              "next": "duoduo_s6_crisis__shadow"
+              "next": "__return__"
             }
           ]
         },
@@ -1126,7 +1655,7 @@ export const fullContent: ContentPack = {
                   "flag": "kid_saved"
                 }
               ],
-              "next": "duoduo_s6_crisis__shadow",
+              "next": "duoduo_s6_crisis__saved_end",
               "result": "「躲进粮柜，听到我的声音再出来。无论听见什么，都不要出来。」\n你把她塞进空粮柜，合上柜门之前，看见她拼命点头，眼泪糊了一脸。\n然后你转身朝雾的反方向狂奔，用尽全力弄出声响——踢罐头、砸窗户、大喊大叫。它跟上来了。你带着它在雾里兜了一整夜，靠着白天侦察记住的地形甩脱了它。\n天亮回到家，双腿抖得像筛糠。粮柜的门开了一条缝，她真的听话地在里面躲了一夜，一声没吭。"
             },
             {
@@ -1143,7 +1672,7 @@ export const fullContent: ContentPack = {
                   "flag": "kid_saved"
                 }
               ],
-              "next": "duoduo_s6_crisis__shadow",
+              "next": "duoduo_s6_crisis__saved_end",
               "requires": {
                 "flags": [
                   "kid_mistwise"
@@ -1177,7 +1706,7 @@ export const fullContent: ContentPack = {
               "id": "c_8",
               "text": "它的注意力还在村东——低声：走",
               "effects": [],
-              "next": "duoduo_s6_crisis__saved_end",
+              "next": "__return__",
               "requires": {
                 "flags": [
                   "barn_distracted"
@@ -1207,7 +1736,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把她汗湿的头发拢到耳后，什么都不问",
               "effects": [],
-              "next": "duoduo_s6_crisis__saved_end"
+              "next": "__return__"
             }
           ]
         },
@@ -1232,7 +1761,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把那罐水，倒在她脚印消失的地方",
               "effects": [],
-              "next": "duoduo_s6_crisis__lost_end"
+              "next": "__return__"
             }
           ]
         },
@@ -1257,7 +1786,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "那一斧劈下去，卡在木头里拔不出来",
               "effects": [],
-              "next": "duoduo_s6_crisis__ignore_end"
+              "next": "__return__"
             }
           ]
         }
@@ -1293,8 +1822,8 @@ export const fullContent: ContentPack = {
                   "flag": "kid_harbored"
                 }
               ],
-              "next": "duoduo_s7_shelter__eve",
-              "result": "「当然能。」你把最好的位置腾给她——离火堆最近、离门最远的那块地板。\n她高兴坏了，转头就跑去把自己那份家当搬了过来：半袋浆果、一只缺口的碗、叠得方方正正的小被子，还有那只一边耳朵高的布偶熊。东西不多，码得整整齐齐，像一座小小的城。\n【叮！朵朵入住庇护所】\nmap"
+              "next": "duoduo_s7_shelter__map",
+              "result": "「当然能。」你把最好的位置腾给她——离火堆最近、离门最远的那块地板。\n她高兴坏了，转头就跑去把自己那份家当搬了过来：半袋浆果、一只缺口的碗、叠得方方正正的小被子，还有那只一边耳朵高的布偶熊。东西不多，码得整整齐齐，像一座小小的城。\n【叮！朵朵入住庇护所】"
             },
             {
               "id": "c_1",
@@ -1310,8 +1839,8 @@ export const fullContent: ContentPack = {
                   "flag": "kid_harbored"
                 }
               ],
-              "next": "duoduo_s7_shelter__eve",
-              "result": "工具房狭小，但胜在结实，门板是整块的厚木。你把门闩拆下来修了两遍，又给她塞了个小火盆。\n她趴在门口研究了半天那个新门闩，然后学着你的样子拉开、插上、再拉开——确认自己一个人也能打开之后，才安心地笑了：「这样半夜我要是想尿尿，就不用喊你了。」\n……行吧，这确实很重要。\nmap"
+              "next": "duoduo_s7_shelter__map",
+              "result": "工具房狭小，但胜在结实，门板是整块的厚木。你把门闩拆下来修了两遍，又给她塞了个小火盆。\n她趴在门口研究了半天那个新门闩，然后学着你的样子拉开、插上、再拉开——确认自己一个人也能打开之后，才安心地笑了：「这样半夜我要是想尿尿，就不用喊你了。」\n……行吧，这确实很重要。"
             },
             {
               "id": "c_2",
@@ -1323,14 +1852,14 @@ export const fullContent: ContentPack = {
                   "delta": -6
                 }
               ],
-              "next": "duoduo_s7_shelter__eve",
+              "next": "duoduo_s7_shelter__map",
               "result": "她低下头「嗯」了一声，没有争辩，也没有像平时那样讨价还价。\n她转过身走进暮色里，背影小小的，背包一颠一颠的。走出十几步，她停下来回头看了一眼——就一眼——然后接着往前走了。\n那晚兽潮的嘶吼声传过来的时候，你盯着天花板，一夜没有合眼。"
             },
             {
               "id": "c_3",
               "text": "把唯一的床让出来，自己抱被子睡灶边",
               "effects": [],
-              "next": "duoduo_s7_shelter__map"
+              "next": "__return__"
             }
           ]
         },
@@ -1359,7 +1888,7 @@ export const fullContent: ContentPack = {
                   "kid_letters"
                 ]
               },
-              "result": "「月、牙、湾……还有这个，三点水的，是『海』！老师教过的！」她一个字一个字地指给你看，小手指戳得纸面咚咚响。残页角落那行被水渍晕开的铅印小字，被她逐字拼了出来。\n你照着她念的内容比对白天侦察记下的方位——沉船湾的位置，一下子清晰了起来。\n【叮！获得线索：地图碎片 ×1】\nwatch"
+              "result": "「月、牙、湾……还有这个，三点水的，是『海』！老师教过的！」她一个字一个字地指给你看，小手指戳得纸面咚咚响。残页角落那行被水渍晕开的铅印小字，被她逐字拼了出来。\n你照着她念的内容比对白天侦察记下的方位——沉船湾的位置，一下子清晰了起来。\n【叮！获得线索：地图碎片 ×1】"
             },
             {
               "id": "c_1",
@@ -1376,13 +1905,13 @@ export const fullContent: ContentPack = {
                   "amount": 2
                 }
               ],
-              "next": "duoduo_s7_shelter__map",
+              "next": "__return__",
               "requires": {
                 "flags": [
                   "kid_snaregirl"
                 ]
               },
-              "result": "她把捡到图的方位、周围的大小脚印、当天的风向讲得清清楚楚，连「地上有拖痕，不是人走的，我绕着走的」这种细节都没漏掉。\n你顺着她的描述在脑子里把地形走了一遍——顺着她标记的那条有水源的小道走，去南边能省出整整半天的路程，还能顺路下套。\n【叮！朵朵标记的安全猎道：生肉 ×2】\nwatch"
+              "result": "她把捡到图的方位、周围的大小脚印、当天的风向讲得清清楚楚，连「地上有拖痕，不是人走的，我绕着走的」这种细节都没漏掉。\n你顺着她的描述在脑子里把地形走了一遍——顺着她标记的那条有水源的小道走，去南边能省出整整半天的路程，还能顺路下套。\n【叮！朵朵标记的安全猎道：生肉 ×2】"
             },
             {
               "id": "c_2",
@@ -1394,8 +1923,8 @@ export const fullContent: ContentPack = {
                   "delta": 3
                 }
               ],
-              "next": "duoduo_s7_shelter__map",
-              "result": "图纸上的墨迹晕得太厉害，油灯的光又暗，一时半会儿看不出所以然。你把它压平收进枕头底下，先给她热了一碗杂烩。\n她捧着碗小口吹气的样子，让你暂时忘掉了外面越来越近的嘶吼声。\n有些账，可以明天再算。\nwatch"
+              "next": "__return__",
+              "result": "图纸上的墨迹晕得太厉害，油灯的光又暗，一时半会儿看不出所以然。你把它压平收进枕头底下，先给她热了一碗杂烩。\n她捧着碗小口吹气的样子，让你暂时忘掉了外面越来越近的嘶吼声。\n有些账，可以明天再算。"
             }
           ]
         },
@@ -1420,13 +1949,13 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "握住那只发白的小手：「不止直升机，还有明天」",
               "effects": [],
-              "next": "duoduo_s7_shelter__watch"
+              "next": "__return__"
             },
             {
               "id": "c_2",
               "text": "搓了一根草绳圈成环，套在她手腕上",
               "effects": [],
-              "next": "duoduo_s7_shelter__watch"
+              "next": "__return__"
             }
           ]
         },
@@ -1451,7 +1980,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把那根树枝削平，刻上两个字：「向东」",
               "effects": [],
-              "next": "duoduo_s7_shelter__alone"
+              "next": "__return__"
             }
           ]
         }
@@ -1488,7 +2017,7 @@ export const fullContent: ContentPack = {
                 }
               ],
               "next": "__return__",
-              "result": "纸鹤的翅膀上还留着她的炭笔小字，歪歪扭扭的两个字：「平安」。\n你把纸鹤放进胸口的口袋，隔着布料按了按。心脏在那个位置跳，一下，一下，很稳。\n十五天了。你第一次觉得，活着这件事有了重量——因为有人把它折成了纸鹤，交到你手上。\noath"
+              "result": "纸鹤的翅膀上还留着她的炭笔小字，歪歪扭扭的两个字：「平安」。\n你把纸鹤放进胸口的口袋，隔着布料按了按。心脏在那个位置跳，一下，一下，很稳。\n十五天了。你第一次觉得，活着这件事有了重量——因为有人把它折成了纸鹤，交到你手上。"
             },
             {
               "id": "c_1",
@@ -1504,14 +2033,14 @@ export const fullContent: ContentPack = {
                   "flag": "kid_crane"
                 }
               ],
-              "next": "duoduo_s8_dawn__crane",
-              "result": "你们头碰着头折了整整一个上午。她的手小，折得慢，但每一条折痕都用指甲反复压实。\n第二只她坚持要用红色的糖纸——「这只代表我，那只代表你」。两只纸鹤被细绳拴在一处，挂在窗前。风一吹，它们就轻轻碰一下头。\n像在说悄悄话。像在说：还在呢，还在呢。\noath"
+              "next": "__return__",
+              "result": "你们头碰着头折了整整一个上午。她的手小，折得慢，但每一条折痕都用指甲反复压实。\n第二只她坚持要用红色的糖纸——「这只代表我，那只代表你」。两只纸鹤被细绳拴在一处，挂在窗前。风一吹，它们就轻轻碰一下头。\n像在说悄悄话。像在说：还在呢，还在呢。"
             },
             {
               "id": "c_2",
               "text": "问她：「纸鹤要飞去哪儿呀」",
               "effects": [],
-              "next": "duoduo_s8_dawn__crane"
+              "next": "__return__"
             }
           ]
         },
@@ -1536,7 +2065,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "翻开她的小背包，把水壶灌满塞在最上层",
               "effects": [],
-              "next": "duoduo_s8_dawn__oath",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "water_clean": 1
@@ -1568,8 +2097,8 @@ export const fullContent: ContentPack = {
                   "delta": 4
                 }
               ],
-              "next": "laok_s1_pact__pact",
-              "result": "他盯着你看了两秒，点点头，把柴刀挪到自己那一侧——这是把你当自己人的放法。\n那一夜你睡得出奇地沉。屋里多了一个人呼吸的声音，风声好像都被压小了。\n【叮！好感度提升：老K +5】\nfire"
+              "next": "laok_s1_pact__fire",
+              "result": "他盯着你看了两秒，点点头，把柴刀挪到自己那一侧——这是把你当自己人的放法。\n那一夜你睡得出奇地沉。屋里多了一个人呼吸的声音，风声好像都被压小了。\n【叮！好感度提升：老K +5】"
             },
             {
               "id": "c_1_0",
@@ -1599,7 +2128,7 @@ export const fullContent: ContentPack = {
               "id": "c_5",
               "text": "伸出三根手指逐一碰回去，像击掌那样",
               "effects": [],
-              "next": "laok_s1_pact__fire"
+              "next": "__return__"
             }
           ]
         },
@@ -1630,14 +2159,14 @@ export const fullContent: ContentPack = {
                   "delta": 3
                 }
               ],
-              "next": "laok_s1_pact__fire",
+              "next": "__return__",
               "result": "他在黑暗里接了，喝了一大口，喉咙滚动了两下。「谢了。」\n有些问题不用问出口。递过去的水，和递过去的道理是一样的。"
             },
             {
               "id": "c_2",
               "text": "装睡，把翻身的动静留给他体面",
               "effects": [],
-              "next": "laok_s1_pact__fire"
+              "next": "__return__"
             }
           ]
         },
@@ -1662,7 +2191,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把自己打的绳结全拆掉，让他重教一遍",
               "effects": [],
-              "next": "laok_s1_pact__dawn"
+              "next": "__return__"
             }
           ]
         }
@@ -1717,8 +2246,8 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "laok_s2_gift__wrap",
-              "result": "你解开军用结——手法很讲究，一看就是救过命的包法。绷带卷得整整齐齐，抗生素的铝箔板用油纸包了两层防潮。\n这个满脸胡茬的男人，比看起来可靠得多。\n【叮！获得物资；老K对你的信任 +1 级】\nguide"
+              "next": "laok_s2_gift__guide",
+              "result": "你解开军用结——手法很讲究，一看就是救过命的包法。绷带卷得整整齐齐，抗生素的铝箔板用油纸包了两层防潮。\n这个满脸胡茬的男人，比看起来可靠得多。\n【叮！获得物资；老K对你的信任 +1 级】"
             },
             {
               "id": "c_1_0",
@@ -1761,13 +2290,13 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "laok_s2_gift__wrap",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "mat_cloth": 2
                 }
               },
-              "result": "你把两块布塞进他手里：「等价交换，谁也不欠谁。」\n他低头看了看布，忽然笑了：「行啊，还学会跟商人谈生意了。成交。」\n这一次，两人都收得心安理得。\nguide"
+              "result": "你把两块布塞进他手里：「等价交换，谁也不欠谁。」\n他低头看了看布，忽然笑了：「行啊，还学会跟商人谈生意了。成交。」\n这一次，两人都收得心安理得。"
             }
           ]
         },
@@ -1798,14 +2327,14 @@ export const fullContent: ContentPack = {
                   "delta": 4
                 }
               ],
-              "next": "laok_s2_gift__guide",
+              "next": "__return__",
               "result": "「少来这套。」他嘴上嫌弃，手里的演示却越来越起劲，连压箱底的「狼烟求救码」都掏出来教了你。\n男人这种生物，吃软不吃硬，尤其吃这一套。"
             },
             {
               "id": "c_2",
               "text": "掏出本子，把三样技巧连图带注记下来",
               "effects": [],
-              "next": "laok_s2_gift__guide"
+              "next": "__return__"
             }
           ]
         },
@@ -1830,13 +2359,13 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "问他：「烟打转的时候，该往哪儿跑」",
               "effects": [],
-              "next": "laok_s2_gift__tip"
+              "next": "__return__"
             },
             {
               "id": "c_2",
               "text": "抓一把湿草，学着他的样子撒上去",
               "effects": [],
-              "next": "laok_s2_gift__tip"
+              "next": "__return__"
             }
           ]
         }
@@ -1880,14 +2409,14 @@ export const fullContent: ContentPack = {
                   "delta": 2
                 }
               ],
-              "next": "laok_s3_photo__glance",
-              "result": "他愣了一秒，然后「呸」了一声笑骂：「滚！我兄弟长得比我俊多了！」\n骂完他把自己的口粮分了你一半，动作粗鲁，理由敷衍：「看你瘦的，丢我的人。」\n眼角的湿意被他用大笑盖了过去。\nsplit"
+              "next": "rescue_s5_split__split",
+              "result": "他愣了一秒，然后「呸」了一声笑骂：「滚！我兄弟长得比我俊多了！」\n骂完他把自己的口粮分了你一半，动作粗鲁，理由敷衍：「看你瘦的，丢我的人。」\n眼角的湿意被他用大笑盖了过去。"
             },
             {
               "id": "c_3",
               "text": "把照片翻过去，只让他看背面那行字",
               "effects": [],
-              "next": "rescue_s5_split__split"
+              "next": "__return__"
             }
           ]
         },
@@ -1918,14 +2447,14 @@ export const fullContent: ContentPack = {
                   "delta": 4
                 }
               ],
-              "next": "laok_s3_photo__split",
+              "next": "__return__",
               "result": "你吃得干干净净，连渣都拍起来吃了。他看着你的吃相满意地点点头：「这就对了。浪费粮食的，山里有的是教训。」\n两张饼，两个人，一顿像样的早饭。末世里的奢侈，不过如此。"
             },
             {
               "id": "c_2",
               "text": "把饼对半掰开，两块半换着吃",
               "effects": [],
-              "next": "laok_s3_photo__split"
+              "next": "__return__"
             }
           ]
         },
@@ -1943,8 +2472,8 @@ export const fullContent: ContentPack = {
                   "delta": 8
                 }
               ],
-              "next": "laok_s3_photo__names",
-              "result": "你讲了很久。讲到后来嗓子有点哑，他就默默往你手里塞了个烤热的面饼。\n「记下了。」他拍拍自己的脑袋，「我记性好。你家里人，从今往后也算我半个熟人。」\n在这片吞掉名字的雾里，多一个人记住你的来处，就多一分走不丢的底气。\nwatch"
+              "next": "laok_s3_photo__watch",
+              "result": "你讲了很久。讲到后来嗓子有点哑，他就默默往你手里塞了个烤热的面饼。\n「记下了。」他拍拍自己的脑袋，「我记性好。你家里人，从今往后也算我半个熟人。」\n在这片吞掉名字的雾里，多一个人记住你的来处，就多一分走不丢的底气。"
             },
             {
               "id": "c_1",
@@ -1956,7 +2485,7 @@ export const fullContent: ContentPack = {
               "id": "c_2",
               "text": "讲完后轻声问：「你弟弟……叫什么？」",
               "effects": [],
-              "next": "laok_s3_photo__watch"
+              "next": "__return__"
             }
           ]
         },
@@ -1985,7 +2514,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把石子揣进贴胸的口袋",
               "effects": [],
-              "next": "laok_s3_photo__watch"
+              "next": "__return__"
             }
           ]
         }
@@ -2021,8 +2550,8 @@ export const fullContent: ContentPack = {
                   "delta": 14
                 }
               ],
-              "next": "laok_s4_past__ember",
-              "result": "老K愣了很久很久，突然笑了——眼睛亮得像换了一个人：「对，雾散了就去接她！到时候你得来喝满月酒——不对，升学酒！」\n那一晚你们聊到很晚。聊她小时候怕打雷，聊她考砸了藏卷子的地方。你多了一个战友，他多了一个证人——证明他不是孤身一人。\nlesson"
+              "next": "laok_s4_past__lesson",
+              "result": "老K愣了很久很久，突然笑了——眼睛亮得像换了一个人：「对，雾散了就去接她！到时候你得来喝满月酒——不对，升学酒！」\n那一晚你们聊到很晚。聊她小时候怕打雷，聊她考砸了藏卷子的地方。你多了一个战友，他多了一个证人——证明他不是孤身一人。"
             },
             {
               "id": "c_1",
@@ -2034,8 +2563,8 @@ export const fullContent: ContentPack = {
                   "delta": 8
                 }
               ],
-              "next": "laok_s4_past__ember",
-              "result": "有些话不需要回应。你只是往火堆里添了一根柴，让火烧得更稳一些。\n他看着火，你看着他。两个人的影子在墙上靠得很近，中间隔着的那点距离，叫作体面。\nlesson"
+              "next": "laok_s4_past__lesson",
+              "result": "有些话不需要回应。你只是往火堆里添了一根柴，让火烧得更稳一些。\n他看着火，你看着他。两个人的影子在墙上靠得很近，中间隔着的那点距离，叫作体面。"
             },
             {
               "id": "c_2",
@@ -2047,7 +2576,7 @@ export const fullContent: ContentPack = {
               "id": "c_3",
               "text": "往火里添了根柴，让火烧得更稳些",
               "effects": [],
-              "next": "laok_s4_past__lesson"
+              "next": "__return__"
             }
           ]
         },
@@ -2076,13 +2605,13 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "指着另一颗星问：「那颗呢？也叫得出吗」",
               "effects": [],
-              "next": "laok_s4_past__lesson"
+              "next": "__return__"
             },
             {
               "id": "c_2",
               "text": "借着星光，把北斗的形状描进本子里",
               "effects": [],
-              "next": "laok_s4_past__lesson"
+              "next": "__return__"
             }
           ]
         },
@@ -2111,7 +2640,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "认真地问：「闺女叫什么名字」",
               "effects": [],
-              "next": "laok_s4_past__promise"
+              "next": "__return__"
             }
           ]
         }
@@ -2152,14 +2681,14 @@ export const fullContent: ContentPack = {
                   "delta": 3
                 }
               ],
-              "next": "laok_s5_patrol__offer",
-              "result": "他探头看了看天，点头：「听你的。雾趴着走的时候，山里的老手都得掂量。」\n那一天你们哪儿也没去。他修好了吱呀作响的门轴，你补了屋顶的漏洞。傍晚时分，远处传来一声若有若无的嚎叫——你们对视一眼，都从对方眼里看到了庆幸。\ndebrief"
+              "next": "laok_s5_patrol__debrief",
+              "result": "他探头看了看天，点头：「听你的。雾趴着走的时候，山里的老手都得掂量。」\n那一天你们哪儿也没去。他修好了吱呀作响的门轴，你补了屋顶的漏洞。傍晚时分，远处传来一声若有若无的嚎叫——你们对视一眼，都从对方眼里看到了庆幸。"
             },
             {
               "id": "c_3",
               "text": "把你的火把塞进他背包侧袋",
               "effects": [],
-              "next": "laok_s5_patrol__debrief",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "tool_torch": 1
@@ -2189,7 +2718,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "在木板地图上补上你见过的那道车辙",
               "effects": [],
-              "next": "laok_s5_patrol__debrief",
+              "next": "__return__",
               "requires": {
                 "flags": [
                   "scout_spotted"
@@ -2200,7 +2729,7 @@ export const fullContent: ContentPack = {
               "id": "c_2",
               "text": "把爪印的位置用炭条圈了个圈",
               "effects": [],
-              "next": "laok_s5_patrol__debrief"
+              "next": "__return__"
             }
           ]
         }
@@ -2230,7 +2759,7 @@ export const fullContent: ContentPack = {
               "text": "「我现在就去取回来」（HP≥50）",
               "effects": [],
               "next": "__return__",
-              "result": "他抓了一下你的手腕，力道很大：「路上小心。矿洞的支撑木朽了好几根，别在下面逗留。」\n你点头，把钥匙攥紧，出发。\ntrek"
+              "result": "他抓了一下你的手腕，力道很大：「路上小心。矿洞的支撑木朽了好几根，别在下面逗留。」\n你点头，把钥匙攥紧，出发。"
             },
             {
               "id": "c_1",
@@ -2255,20 +2784,20 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "laok_s6_secret__key",
-              "result": "他愣住了，捏着钥匙看了很久很久，像是在看一件失而复得的东西。\n「……好。」他重重点头，把钥匙重新收好，声音有点哑，「当晚我就去。这条命，往后跟你混了。」\n【叮！好感度大幅提升：老K +25】\ntrust_end"
+              "next": "__return__",
+              "result": "他愣住了，捏着钥匙看了很久很久，像是在看一件失而复得的东西。\n「……好。」他重重点头，把钥匙重新收好，声音有点哑，「当晚我就去。这条命，往后跟你混了。」\n【叮！好感度大幅提升：老K +25】"
             },
             {
               "id": "c_2",
               "text": "问：「如果我回不来呢？」",
               "effects": [],
-              "next": "laok_s6_secret__key"
+              "next": "__return__"
             },
             {
               "id": "c_3",
               "text": "把钥匙在掌心焐热了才还给他看：「记下了」",
               "effects": [],
-              "next": "laok_s6_secret__key"
+              "next": "__return__"
             }
           ]
         },
@@ -2298,19 +2827,19 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "laok_s6_secret__trek",
+              "next": "laok_s6_secret__room",
               "requires": {
                 "items": {
                   "tool_torch": 1
                 }
               },
-              "result": "火光贴着湿滑的沟壁前进，头顶是废弃的运矿轨道，锈迹斑斑。你按他说的数着步子走——两百一十七步，正好是沟渠尽头。\n洞口的记号出现在眼前时，你长出了一口气。顺便在沟底捡了一截废铁。\nroom"
+              "result": "火光贴着湿滑的沟壁前进，头顶是废弃的运矿轨道，锈迹斑斑。你按他说的数着步子走——两百一十七步，正好是沟渠尽头。\n洞口的记号出现在眼前时，你长出了一口气。顺便在沟底捡了一截废铁。"
             },
             {
               "id": "c_3",
               "text": "进洞前，在支撑木上补刻一个活扣记号",
               "effects": [],
-              "next": "laok_s6_secret__trek"
+              "next": "__return__"
             }
           ]
         },
@@ -2334,13 +2863,13 @@ export const fullContent: ContentPack = {
               "id": "c_2",
               "text": "合掌默立三秒，再动手开箱",
               "effects": [],
-              "next": "laok_s6_secret__room"
+              "next": "laok_s6_secret__letter"
             },
             {
               "id": "c_3",
               "text": "先查看箱子四周有没有布设机关",
               "effects": [],
-              "next": "laok_s6_secret__room"
+              "next": "__return__"
             }
           ]
         },
@@ -2365,13 +2894,13 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "把信按原折痕放回去：有些话该他自己读",
               "effects": [],
-              "next": "laok_s6_secret__letter"
+              "next": "__return__"
             },
             {
               "id": "c_2",
               "text": "替他读出声——只读到抬头两个字就停下",
               "effects": [],
-              "next": "laok_s6_secret__letter"
+              "next": "__return__"
             }
           ]
         },
@@ -2396,7 +2925,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "夜里把工具房钥匙擦亮，挂上门后的钉子",
               "effects": [],
-              "next": "laok_s6_secret__quiet_end"
+              "next": "__return__"
             }
           ]
         },
@@ -2421,7 +2950,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "烧一锅热水，等他回来烫脚",
               "effects": [],
-              "next": "laok_s6_secret__trust_end"
+              "next": "__return__"
             }
           ]
         }
@@ -2469,14 +2998,14 @@ export const fullContent: ContentPack = {
                   "delta": -4
                 }
               ],
-              "next": "laok_s7_plan__proposal",
-              "result": "老K没争辩，只是默默收起了地图。那晚之后他话少了很多。\n也许向导也有向导的骄傲——他把命押在专业上的骄傲。你选择了另一条路，就得独自面对它的重量。\nstubborn"
+              "next": "rescue_s7_eve__eve",
+              "result": "老K没争辩，只是默默收起了地图。那晚之后他话少了很多。\n也许向导也有向导的骄傲——他把命押在专业上的骄傲。你选择了另一条路，就得独自面对它的重量。"
             },
             {
               "id": "c_3",
               "text": "指着高地缺口问：「第一波冲这里怎么办」",
               "effects": [],
-              "next": "rescue_s7_eve__eve"
+              "next": "__return__"
             }
           ]
         },
@@ -2494,14 +3023,14 @@ export const fullContent: ContentPack = {
                   "delta": 6
                 }
               ],
-              "next": "laok_s7_plan__eve",
-              "result": "两个大男人，一边钉栅栏一边哼着跑调的山歌，惊飞了篱笆上的两只乌鸦。\n荒唐吗？有一点。安心吗？非常。\nnight"
+              "next": "laok_s7_plan__night",
+              "result": "两个大男人，一边钉栅栏一边哼着跑调的山歌，惊飞了篱笆上的两只乌鸦。\n荒唐吗？有一点。安心吗？非常。"
             },
             {
               "id": "c_1",
               "text": "往陶罐的沙里掺石灰粉",
               "effects": [],
-              "next": "laok_s7_plan__night"
+              "next": "__return__"
             }
           ]
         },
@@ -2530,19 +3059,19 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "背靠背时数他的呼吸给自己定拍",
               "effects": [],
-              "next": "laok_s7_plan__night"
+              "next": "__return__"
             },
             {
               "id": "c_2_0",
               "text": "朝着兽群吼一嗓子，替自己壮胆",
               "effects": [],
-              "next": "laok_s7_plan__night"
+              "next": "__return__"
             },
             {
               "id": "c_4_1",
               "text": "朝着兽群吼一嗓子，替自己壮胆",
               "effects": [],
-              "next": "laok_s7_plan__night"
+              "next": "__return__"
             }
           ]
         },
@@ -2571,7 +3100,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "给斧头柄缠上一圈防滑布条",
               "effects": [],
-              "next": "laok_s7_plan__stubborn",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "mat_cloth": 1
@@ -2582,7 +3111,7 @@ export const fullContent: ContentPack = {
               "id": "c_2",
               "text": "在心里默数呼吸，从一数到一千",
               "effects": [],
-              "next": "laok_s7_plan__stubborn"
+              "next": "__return__"
             }
           ]
         }
@@ -2605,8 +3134,8 @@ export const fullContent: ContentPack = {
               "id": "c_0",
               "text": "递给他水壶，让他歇口气",
               "effects": [],
-              "next": "laok_s8_oath__repair",
-              "result": "他咕咚咕咚灌了大半壶，用手背抹嘴：「行了，缓过来了。接着干——干完这票，咱们的窝就算齐活了。」\n他说「咱们的窝」的时候，语气自然得就像说「今天的天气」。\ncompass"
+              "next": "laok_s8_oath__compass",
+              "result": "他咕咚咕咚灌了大半壶，用手背抹嘴：「行了，缓过来了。接着干——干完这票，咱们的窝就算齐活了。」\n他说「咱们的窝」的时候，语气自然得就像说「今天的天气」。"
             },
             {
               "id": "c_1",
@@ -2618,7 +3147,7 @@ export const fullContent: ContentPack = {
               "id": "c_2",
               "text": "提议把缺口栅栏改成可拆卸的活扣结构",
               "effects": [],
-              "next": "laok_s8_oath__repair"
+              "next": "__return__"
             }
           ]
         },
@@ -2647,7 +3176,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "问他砍痕的来历",
               "effects": [],
-              "next": "laok_s8_oath__compass"
+              "next": "__return__"
             }
           ]
         },
@@ -2665,8 +3194,8 @@ export const fullContent: ContentPack = {
                   "delta": 8
                 }
               ],
-              "next": "laok_s8_oath__school",
-              "result": "他怔了一下，随即重重锤了下你的肩膀，力道大得差点把你捶进火堆里。\n「好小子。」他别过头去，声音有点闷，「行。那你得喝那坛升学酒——双份。」\noath"
+              "next": "laok_s8_oath__oath",
+              "result": "他怔了一下，随即重重锤了下你的肩膀，力道大得差点把你捶进火堆里。\n「好小子。」他别过头去，声音有点闷，「行。那你得喝那坛升学酒——双份。」"
             },
             {
               "id": "c_1",
@@ -2678,14 +3207,14 @@ export const fullContent: ContentPack = {
                   "delta": 10
                 }
               ],
-              "next": "laok_s8_oath__school",
-              "result": "「海？」他挑了挑眉，忽然笑了，「巧了。我弟以前总嚷嚷要去海边。行，送完闺女，我陪你去——顺路把我弟那份也看了。」\n两个约定，一条路线。雾散之后的日子，忽然就有了盼头。\noath"
+              "next": "laok_s8_oath__oath",
+              "result": "「海？」他挑了挑眉，忽然笑了，「巧了。我弟以前总嚷嚷要去海边。行，送完闺女，我陪你去——顺路把我弟那份也看了。」\n两个约定，一条路线。雾散之后的日子，忽然就有了盼头。"
             },
             {
               "id": "c_2",
               "text": "「教你孙子下棋。让你尝尝连输五把的滋味」",
               "effects": [],
-              "next": "laok_s8_oath__oath"
+              "next": "__return__"
             }
           ]
         },
@@ -2710,7 +3239,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "击掌之后补一句：「信我留着，出去那天还你」",
               "effects": [],
-              "next": "laok_s8_oath__oath",
+              "next": "__return__",
               "requires": {
                 "flags": [
                   "lk_letter_unread"
@@ -2782,7 +3311,7 @@ export const fullContent: ContentPack = {
                   "flag": "doc_trust1"
                 }
               ],
-              "next": "doc_s1_housecall__q",
+              "next": "__return__",
               "result": "「社区医院干了二十年，什么没见过。」他笑了笑，「可惜现在没设备了，只能靠经验。你要想学，我可以教。」\n他从口袋里摸出一本翻烂的《野外急救手册》递给你。\n【获得「野外急救手册」】\n【好感+10】"
             },
             {
@@ -2795,7 +3324,7 @@ export const fullContent: ContentPack = {
                   "delta": 2
                 }
               ],
-              "next": "doc_s1_housecall__q",
+              "next": "__return__",
               "result": "「行，不勉强。」他转身要走，又回头，「不过要是哪天改主意了，我在诊所等你。」\n他走了几步又折回来，「对了，溪谷那边最近不太平，别去太深。」"
             }
           ]
@@ -2820,7 +3349,7 @@ export const fullContent: ContentPack = {
               "id": "c_1",
               "text": "随他去吧",
               "effects": [],
-              "next": "doc_s1_housecall__end",
+              "next": "__return__",
               "result": "你关上门。每个人都有自己的路。"
             }
           ]
@@ -2873,7 +3402,7 @@ export const fullContent: ContentPack = {
                   "delta": 5
                 }
               ],
-              "next": "doc_s2_shortage__q",
+              "next": "__return__",
               "result": "你帮他把有限的药品分类整理，标注保质期和用途。他看着你熟练的动作，点了点头。\n「你学过医？」你摇了摇头。他笑了，「那比我聪明。」\n【knowledge+10】"
             },
             {
@@ -2886,7 +3415,7 @@ export const fullContent: ContentPack = {
                   "delta": 2
                 }
               ],
-              "next": "doc_s2_shortage__q",
+              "next": "__return__",
               "result": "「求人不如求己。」他摆摆手，「我再想想办法。」\n他关上药箱，声音闷闷的。"
             }
           ]
@@ -2943,7 +3472,7 @@ export const fullContent: ContentPack = {
                   "flag": "doc_plan_deep"
                 }
               ],
-              "next": "doc_s3_expedition__q",
+              "next": "__return__",
               "result": "他沉默了一会儿。\n「我女儿今年二十二。」他说，「也在某个迷雾里。」\n「我救不了所有人。但能救一个是一个。」\n他推了推眼镜，「走吧。天亮了雾会更浓。」\n【好感+20】"
             }
           ]
@@ -2994,7 +3523,7 @@ export const fullContent: ContentPack = {
                   "flag": "doc_night_done"
                 }
               ],
-              "next": "doc_s4_clinic__q",
+              "next": "__return__",
               "result": "你站起来，举起双手。「我们也是来拿药的。」\n三个人对视一眼。领头的冷笑：「药房是公共的？」\n老医生挡在你前面：「我们先到的。」\n对方犹豫了一下，转身走了。「下次注意点。」\n老医生的手在发抖，但他没表现出来。\n【好感+10】"
             }
           ]
@@ -3057,7 +3586,7 @@ export const fullContent: ContentPack = {
                   "flag": "doc_prudent"
                 }
               ],
-              "next": "doc_s5_fever__q",
+              "next": "__return__",
               "result": "老医生犹豫了一下，还是听了你的。半瓶灌下去，孩子退烧了，但速度慢一些。\n「今晚可能会反复。」他对女人说，「你守着，有任何情况来找我。」\n女人千恩万谢地走了。\n老医生坐下来，揉了揉太阳穴。\n「你说得对。我太冲动了。」"
             },
             {
@@ -3070,7 +3599,7 @@ export const fullContent: ContentPack = {
                   "delta": 15
                 }
               ],
-              "next": "doc_s5_fever__q",
+              "next": "__return__",
               "result": "你翻出那本《野外急救手册》，找到了物理降温的方法。\n你用溪水浸湿毛巾敷在孩子额头，老医生在旁边指导。\n半小时后，孩子退烧了。药没用。\n老医生看着你，眼里有光。\n「你比我强。」他说这话时，语气里没有嫉妒，只有欣慰。\n【knowledge+15 好感+20】"
             }
           ]
@@ -3132,7 +3661,7 @@ export const fullContent: ContentPack = {
                   "flag": "doc_fin"
                 }
               ],
-              "next": "doc_s6_flag__q",
+              "next": "__return__",
               "result": "你没有打扰他。有些人注定要在末日里点亮一盏灯。\n你回头看了一眼诊所的白旗。它在风中轻轻飘着。\n【老医生路线完结】"
             }
           ]
@@ -3204,7 +3733,7 @@ export const fullContent: ContentPack = {
                   "flag": "rat_story"
                 }
               ],
-              "next": "rat_s1_return__q",
+              "next": "__return__",
               "result": "他沉默了很久。\n「上面太亮了。」他说，「我习惯了黑。」\n他从怀里掏出一只小铁盒，里面装着几颗发霉的糖。\n「她给我的。」他说了一个名字，你没听清。\n「后来她走了。我就下来了。」\n【好感+12】"
             },
             {
@@ -3217,7 +3746,7 @@ export const fullContent: ContentPack = {
                   "delta": 5
                 }
               ],
-              "next": "rat_s1_return__q",
+              "next": "__return__",
               "result": "他接过石头看了看，又看了看你。\n「……有意思。」他把石头揣进兜里，「你很有趣。下次带点吃的来。」\n他没有生气。"
             }
           ]
@@ -3293,7 +3822,7 @@ export const fullContent: ContentPack = {
                   "amount": -1
                 }
               ],
-              "next": "rat_s2_price__q",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "mat_scrap_metal": 1
@@ -3320,7 +3849,7 @@ export const fullContent: ContentPack = {
                   "amount": -2
                 }
               ],
-              "next": "rat_s2_price__q",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "food_berry": 2
@@ -3338,7 +3867,7 @@ export const fullContent: ContentPack = {
                   "delta": 3
                 }
               ],
-              "next": "rat_s2_price__q",
+              "next": "__return__",
               "result": "他凑近栅栏，压低声音：\n「沉船湾下面有个密室。很多人不知道。里面的东西——」\n他伸出五根手指，「值五条命。」\n「但你得先拿到地图碎片。」他看了看你，「你有吗？」"
             }
           ]
@@ -3391,7 +3920,7 @@ export const fullContent: ContentPack = {
                   "delta": -2
                 }
               ],
-              "next": "rat_s3_invite__q",
+              "next": "__return__",
               "result": "你站在入口犹豫了一会儿，转身离开了。\n身后传来鼠王的声音：「胆小鬼。」\n但语气里没有嘲讽，只有失望。"
             }
           ]
@@ -3447,7 +3976,7 @@ export const fullContent: ContentPack = {
                   "flag": "rat_throne_done"
                 }
               ],
-              "next": "rat_s4_throne__q",
+              "next": "__return__",
               "result": "他沉默了一会儿。\n「因为你是第一个给我饼干的人。」他说，「也是第一个没有笑我的人。」\n他坐回石头上，「我以前在上面有个家。后来没了。」\n「现在我有王国了。虽然只有三只死老鼠和一堆发霉面包。」\n他看着你，「你会告诉别人吗？」\n你摇了摇头。\n他笑了。\n【好感+20】"
             }
           ]
@@ -3504,7 +4033,7 @@ export const fullContent: ContentPack = {
                   "flag": "rat_peace"
                 }
               ],
-              "next": "rat_s5_queen__q",
+              "next": "__return__",
               "result": "你让鼠王对着管道喊话：「我们可以共享领地！」\n对面安静了一会儿。\n然后一只老鼠叼着一块布走出来，放在鼠王面前。\n「她同意了。」鼠王难以置信，「她居然同意了。」\n布上绣着一朵花。是鼠后的嫁妆。\n「以后她管西边，我管东边。」鼠王把布叠好揣进兜里，「和平了。」\n【social+15 好感+15】"
             },
             {
@@ -3521,7 +4050,7 @@ export const fullContent: ContentPack = {
                   "flag": "rat_abandoned"
                 }
               ],
-              "next": "rat_s5_queen__q",
+              "next": "__return__",
               "result": "你转身走了。身后传来鼠王的喊声：「别走！！」\n你没有回头。\n第二天你来找他时，他蜷在角落里，身上多了几道抓痕。\n「没事。」他说，「它们走了。」\n但他的眼神变了。"
             }
           ]
@@ -3593,7 +4122,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "rat_s6_farewell__q",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "food_canned": 2
@@ -3620,7 +4149,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "rat_s6_farewell__q",
+              "next": "__return__",
               "result": "他看了看你，又看了看手里的石头。\n「算了。」他把石头递给你，「拿去吧。反正我也用不上了。」\n他转身走了。没有回头。\n你手里攥着石头，站在原地。\n【鼠王路线完结】"
             }
           ]
@@ -3675,7 +4204,7 @@ export const fullContent: ContentPack = {
                   "amount": -1
                 }
               ],
-              "next": "rescue_s1_wreck__gate",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "med_herbal": 1
@@ -3706,7 +4235,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "rescue_s1_wreck__gate",
+              "next": "__return__",
               "result": "你翻开他的包——半块压缩饼干，一份防水地图，还有那个摔裂电台里掉出来的零件。\n你把它们收进自己兜里。他好像动了动，但你不敢确定。\n【道德 -5，好感度下降：救援队 -20】"
             },
             {
@@ -3723,7 +4252,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_lost"
                 }
               ],
-              "next": "rescue_s1_wreck__gate",
+              "next": "__return__",
               "result": "你退回去，把门闩上。雾里那点人声形状的杂音，被你用被子捂了一夜。\n第二天清晨，门口只剩一滩暗色的痕迹，和半截折断的天线。\n【好感度下降：救援队 -30】"
             }
           ]
@@ -3793,7 +4322,7 @@ export const fullContent: ContentPack = {
                   "flag": "word_rescue_point"
                 }
               ],
-              "next": "rescue_s2_awake__talk",
+              "next": "__return__",
               "result": "他说雾起的那天，所有频段同时哑了，只有救援点还在循环播报。后来连他们也快要撑不住。\n「但直升机还在飞。」他最后说，「只要有人回应，他们就还会来。」\n你心里那点熄灭的希望，又被他拨亮了一格。\n【好感度提升：救援队 +5，精神 +3】"
             },
             {
@@ -3810,7 +4339,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_talked"
                 }
               ],
-              "next": "rescue_s2_awake__talk",
+              "next": "__return__",
               "result": "他摇头：「我们也不清楚。只知道雾来之前，天上掉过一阵蓝色的雨。」\n他没再多说，只是看着窗外的白，眼神很远。\n【好感度提升：救援队 +3】"
             }
           ]
@@ -3869,7 +4398,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "rescue_s3_radio__fix",
+              "next": "__return__",
               "result": "你们摸黑翻了近处的倒塌房屋，在一具冻僵的通讯车残骸里，找到了完好的耦合件。\n回来时他手都在抖，但眼睛亮得不行。\n【好感度提升：救援队 +10】"
             },
             {
@@ -3881,7 +4410,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_no_radio"
                 }
               ],
-              "next": "rescue_s3_radio__fix",
+              "next": "__return__",
               "result": "他沉默了很久，把零件收回兜里。\n「也是。」他说，「能活到现在，已经算运气了。」\n但你看得出，他眼底那点火，暗了一截。\n【好感度下降：救援队 -5】"
             }
           ]
@@ -3934,7 +4463,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_coord"
                 }
               ],
-              "next": "rescue_s4_coord__coord",
+              "next": "__return__",
               "result": "你摇头。他没勉强，只是把坐标又念了一遍，让你记牢。\n「也好。」他说，「活着比被找到重要。」\n【好感度提升：救援队 +2，精神 +2】"
             },
             {
@@ -3950,7 +4479,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_cautious"
                 }
               ],
-              "next": "rescue_s4_coord__coord",
+              "next": "__return__",
               "result": "他愣了一下，随即苦笑：「你比我谨慎。」\n他把电台关小了音量，但没关掉。你们谁都没再提坐标的事。\n【好感度提升：救援队 +3】"
             }
           ]
@@ -4002,7 +4531,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_stay"
                 }
               ],
-              "next": "rescue_s5_split__split",
+              "next": "__return__",
               "result": "他怔住，随即重重拍了下你肩膀：「你这人……」\n他对着话筒改了口。那一头骂了句什么，但也认了。\n【道德 +3，好感度提升：救援队 +5】"
             },
             {
@@ -4014,7 +4543,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_chosen"
                 }
               ],
-              "next": "rescue_s5_split__split",
+              "next": "__return__",
               "result": "你没吭声。他盯着你看了几秒，自己拿了个折中的主意。\n「行吧。」他嘟囔，「两边都不得罪。」\n【好感度下降：救援队 -2】"
             }
           ]
@@ -4073,7 +4602,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_ally"
                 }
               ],
-              "next": "rescue_s6_tide__tide",
+              "next": "__return__",
               "result": "你们背靠背，把每一次扑上来的黑影都捅回去。他的撬棍和你手里的家伙，节奏居然合上了。\n兽潮退时，你肋下挨了一下，但他把你护在了墙角。\n【好感度提升：救援队 +20，体力 -5】"
             },
             {
@@ -4090,7 +4619,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_ally"
                 }
               ],
-              "next": "rescue_s6_tide__tide",
+              "next": "__return__",
               "result": "你拽着他滚进地窖。撞击声在头顶炸了整整一夜。\n天亮时上面安静了。他拍了拍你：「谢了。换我，未必拉得动你。」\n【好感度提升：救援队 +10，精神 -3】"
             }
           ]
@@ -4154,7 +4683,7 @@ export const fullContent: ContentPack = {
                   "amount": -2
                 }
               ],
-              "next": "rescue_s7_eve__eve",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "food_canned": 2
@@ -4180,7 +4709,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_backstory"
                 }
               ],
-              "next": "rescue_s7_eve__eve",
+              "next": "__return__",
               "result": "他沉默了一会儿：「我家人也在雾里失了联。帮着你，就像帮着当初的他们。」\n他没再往下说。火光里，你看见他手指在抖。\n【好感度提升：救援队 +12，精神 -2】"
             }
           ]
@@ -4238,7 +4767,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_left"
                 }
               ],
-              "next": "rescue_s8_leave__leave",
+              "next": "__return__",
               "result": "你跟着他冲上开阔地。他回头看见你，眼睛一下子亮了：「还以为你不肯走！」\n舱门合拢前，他把电台塞进你怀里：「这个，归你了。」\n引擎盖过了所有声音。雾，在脚下退成一片白海。\n【救援线完结 — 好感度提升：救援队 +25，精神 +10】"
             },
             {
@@ -4255,7 +4784,7 @@ export const fullContent: ContentPack = {
                   "flag": "rescue_saved"
                 }
               ],
-              "next": "rescue_s8_leave__leave",
+              "next": "__return__",
               "result": "你站在篱笆边，抬了抬手。他也抬手，没说什么。\n飞机起飞时，你忽然想起他说的那句「活着比被找到重要」。\n也许他是对的。\n【救援线完结 — 好感度提升：救援队 +5，精神 +3】"
             }
           ]
@@ -4318,7 +4847,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "crystal_s1_vein__vein",
+              "next": "__return__",
               "result": "你蹲了半晌，看出门道：蓝光随雾的浓淡呼吸，雾越浓它越亮。\n「它在吃雾。」你对自己说。这发现让你后背发凉，也让你多了一分底气。\n【获得：迷雾结晶×1，知识经验 +6】"
             },
             {
@@ -4335,7 +4864,7 @@ export const fullContent: ContentPack = {
                   "flag": "crystal_met"
                 }
               ],
-              "next": "crystal_s1_vein__vein",
+              "next": "__return__",
               "result": "你怕那蓝光。绕开时，晶体里的声音似乎叹了口气。\n但你记下了它的位置——也许以后用得上。\n【精神 +1】"
             }
           ]
@@ -4388,7 +4917,7 @@ export const fullContent: ContentPack = {
                   "flag": "laok_knows"
                 }
               ],
-              "next": "crystal_s2_laok__laok",
+              "next": "__return__",
               "result": "他沉默良久：「我以前……在那项目里打过工。打扫卫生的那种。」\n他苦笑，「所以雾起来的那天，我跑得比谁都快。」\n【好感度提升：老K +5，道德 +2，线索：老K知情】"
             },
             {
@@ -4400,7 +4929,7 @@ export const fullContent: ContentPack = {
                   "flag": "crystal_hint"
                 }
               ],
-              "next": "crystal_s2_laok__laok",
+              "next": "__return__",
               "result": "老K耸肩：「不信也好。信了，晚上睡不着。」\n但他看晶体的眼神，分明是信的。\n【好感度下降：老K -3，线索：雾的传闻】"
             }
           ]
@@ -4458,7 +4987,7 @@ export const fullContent: ContentPack = {
                   "flag": "crystal_on_window"
                 }
               ],
-              "next": "crystal_s3_resonate__res",
+              "next": "__return__",
               "result": "你把晶体搁在窗台。它替火堆值了夜，蓝光一夜没灭。\n清晨你醒来，发现窗外那圈空白还在。\n【精神 +3，雾压 -2，线索：晶体镇雾】"
             },
             {
@@ -4475,7 +5004,7 @@ export const fullContent: ContentPack = {
                   "flag": "crystal_resonate"
                 }
               ],
-              "next": "crystal_s3_resonate__res",
+              "next": "__return__",
               "result": "你把它丢出篱笆。蓝光在雾里滚了两圈，灭了。\n空白塌缩回去，雾重新合拢。你松了口气，又有点空。\n【精神 -3，线索：共鸣现象】"
             }
           ]
@@ -4534,7 +5063,7 @@ export const fullContent: ContentPack = {
                   "flag": "crystal_scan"
                 }
               ],
-              "next": "crystal_s4_doc__doc",
+              "next": "__return__",
               "result": "你没把晶体交出去，只听他讲完。\n「活的。」这两个字在你脑子里转了一夜。\n【好感度提升：老医生 +5，线索：雾是活的】"
             },
             {
@@ -4546,7 +5075,7 @@ export const fullContent: ContentPack = {
                   "flag": "crystal_scan"
                 }
               ],
-              "next": "crystal_s4_doc__doc",
+              "next": "__return__",
               "result": "老医生叹气，把显微镜盖上了：「行。无知者长寿。」\n但你看见他偷偷在笔记本上画下了晶体的样子。\n【好感度下降：老医生 -2，线索：雾是活的】"
             }
           ]
@@ -4610,7 +5139,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "crystal_s5_second__second",
+              "next": "__return__",
               "result": "你循着微光，在塌了一半的钟楼尖顶上，抠出一块被藤蔓缠住的晶体。\n下来时划破了手，但值。\n【获得：迷雾结晶×1，体力 -3】"
             },
             {
@@ -4627,7 +5156,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "crystal_s5_second__second",
+              "next": "__return__",
               "result": "老K挠挠头，从怀里摸出一块：「本来留着压箱底的……给你吧，你比我会用。」\n他递过来时，手有点抖。\n【获得：迷雾结晶×1，好感度下降：老K -5】"
             }
           ]
@@ -4684,7 +5213,7 @@ export const fullContent: ContentPack = {
                   "amount": -2
                 }
               ],
-              "next": "crystal_s6_third__third",
+              "next": "__return__",
               "requires": {
                 "items": {
                   "key_mist_crystal": 2
@@ -4701,7 +5230,7 @@ export const fullContent: ContentPack = {
                   "flag": "crystal_third"
                 }
               ],
-              "next": "crystal_s6_third__third",
+              "next": "__return__",
               "result": "你把晶体收好。真相可以等，命不能等。\n但那点蓝光，从此在你梦里亮着。\n【线索：第三块未决】"
             }
           ]
@@ -4759,7 +5288,7 @@ export const fullContent: ContentPack = {
                   "flag": "journal_bonus"
                 }
               ],
-              "next": "crystal_s7_crack__crack",
+              "next": "__return__",
               "result": "你掏出日记，把裂缝的位置、风向、晶体的反应全记下来。\n也许有一天，这页纸能救别人。\n【精神 +3，知识经验 +5，线索：裂缝记录】"
             },
             {
@@ -4776,7 +5305,7 @@ export const fullContent: ContentPack = {
                   "flag": "crystal_crack"
                 }
               ],
-              "next": "crystal_s7_crack__crack",
+              "next": "__return__",
               "result": "你拽住老K，把他拖到缝前。他呆了半晌，突然红了眼：「原来天还在。」\n你们并肩站着，谁都没说话。\n【好感度提升：老K +5，精神 +4】"
             }
           ]
@@ -4840,7 +5369,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "crystal_s8_truth__truth",
+              "next": "__return__",
               "result": "你拉住老K，把掌心的蓝光递给他看。他看完，长长舒了口气：「原来如此。原来我们没做错什么，也没做对什么。」\n你们在蓝光里坐着，像两个终于放学的小孩。\n【好感度提升：老K +10，精神 +8，线索：真相揭晓】"
             },
             {
@@ -4862,7 +5391,7 @@ export const fullContent: ContentPack = {
                   "amount": 1
                 }
               ],
-              "next": "crystal_s8_truth__truth",
+              "next": "__return__",
               "result": "你把晶体揣回口袋。真相太重，你选择自己扛着。\n但你知道，从今往后，你看雾的眼神不一样了。\n【精神 +4，线索：真相揭晓】"
             }
           ]
@@ -4883,11 +5412,22 @@ export const fullContent: ContentPack = {
           "text": "冒险冲过去抢空投",
           "hint": "可能空手而归",
           "effects": [
-            { "kind": "roll", "difficulty": 55,
+            {
+              "kind": "roll",
+              "difficulty": 55,
               "successEffects": [
-                { "kind": "item", "item": "food", "amount": 15 },
-                { "kind": "item", "item": "metal", "amount": 5 }
-              ] }
+                {
+                  "kind": "item",
+                  "item": "food",
+                  "amount": 15
+                },
+                {
+                  "kind": "item",
+                  "item": "metal",
+                  "amount": 5
+                }
+              ]
+            }
           ],
           "next": "__return__",
           "result": "你在雾里狂奔……灌木丛里的箱子还剩多少，全看运气。"
@@ -4896,8 +5436,16 @@ export const fullContent: ContentPack = {
           "id": "o_1",
           "text": "谨慎观察半小时再靠近",
           "effects": [
-            { "kind": "resource", "resource": "energy", "delta": -5 },
-            { "kind": "item", "item": "food", "amount": 8 }
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -5
+            },
+            {
+              "kind": "item",
+              "item": "food",
+              "amount": 8
+            }
           ],
           "next": "__return__",
           "result": "你等到雾稍散了些才摸过去，箱子被别人先撬开了一半，剩下的也够吃两天。"
@@ -4906,7 +5454,11 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "无视它——太显眼的地方太危险",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": 2 }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": 2
+            }
           ],
           "next": "__return__",
           "result": "入夜后，东边传来几声争抢的尖叫。你裹紧毯子，庆幸自己没去。"
@@ -4924,8 +5476,16 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "用木材×20换罐头（食物+12）",
           "effects": [
-            { "kind": "item", "item": "wood", "amount": -20 },
-            { "kind": "item", "item": "food", "amount": 12 }
+            {
+              "kind": "item",
+              "item": "wood",
+              "amount": -20
+            },
+            {
+              "kind": "item",
+              "item": "food",
+              "amount": 12
+            }
           ],
           "next": "__return__",
           "result": "铜铃叮当作响，你用一捆木头换回了救命的热量。"
@@ -4934,8 +5494,16 @@ export const fullContent: ContentPack = {
           "id": "o_1",
           "text": "用石材×10换金属×6",
           "effects": [
-            { "kind": "item", "item": "stone", "amount": -10 },
-            { "kind": "item", "item": "metal", "amount": 6 }
+            {
+              "kind": "item",
+              "item": "stone",
+              "amount": -10
+            },
+            {
+              "kind": "item",
+              "item": "metal",
+              "amount": 6
+            }
           ],
           "next": "__return__",
           "result": "「石头换铁？你这买卖做得过。」车夫咧嘴，铜铃又响了一声。"
@@ -4944,8 +5512,16 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "什么都不换，只打听外面的消息",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": -3 },
-            { "kind": "flag", "flag": "heard_caravan_rumor", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -3
+            },
+            {
+              "kind": "flag",
+              "flag": "heard_caravan_rumor",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "「西边的雾上周吃掉了一个村子。」车夫压低声音，「给钱也不换那种死法。」"
@@ -5621,7 +6197,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_c_beast_scratch",
       "weight": 12,
-      "minDay": 1,
+      "minDay": 8,
       "maxTriggers": 1,
       "text": "兽潮的爪子已经搭上了你的墙板。一下一下的抓挠从四面八方响起，像在挑选最薄的那面。",
       "choices": [
@@ -5755,7 +6331,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_daily_radio_news",
       "weight": 8,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": -1,
       "text": "你摆弄着捡来的旧收音机。刺啦刺啦的杂音里，隐约夹着断续的人声广播。",
       "choices": [
@@ -6482,7 +7058,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_d_radio_static",
       "weight": 8,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": -1,
       "text": "深夜没开机，收音机却自己响起细弱的电流声，像有人隔着频段在犹豫要不要说话。",
       "choices": [
@@ -7645,7 +8221,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_signal_plane",
       "weight": 7,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "头顶的浓雾忽然震颤起来——那是引擎的轰鸣！有什么飞机正在雾层上方飞过。信号枪在你怀里烫得像一块炭。",
       "choices": [
@@ -7848,7 +8424,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_forest_hive",
       "weight": 7,
-      "minDay": 1,
+      "minDay": 20,
       "maxTriggers": 1,
       "text": "低矮的灌木上挂着一个野蜂巢，个头不小。蜂蜜是迷雾里的顶级奢侈品——如果操作得当的话。",
       "choices": [
@@ -8436,7 +9012,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_deepfog_altar",
       "weight": 20,
-      "minDay": 1,
+      "minDay": 12,
       "maxTriggers": 1,
       "text": "火把的光只能推开半米浓雾。雾中忽然浮现出一座石台，台上凹槽的形状——和你口袋里的结晶一模一样。",
       "choices": [
@@ -9381,7 +9957,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_ex_slogan",
       "weight": 7,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "土墙上用红漆刷着大字：'守好家门，等待救援'。漆迹下隐约还有一层更旧的字。",
       "choices": [
@@ -9614,7 +10190,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_ex_crystal_cluster",
       "weight": 11,
-      "minDay": 1,
+      "minDay": 12,
       "maxTriggers": 1,
       "text": "岩壁上生长着一片迷雾结晶，每一颗都在以心跳般的频率明明灭灭。你数了数，频率和你完全同步。",
       "choices": [
@@ -9877,7 +10453,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_ex_dutylog",
       "weight": 10,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "值班台上摊着日志本。最后一页的字迹潦草：'D-3。他们回复了。不是救援频道。别回话。千万别回话。'",
       "choices": [
@@ -19105,7 +19681,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_262",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "一本翻烂的《莫尔斯电码手册》。页边写满了翻译练习。",
       "choices": [
@@ -19160,7 +19736,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_263",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "贴满便签的操作台。每张便签都是一个频段参数。",
       "choices": [
@@ -19215,7 +19791,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_264",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "屋顶避雷针。针尖熔了一个瘤。",
       "choices": [
@@ -19270,7 +19846,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_265",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "天线基座的工具箱。扳手齐全，少了一把螺丝刀。",
       "choices": [
@@ -19325,7 +19901,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_266",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "墙上的信号覆盖图。用红笔圈了三个盲区。",
       "choices": [
@@ -19380,7 +19956,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_267",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "备用发电机房。机油味呛人。",
       "choices": [
@@ -19435,7 +20011,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_268",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "成捆的同轴电缆。铜芯在断口处闪闪发亮。",
       "choices": [
@@ -19490,7 +20066,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_269",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "值班室的行军床。被子叠成了豆腐块。",
       "choices": [
@@ -19545,7 +20121,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_270",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "屋顶避雷针。针尖熔了一个瘤。",
       "choices": [
@@ -19600,7 +20176,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_271",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "贴满便签的操作台。每张便签都是一个频段参数。",
       "choices": [
@@ -19655,7 +20231,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_272",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "墙上的信号覆盖图。用红笔圈了三个盲区。",
       "choices": [
@@ -19710,7 +20286,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_273",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "贴满便签的操作台。每张便签都是一个频段参数。",
       "choices": [
@@ -19765,7 +20341,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_274",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "墙上的信号覆盖图。用红笔圈了三个盲区。",
       "choices": [
@@ -19820,7 +20396,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_275",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "值班室的行军床。被子叠成了豆腐块。",
       "choices": [
@@ -19875,7 +20451,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_276",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "天线基座的工具箱。扳手齐全，少了一把螺丝刀。",
       "choices": [
@@ -19930,7 +20506,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_277",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "屋顶避雷针。针尖熔了一个瘤。",
       "choices": [
@@ -19985,7 +20561,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_278",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "值班室的行军床。被子叠成了豆腐块。",
       "choices": [
@@ -20040,7 +20616,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_g_radio_tower_279",
       "weight": 5,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "成捆的同轴电缆。铜芯在断口处闪闪发亮。",
       "choices": [
@@ -21507,7 +22083,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_nb_laomei_hunt",
       "weight": 30,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "频道突然炸了——\n\n「直播达人小美」：有人在外面！！不是好人！！他们在砸门！！\n\n然后信号断了。\n\n频道里一片混乱。有人说听到了尖叫声。",
       "choices": [
@@ -22502,7 +23078,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_n2_flashlight_signal",
       "weight": 8,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "浓雾深处，一束手电光规律地闪烁：三短，三长，三短。然后是长久的等待，又开始重复。有人在求救。",
       "choices": [
@@ -22554,7 +23130,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_n2_radio_selfon",
       "weight": 7,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "收音机在深夜自己亮起了指示灯。旋钮纹丝未动，喇叭里的女声清晰得可怕：'……检测到幸存者生命体征……编号114……'",
       "choices": [
@@ -22607,7 +23183,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_exp_crystal_1",
       "weight": 25,
-      "minDay": 1,
+      "minDay": 12,
       "maxTriggers": 1,
       "text": "洞壁上嵌满了淡蓝色结晶，手指触碰时微微发热。\n你小心翼翼撬下一块。",
       "choices": [
@@ -22630,7 +23206,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_exp_crystal_2",
       "weight": 25,
-      "minDay": 1,
+      "minDay": 12,
       "maxTriggers": 1,
       "text": "洞穴深处传来低沉的嗡鸣声。结晶在黑暗中发出微弱的脉动。\n空气中有股奇怪的甜味。",
       "choices": [
@@ -22653,7 +23229,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_exp_crystal_3",
       "weight": 20,
-      "minDay": 1,
+      "minDay": 12,
       "maxTriggers": 1,
       "text": "洞穴角落有一具骸骨，手中紧握着一块特别大的结晶。\n旁边散落着一本笔记。",
       "choices": [
@@ -23006,7 +23582,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_s_rescue_start",
       "weight": 13,
-      "minDay": 1,
+      "minDay": 10,
       "maxTriggers": 1,
       "text": "收音机里忽然插进一条清晰的讯息：'东经xxx，北纬xx，安全区开放。重复，安全区开放。'坐标就在三十公里外的山那头。",
       "choices": [
@@ -23101,7 +23677,7 @@ export const fullContent: ContentPack = {
     {
       "id": "evt_s_crystal_dream",
       "weight": 11,
-      "minDay": 1,
+      "minDay": 12,
       "maxTriggers": 1,
       "text": "你做了一个过分清醒的梦。梦里所有的结晶连成一张网，网的中心悬浮着一句话：'我们不是雾。我们是记得。'",
       "choices": [
@@ -23596,8 +24172,16 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "连夜加固木屋外围（消耗木材×20）",
           "effects": [
-            { "kind": "item", "item": "wood", "amount": -20 },
-            { "kind": "resource", "resource": "sanity", "delta": -2 }
+            {
+              "kind": "item",
+              "item": "wood",
+              "amount": -20
+            },
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -2
+            }
           ],
           "next": "__return__",
           "result": "你连夜把木刺削尖钉进门框。天亮时，泥地上多了几串陌生的爪印。"
@@ -23607,8 +24191,16 @@ export const fullContent: ContentPack = {
           "text": "磨一根像样的木矛",
           "hint": "获得木矛",
           "effects": [
-            { "kind": "item", "item": "wooden_spear", "amount": 1 },
-            { "kind": "resource", "resource": "energy", "delta": -10 }
+            {
+              "kind": "item",
+              "item": "wooden_spear",
+              "amount": 1
+            },
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -10
+            }
           ],
           "next": "__return__",
           "result": "你花了一整夜打磨矛尖。手在抖，但矛比手稳。"
@@ -23617,8 +24209,16 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "留在暗处观察兽群动向",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": -6 },
-            { "kind": "flag", "flag": "beast_wave_observed", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -6
+            },
+            {
+              "kind": "flag",
+              "flag": "beast_wave_observed",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "你记下了吼声的方位和间隔。恐惧还在，但你至少知道它们从哪来。"
@@ -23636,9 +24236,21 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "储备木石，闭门死守（消耗木材×30、石头×10）",
           "effects": [
-            { "kind": "item", "item": "wood", "amount": -30 },
-            { "kind": "item", "item": "stone", "amount": -10 },
-            { "kind": "flag", "flag": "beast_wave_ready", "flagValue": true }
+            {
+              "kind": "item",
+              "item": "wood",
+              "amount": -30
+            },
+            {
+              "kind": "item",
+              "item": "stone",
+              "amount": -10
+            },
+            {
+              "kind": "flag",
+              "flag": "beast_wave_ready",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "栅栏加高了两层，壕沟里插满削尖的木桩。它们想进来，就得先付出代价。"
@@ -23648,9 +24260,21 @@ export const fullContent: ContentPack = {
           "text": "主动出击，猎杀落单的先头兽",
           "hint": "有风险，缴获兽核",
           "effects": [
-            { "kind": "resource", "resource": "health", "delta": -15 },
-            { "kind": "resource", "resource": "energy", "delta": -20 },
-            { "kind": "item", "item": "beast_core", "amount": 1 }
+            {
+              "kind": "resource",
+              "resource": "health",
+              "delta": -15
+            },
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -20
+            },
+            {
+              "kind": "item",
+              "item": "beast_core",
+              "amount": 1
+            }
           ],
           "next": "__return__",
           "result": "你拖着伤回到屋里，手里的兽核还带着体温。"
@@ -23659,8 +24283,16 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "用电台联络附近的幸存者",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": 4 },
-            { "kind": "flag", "flag": "alliance_contact", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": 4
+            },
+            {
+              "kind": "flag",
+              "flag": "alliance_contact",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "无线电里传来三声短促的回应。你不是一个人在守。"
@@ -23678,8 +24310,16 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "走科技之路：理解它，然后利用它",
           "effects": [
-            { "kind": "flag", "flag": "path_tech", "flagValue": true },
-            { "kind": "resource", "resource": "sanity", "delta": 2 }
+            {
+              "kind": "flag",
+              "flag": "path_tech",
+              "flagValue": true
+            },
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": 2
+            }
           ],
           "next": "__return__",
           "result": "你拆开收音机的最后一枚零件，公式在脑中清晰起来——力量不必来自雾，可以来自理解。"
@@ -23688,8 +24328,16 @@ export const fullContent: ContentPack = {
           "id": "o_1",
           "text": "走修行之路：顺应它，与雾共鸣",
           "effects": [
-            { "kind": "flag", "flag": "path_cultivation", "flagValue": true },
-            { "kind": "resource", "resource": "energy", "delta": 5 }
+            {
+              "kind": "flag",
+              "flag": "path_cultivation",
+              "flagValue": true
+            },
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": 5
+            }
           ],
           "next": "__return__",
           "result": "你盘膝坐下，跟随光点的节奏吐纳。一缕暖流沉入小腹——雾不是灾，是灵气。"
@@ -23698,8 +24346,16 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "拒绝力量，保持凡人之躯",
           "effects": [
-            { "kind": "flag", "flag": "path_mortal", "flagValue": true },
-            { "kind": "resource", "resource": "sanity", "delta": 6 }
+            {
+              "kind": "flag",
+              "flag": "path_mortal",
+              "flagValue": true
+            },
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": 6
+            }
           ],
           "next": "__return__",
           "result": "你握紧拳头，把光芒按回皮肤之下。有些东西一旦拿起，就再也放不下了。"
@@ -23717,8 +24373,16 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "抄录碑文，仔细研究",
           "effects": [
-            { "kind": "flag", "flag": "ruins_truth_1", "flagValue": true },
-            { "kind": "resource", "resource": "sanity", "delta": -4 }
+            {
+              "kind": "flag",
+              "flag": "ruins_truth_1",
+              "flagValue": true
+            },
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -4
+            }
           ],
           "next": "__return__",
           "result": "你抄下三十七个符号。夜里它们在梦中重排成句：这不是天灾，是一次筛选。"
@@ -23728,8 +24392,16 @@ export const fullContent: ContentPack = {
           "text": "带走碑文旁的神秘结晶",
           "hint": "获得神秘结晶",
           "effects": [
-            { "kind": "item", "item": "mysterious_crystal", "amount": 1 },
-            { "kind": "resource", "resource": "health", "delta": -10 }
+            {
+              "kind": "item",
+              "item": "mysterious_crystal",
+              "amount": 1
+            },
+            {
+              "kind": "resource",
+              "resource": "health",
+              "delta": -10
+            }
           ],
           "next": "__return__",
           "result": "结晶入手的瞬间，雾海发出一声悠长的叹息。有什么东西，注意到你了。"
@@ -23738,8 +24410,16 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "摧毁石碑，假装什么都没看见",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": 8 },
-            { "kind": "flag", "flag": "ruins_destroyed", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": 8
+            },
+            {
+              "kind": "flag",
+              "flag": "ruins_destroyed",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "石碑碎裂时发出无声的悲鸣。你转身回屋，把那一角重新用雾封死。"
@@ -23757,9 +24437,21 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "燃烧储备，武装到牙齿（消耗食物30、金属×20）",
           "effects": [
-            { "kind": "resource", "resource": "food", "delta": -30 },
-            { "kind": "item", "item": "metal", "amount": -20 },
-            { "kind": "flag", "flag": "final_battle_ready", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "food",
+              "delta": -30
+            },
+            {
+              "kind": "item",
+              "item": "metal",
+              "amount": -20
+            },
+            {
+              "kind": "flag",
+              "flag": "final_battle_ready",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "你把最后的存粮烤成干粮，把废铁淬成刀锋。七天后，要么死，要么走出去。"
@@ -23768,8 +24460,16 @@ export const fullContent: ContentPack = {
           "id": "o_1",
           "text": "静坐调息，直面终局",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": 10 },
-            { "kind": "flag", "flag": "final_battle_ready", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": 10
+            },
+            {
+              "kind": "flag",
+              "flag": "final_battle_ready",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "你安静地擦净那把陪你走过八十天的木矛。来吧。"
@@ -23778,8 +24478,16 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "深挖地窖，赌一把苟活",
           "effects": [
-            { "kind": "resource", "resource": "energy", "delta": -15 },
-            { "kind": "flag", "flag": "final_hideout", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -15
+            },
+            {
+              "kind": "flag",
+              "flag": "final_hideout",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "你把地窖挖深了三米，用木板封住头顶。雾声从缝隙里渗进来，像某种叹息。"
@@ -23797,7 +24505,11 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "依托工事死守",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": -5 }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -5
+            }
           ],
           "next": "__return__",
           "result": "木栅栏被撞得吱呀作响，但它们没能进来。天亮时，院子里留下了七具尸体。"
@@ -23807,8 +24519,16 @@ export const fullContent: ContentPack = {
           "text": "爬上屋顶反击",
           "hint": "有受伤风险",
           "effects": [
-            { "kind": "resource", "resource": "health", "delta": -10 },
-            { "kind": "item", "item": "mutant_fang", "amount": 2 }
+            {
+              "kind": "resource",
+              "resource": "health",
+              "delta": -10
+            },
+            {
+              "kind": "item",
+              "item": "mutant_fang",
+              "amount": 2
+            }
           ],
           "next": "__return__",
           "result": "你用木矛从屋顶一次次捅下去，最后两匹野兽拖着伤逃进了雾里。"
@@ -23817,8 +24537,16 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "弃屋躲入地窖",
           "effects": [
-            { "kind": "resource", "resource": "energy", "delta": -15 },
-            { "kind": "resource", "resource": "food", "delta": -10 }
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -15
+            },
+            {
+              "kind": "resource",
+              "resource": "food",
+              "delta": -10
+            }
           ],
           "next": "__return__",
           "result": "你在黑暗里听着头顶的撕咬声直到黄昏。木屋损失惨重，但人没事。"
@@ -23836,7 +24564,11 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "烧掉备用木料取暖（消耗木材×25）",
           "effects": [
-            { "kind": "item", "item": "wood", "amount": -25 }
+            {
+              "kind": "item",
+              "item": "wood",
+              "amount": -25
+            }
           ],
           "next": "__return__",
           "result": "炉火烧了整整五天。木料没了，但骨头是暖的。"
@@ -23845,8 +24577,16 @@ export const fullContent: ContentPack = {
           "id": "o_1",
           "text": "裹紧所有衣物，减少外出",
           "effects": [
-            { "kind": "resource", "resource": "energy", "delta": -10 },
-            { "kind": "resource", "resource": "sanity", "delta": -3 }
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -10
+            },
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -3
+            }
           ],
           "next": "__return__",
           "result": "你把自己裹成一个茧，靠数屋顶的冰裂声打发时间。"
@@ -23856,8 +24596,16 @@ export const fullContent: ContentPack = {
           "text": "冒雪外出搜集燃料",
           "hint": "有冻伤风险",
           "effects": [
-            { "kind": "resource", "resource": "health", "delta": -15 },
-            { "kind": "item", "item": "wood", "amount": 15 }
+            {
+              "kind": "resource",
+              "resource": "health",
+              "delta": -15
+            },
+            {
+              "kind": "item",
+              "item": "wood",
+              "amount": 15
+            }
           ],
           "next": "__return__",
           "result": "你拖回一捆湿柴，指尖冻得发黑。这一趟，值，也不值。"
@@ -23875,9 +24623,21 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "消耗物资，全面死守（木材×40、石材×20）",
           "effects": [
-            { "kind": "item", "item": "wood", "amount": -40 },
-            { "kind": "item", "item": "stone", "amount": -20 },
-            { "kind": "resource", "resource": "sanity", "delta": -5 }
+            {
+              "kind": "item",
+              "item": "wood",
+              "amount": -40
+            },
+            {
+              "kind": "item",
+              "item": "stone",
+              "amount": -20
+            },
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -5
+            }
           ],
           "next": "__return__",
           "result": "三道防线被撕碎了两道。黎明时分，兽潮退了，你的手还在抖。"
@@ -23886,8 +24646,16 @@ export const fullContent: ContentPack = {
           "id": "o_1",
           "text": "利用地形与兽群周旋",
           "effects": [
-            { "kind": "resource", "resource": "energy", "delta": -20 },
-            { "kind": "item", "item": "beast_core", "amount": 2 }
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -20
+            },
+            {
+              "kind": "item",
+              "item": "beast_core",
+              "amount": 2
+            }
           ],
           "next": "__return__",
           "result": "你把兽群引进了沼泽，收割了两个核心。雾海在为你让路。"
@@ -23896,8 +24664,16 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "释放信号弹向盟友求援",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": 3 },
-            { "kind": "flag", "flag": "alliance_aid_received", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": 3
+            },
+            {
+              "kind": "flag",
+              "flag": "alliance_aid_received",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "远处亮起了回应的火光。有人和你在同一场噩梦里并肩。"
@@ -23915,7 +24691,11 @@ export const fullContent: ContentPack = {
           "id": "o_0",
           "text": "举火把重新驱散领地",
           "effects": [
-            { "kind": "resource", "resource": "energy", "delta": -25 }
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -25
+            }
           ],
           "next": "__return__",
           "result": "你举着火把走了一整天，雾退回了界碑之外。"
@@ -23924,8 +24704,16 @@ export const fullContent: ContentPack = {
           "id": "o_1",
           "text": "放弃外围田地，收缩防线",
           "effects": [
-            { "kind": "resource", "resource": "sanity", "delta": -6 },
-            { "kind": "resource", "resource": "food", "delta": -15 }
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -6
+            },
+            {
+              "kind": "resource",
+              "resource": "food",
+              "delta": -15
+            }
           ],
           "next": "__return__",
           "result": "你看着半年的耕作沉入灰白。活着，比什么都重要。"
@@ -23935,8 +24723,16 @@ export const fullContent: ContentPack = {
           "text": "深入新雾区侦察",
           "hint": "危险，可能有发现",
           "effects": [
-            { "kind": "resource", "resource": "health", "delta": -10 },
-            { "kind": "flag", "flag": "explored_new_fog", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "health",
+              "delta": -10
+            },
+            {
+              "kind": "flag",
+              "flag": "explored_new_fog",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "新雾区的雾是活的——你亲眼看见雾墙在你身后合拢。你记下了里面的路标。"
@@ -23955,9 +24751,21 @@ export const fullContent: ContentPack = {
           "text": "倾尽全力，与兽王决战",
           "hint": "九死一生",
           "effects": [
-            { "kind": "resource", "resource": "health", "delta": -30 },
-            { "kind": "resource", "resource": "energy", "delta": -30 },
-            { "kind": "flag", "flag": "beast_king_slain", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "health",
+              "delta": -30
+            },
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -30
+            },
+            {
+              "kind": "flag",
+              "flag": "beast_king_slain",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "你亲手斩下了兽王的獠牙。那一夜，整个雾海安静得像在默哀。"
@@ -23966,9 +24774,21 @@ export const fullContent: ContentPack = {
           "id": "o_1",
           "text": "退入基地核心，凭工事死守（木材×50、石材×30）",
           "effects": [
-            { "kind": "item", "item": "wood", "amount": -50 },
-            { "kind": "item", "item": "stone", "amount": -30 },
-            { "kind": "resource", "resource": "sanity", "delta": -8 }
+            {
+              "kind": "item",
+              "item": "wood",
+              "amount": -50
+            },
+            {
+              "kind": "item",
+              "item": "stone",
+              "amount": -30
+            },
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -8
+            }
           ],
           "next": "__return__",
           "result": "城墙在兽王的冲撞下呻吟了三天。第四天清晨，它转身离开了。"
@@ -23977,9 +24797,21 @@ export const fullContent: ContentPack = {
           "id": "o_2",
           "text": "携带轻装撤离，放弃基地",
           "effects": [
-            { "kind": "resource", "resource": "energy", "delta": -20 },
-            { "kind": "resource", "resource": "sanity", "delta": -12 },
-            { "kind": "flag", "flag": "abandoned_base", "flagValue": true }
+            {
+              "kind": "resource",
+              "resource": "energy",
+              "delta": -20
+            },
+            {
+              "kind": "resource",
+              "resource": "sanity",
+              "delta": -12
+            },
+            {
+              "kind": "flag",
+              "flag": "abandoned_base",
+              "flagValue": true
+            }
           ],
           "next": "__return__",
           "result": "你回头看了一眼燃烧的木屋，转身走进雾里。活着，就还有下一次。"
@@ -23987,14 +24819,35 @@ export const fullContent: ContentPack = {
       ]
     }
   ],
-  "income": [],
+  "income": [
+    {
+      "resource": "warmth",
+      "delta": -1
+    }
+  ],
   "startingResources": {
     "food": {
-      "current": 70,
+      "current": 80,
       "max": 100
     },
     "water": {
-      "current": 70,
+      "current": 80,
+      "max": 100
+    },
+    "health": {
+      "current": 100,
+      "max": 100
+    },
+    "sanity": {
+      "current": 100,
+      "max": 100
+    },
+    "energy": {
+      "current": 100,
+      "max": 100
+    },
+    "warmth": {
+      "current": 100,
       "max": 100
     }
   }
