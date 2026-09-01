@@ -502,7 +502,7 @@ export function runDaily(content, state, rng) {
     // v0.5.0: 处理待生效的因果效果
     messages.push(...processPendingCausalEffects(state));
     // v1.0.0: 自动检查并触发因果关系
-    messages.push(...autoCheckCausalRelations(state));
+    messages.push(...autoCheckCausalRelations(state, content));
     // v0.5.0: 更新已解锁区域
     const newZones = updateUnlockedZones(state);
     if (newZones.length > 0) {
@@ -978,7 +978,7 @@ export function applyBuildingDailyEffects(state) {
  * 自动检查并触发因果关系
  * 根据玩家当前状态和行为，匹配因果关系并触发效果
  */
-export function autoCheckCausalRelations(state) {
+export function autoCheckCausalRelations(state, content) {
     const messages = [];
     const triggeredToday = [];
     for (const causal of CAUSAL_RELATIONS) {
@@ -1007,7 +1007,7 @@ export function autoCheckCausalRelations(state) {
             const probability = causal.effect.probability ?? 1;
             if (Math.random() < probability) {
                 // 触发因果效果
-                const effectMessage = applyCausalEffect(state, causal);
+                const effectMessage = applyCausalEffect(state, causal, content);
                 if (effectMessage) {
                     messages.push(effectMessage);
                     triggeredToday.push(causal.id);
@@ -1142,7 +1142,7 @@ function checkNpcCausalCondition(state, description) {
     return false;
 }
 /** 应用因果效果 */
-function applyCausalEffect(state, causal) {
+function applyCausalEffect(state, causal, content) {
     const effect = causal.effect;
     let message = `【因果报应】${effect.description}`;
     // 记录因果关系
@@ -1232,8 +1232,14 @@ function applyCausalEffect(state, causal) {
             break;
         case 'event_trigger':
             if (effect.parameters && effect.parameters.event) {
-                state.pendingEvents.push(effect.parameters.event);
-                message += `（触发事件：${effect.parameters.event}）`;
+                // 只入队内容包里真实存在的事件，防止悬空引用卡死主循环
+                if (resolveEvent(content, effect.parameters.event)) {
+                    state.pendingEvents.push(effect.parameters.event);
+                    message += `（触发事件：${effect.parameters.event}）`;
+                }
+                else {
+                    message += `（事件 ${effect.parameters.event} 未收录，已跳过）`;
+                }
             }
             break;
         default:

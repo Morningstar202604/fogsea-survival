@@ -9,6 +9,7 @@ import { PHASE7_SCENES, PHASE7_EVENTS } from "./phase7.js";
 import { PHASE8_SCENES, PHASE8_EVENTS } from "./phase8.js";
 import { PHASE9_SCENES, PHASE9_EVENTS } from "./phase9.js";
 import { PHASE10_SCENES, PHASE10_EVENTS } from "./phase10.js";
+import { CAUSAL_EVENTS } from "./causal-events.js";
 
 // 自动生成（scripts/migrate.mjs）：旧版 44 场 + 事件池 + 14 结局 迁移至新 ContentPack。
 // 主线为合成生存循环；6 条旧剧情线作为触发式支线(lines)。精简模型已丢弃关系/道德/雾压/天赋等字段。
@@ -24879,3 +24880,5 @@ fullContent.storyline.scenes = {
 };
 if (!fullContent.randomEvents) fullContent.randomEvents = [];
 fullContent.randomEvents = [...fullContent.randomEvents, ...PHASE1_EVENTS, ...PHASE2_EVENTS, ...PHASE3_EVENTS, ...PHASE4_EVENTS, ...PHASE5_EVENTS, ...PHASE6_EVENTS, ...PHASE7_EVENTS, ...PHASE8_EVENTS, ...PHASE9_EVENTS, ...PHASE10_EVENTS];
+// 因果系统触发型事件（weight=0，仅由 CAUSAL_RELATIONS 的 event_trigger 引用）
+fullContent.randomEvents = [...fullContent.randomEvents, ...CAUSAL_EVENTS];

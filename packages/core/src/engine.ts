@@ -556,7 +556,7 @@ export function runDaily(
   messages.push(...processPendingCausalEffects(state));
   
   // v1.0.0: 自动检查并触发因果关系
-  messages.push(...autoCheckCausalRelations(state));
+  messages.push(...autoCheckCausalRelations(state, content));
 
   // v0.5.0: 更新已解锁区域
   const newZones = updateUnlockedZones(state);
@@ -1087,7 +1087,7 @@ export function applyBuildingDailyEffects(state: GameState): string[] {
  * 自动检查并触发因果关系
  * 根据玩家当前状态和行为，匹配因果关系并触发效果
  */
-export function autoCheckCausalRelations(state: GameState): string[] {
+export function autoCheckCausalRelations(state: GameState, content: ContentPack): string[] {
   const messages: string[] = [];
   const triggeredToday: string[] = [];
   
@@ -1120,7 +1120,7 @@ export function autoCheckCausalRelations(state: GameState): string[] {
       const probability = causal.effect.probability ?? 1;
       if (Math.random() < probability) {
         // 触发因果效果
-        const effectMessage = applyCausalEffect(state, causal);
+        const effectMessage = applyCausalEffect(state, causal, content);
         if (effectMessage) {
           messages.push(effectMessage);
           triggeredToday.push(causal.id);
@@ -1259,7 +1259,7 @@ function checkNpcCausalCondition(state: GameState, description: string): boolean
 }
 
 /** 应用因果效果 */
-function applyCausalEffect(state: GameState, causal: any): string | null {
+function applyCausalEffect(state: GameState, causal: any, content: ContentPack): string | null {
   const effect = causal.effect;
   let message = `【因果报应】${effect.description}`;
   
@@ -1332,8 +1332,13 @@ function applyCausalEffect(state: GameState, causal: any): string | null {
       break;
     case 'event_trigger':
       if (effect.parameters && effect.parameters.event) {
-        state.pendingEvents.push(effect.parameters.event);
-        message += `（触发事件：${effect.parameters.event}）`;
+        // 只入队内容包里真实存在的事件，防止悬空引用卡死主循环
+        if (resolveEvent(content, effect.parameters.event)) {
+          state.pendingEvents.push(effect.parameters.event);
+          message += `（触发事件：${effect.parameters.event}）`;
+        } else {
+          message += `（事件 ${effect.parameters.event} 未收录，已跳过）`;
+        }
       }
       break;
     default:
