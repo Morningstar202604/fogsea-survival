@@ -34,3 +34,4 @@ export * from './content/phase5.js';
 export * from './content/phase6.js';
 export * from './content/phase7.js';
 export * from './content/phase8.js';
+export * from './content/phase9.js';
