@@ -1,0 +1,164 @@
+import { describe, it, expect } from 'vitest';
+import { demoContent } from './content/index.js';
+import { fullContent } from './content/full.js';
+import {
+  createInitialState,
+  applyChoice,
+  resolveScene,
+  runDaily,
+  exportState,
+  importState,
+  Rng,
+  TALENTS,
+  drawTalentChoices,
+  applyTalent,
+  computeRank,
+  rankMessage,
+  RANK_TOTAL,
+} from './index.js';
+
+describe('开局天赋系统', () => {
+  it('天赋池包含 S/A/B 三级且 id 唯一', () => {
+    const ids = new Set(TALENTS.map((t) => t.id));
+    expect(ids.size).toBe(TALENTS.length);
+    expect(TALENTS.some((t) => t.tier === 'S')).toBe(true);
+    expect(TALENTS.some((t) => t.tier === 'A')).toBe(true);
+    expect(TALENTS.some((t) => t.tier === 'B')).toBe(true);
+  });
+
+  it('三选一抽取：3 个不重复且都在池内，固定种子可复现', () => {
+    const a = drawTalentChoices(new Rng(7)).map((t) => t.id);
+    const b = drawTalentChoices(new Rng(7)).map((t) => t.id);
+    expect(a).toEqual(b);
+    expect(new Set(a).size).toBe(3);
+    for (const id of a) expect(TALENTS.some((t) => t.id === id)).toBe(true);
+  });
+
+  it('选择天赋后 flag 与一次性加成落地', () => {
+    const s = createInitialState(demoContent);
+    const msgs = applyTalent(s, 'scavenge_master');
+    expect(s.flags['talent_chosen']).toBe(true);
+    expect(s.attributes.luck).toBe(15);
+    expect(s.resources.food.current).toBeGreaterThan(70);
+    expect(msgs[0]).toContain('搜刮大师');
+  });
+
+  it('createInitialState 直接接受 talentId', () => {
+    const s = createInitialState(fullContent, undefined, 'craftsman');
+    expect(s.inventory['wooden_spear']).toBe(1);
+    expect(s.inventory['wood']).toBe(25);
+  });
+
+  it('铁胃天赋降低每日食物/水消耗', () => {
+    const base = createInitialState(fullContent, undefined, 'scavenge_master');
+    const iron = createInitialState(fullContent, undefined, 'iron_stomach');
+    const r1 = runDaily(fullContent, base, new Rng(1));
+    const r2 = runDaily(fullContent, iron, new Rng(1));
+    const parse = (msgs: string[]) => Number(msgs.find((m) => m.includes('食物-'))!.match(/食物-(\d+)/)![1]);
+    expect(parse(r2.messages)).toBeLessThan(parse(r1.messages));
+  });
+
+  it('未选天赋时 applyTalent 幂等（不重复生效）', () => {
+    const s = createInitialState(demoContent);
+    applyTalent(s, 'lucky_star');
+    const again = applyTalent(s, 'scavenge_master');
+    expect(again).toEqual([]);
+    expect(s.attributes.luck).toBe(15);
+  });
+});
+
+describe('物品自动升级', () => {
+  it('消耗物品累积熟练度，满 10 次升级并产生系统播报', () => {
+    const s = createInitialState(demoContent);
+    s.inventory['wood'] = 500;
+    const scene = resolveScene(demoContent, s.currentScene)!;
+    const search = scene.choices.find((c) => c.id === 'search')!;
+    let msgs: string[] = [];
+    for (let i = 0; i < 10; i++) {
+      s.inventory['wood'] = 500; // 保持库存
+      s.resources.food.current = s.resources.food.max;
+      s.currentScene = scene.id;
+      const r = applyChoice(demoContent, s, { ...search, effects: [{ kind: 'item', item: 'wood', amount: -1 }], next: '__return__' }, new Rng(i));
+      msgs = r.systemMessages ?? [];
+    }
+    expect(s.itemLevels['wood']!.level).toBe(2);
+    expect(msgs.some((m) => m.includes('Lv.2'))).toBe(true);
+  });
+
+  it('强化万物天赋让熟练度获取翻倍（5 次使用即升到 Lv.2）', () => {
+    const s = createInitialState(demoContent, undefined, 'item_boost');
+    s.inventory['wood'] = 100;
+    for (let i = 0; i < 5; i++) {
+      s.inventory['wood'] = 100;
+      s.currentScene = 'start';
+      applyChoice(demoContent, s, { id: 't', text: 't', effects: [{ kind: 'item', item: 'wood', amount: -1 }], next: '__return__' }, new Rng(i));
+    }
+    expect(s.itemLevels['wood']!.level).toBe(2);
+    expect(s.itemLevels['wood']!.uses).toBe(0);
+  });
+});
+
+describe('幸存者排行榜', () => {
+  it('排名始终在 [1, 162] 区间', () => {
+    const s = createInitialState(fullContent);
+    for (let d = 1; d <= 90; d++) {
+      s.day = d;
+      const r = computeRank(s);
+      expect(r).toBeGreaterThanOrEqual(1);
+      expect(r).toBeLessThanOrEqual(RANK_TOTAL);
+    }
+  });
+
+  it('基地等级越高排名越好，天数越大竞争越激烈', () => {
+    const s = createInitialState(fullContent);
+    s.day = 20;
+    s.base.level = 1;
+    const lowRank = computeRank(s);
+    s.base.level = 5;
+    const highRank = computeRank(s);
+    expect(highRank).toBeLessThan(lowRank);
+    s.base.level = 1;
+    s.day = 60;
+    expect(computeRank(s)).toBeGreaterThan(lowRank);
+  });
+
+  it('每 3 天播报一次，含排行榜标记', () => {
+    const s = createInitialState(fullContent);
+    s.day = 3;
+    expect(rankMessage(s)).toContain('【排行榜】');
+    s.day = 4;
+    expect(rankMessage(s)).toBeNull();
+  });
+});
+
+describe('存档兼容', () => {
+  it('新档含 itemLevels，导出导入后保留物品等级', () => {
+    const s = createInitialState(fullContent, undefined, 'item_boost');
+    s.itemLevels['iron_sword'] = { uses: 7, level: 3 };
+    const raw = exportState(s);
+    const back = importState(raw)!;
+    expect(back.itemLevels['iron_sword']).toEqual({ uses: 7, level: 3 });
+    expect(back.flags['talent_item_xp_boost']).toBe(true);
+  });
+
+  it('旧档（无 itemLevels/economy）导入后补默认值不崩溃', () => {
+    const s = createInitialState(fullContent);
+    const legacy = JSON.parse(JSON.stringify(s));
+    delete legacy.itemLevels;
+    delete legacy.economy;
+    // 直接构造与 exportState 相同格式（Base64 + CRC32）的旧档
+    const json = JSON.stringify(legacy);
+    const b64 = Buffer.from(json, 'utf8').toString('base64');
+    let crc = 0xffffffff;
+    for (let i = 0; i < json.length; i++) {
+      let c = (crc ^ json.charCodeAt(i)) & 0xff;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      crc = (c ^ (crc >>> 8)) >>> 0;
+    }
+    const checksum = ((crc ^ 0xffffffff) >>> 0).toString(16).padStart(8, '0');
+    const back = importState(`${b64}:${checksum}`)!;
+    expect(back).not.toBeNull();
+    expect(back.itemLevels).toEqual({});
+    expect(back.economy.unlockedMerchants).toContain('wandering_trader');
+  });
+});

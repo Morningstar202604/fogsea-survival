@@ -12,7 +12,7 @@ import { processSignin } from './signin.js';
 import { maybeStartEncounter, initiateCombat, getAvailableMonsters } from './combat.js';
 import { checkAchievements } from './achievements.js';
 // v3.0 新增：统一配置与公式
-import { getPhaseByDay, calculateExpRequired, TITLES, BASE_CONFIG, CAUSAL_RELATIONS, calculateDailyWeather, calculateMistDensity, calculateDangerLevel, getMajorEventByDay, assessMajorEventDifficulty, getUnlockedZones, calculateBaseDefense, } from './gameConfig.js';
+import { getPhaseByDay, calculateExpRequired, TITLES, BASE_CONFIG, CAUSAL_RELATIONS, PHASE_STORY, calculateDailyWeather, calculateMistDensity, calculateDangerLevel, getMajorEventByDay, assessMajorEventDifficulty, getUnlockedZones, calculateBaseDefense, } from './gameConfig.js';
 /** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
 export function createInitialState(content, meta, talentId) {
     const initial = content.storyline.initialScene;
@@ -353,6 +353,28 @@ export function scheduleLine(content, state) {
     }
 }
 /**
+ * 阶段剧情调度：按 PHASE_STORY 时序把主线剧情链入口接管为当前场景（一次性）。
+ * 与 scheduleLine 不同：不压事件栈——剧情链的选项以 next: start / __return__ 收尾，
+ * 直接落回主枢纽；事件栈保持干净，不影响支线调度。
+ * 入口场景必须在当前内容包中存在（demoContent 等精简包自动跳过）。
+ */
+export function schedulePhaseStory(content, state) {
+    if (state.eventStack.length || state.pendingEvents.length)
+        return null;
+    for (const beat of PHASE_STORY) {
+        if (state.day < beat.dayMin)
+            continue;
+        if (state.flags[beat.onceFlag])
+            continue;
+        if (!content.storyline.scenes[beat.entryScene])
+            continue;
+        state.flags[beat.onceFlag] = true;
+        state.currentScene = beat.entryScene;
+        return `【剧情】${beat.title}`;
+    }
+    return null;
+}
+/**
  * 推进一天 v2.0：集成基地生产、技能成长、推进机制
  */
 // ============================================================
@@ -568,6 +590,12 @@ export function runDaily(content, state, rng) {
     gainSkillPoints(state, 1);
     // 6. 调度触发式支线
     scheduleLine(content, state);
+    // 6b. 调度阶段剧情链（一次性剧情场景接管，链尾经 next: start 回到枢纽）
+    if (!state.eventStack.length) {
+        const storyMsg = schedulePhaseStory(content, state);
+        if (storyMsg)
+            messages.push(storyMsg);
+    }
     // 7. 野兽遭遇战检定（战斗为覆盖层：剧情进行中同样可能遇袭）
     if (!state.combat) {
         const encounter = maybeStartEncounter(state, rng);
@@ -757,21 +785,22 @@ function checkGoodEndings(state, content) {
     const flags = state.flags;
     const inv = state.inventory;
     // === 后期结局（第150天以后触发）===
+    // flag 名与 phase10 决战链内容的产出对齐（ending_* 系列）
     if (day >= 150) {
-        // E18 人类末日：最终决战失败
-        if (flags['final_battle_failed']) {
+        // E18 人类末日：最终决战走向灭亡
+        if (flags['ending_humanity_end']) {
             return triggerEnding(content, state, 'E18');
         }
-        // E15 文明重生：建立联邦，迷雾消散
-        if (flags['civilization_rebuilt'] && flags['mist_dispelled']) {
+        // E15 文明重生：带领人类重建文明，迷雾消散
+        if (flags['ending_civilization_reborn'] && flags['mist_dispelled']) {
             return triggerEnding(content, state, 'E15');
         }
         // E16 迷雾之主：继承先知的力量
-        if (flags['mist_lord_ending']) {
+        if (flags['ending_mist_lord']) {
             return triggerEnding(content, state, 'E16');
         }
-        // E17 独裁者：建立帝国，成为独裁者
-        if (flags['dictator_ending']) {
+        // E17 独裁者：用铁腕建立独裁政权
+        if (flags['ending_dictator']) {
             return triggerEnding(content, state, 'E17');
         }
         // 隐藏结局：爱的进化（与先知和解）

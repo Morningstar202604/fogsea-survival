@@ -1,0 +1,55 @@
+name: Android APK
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建 Web 产物
+        run: pnpm build
+
+      - name: 同步 Capacitor
+        run: npx cap sync android
+        working-directory: apps/web
+
+      - name: 打包 APK
+        run: |
+          chmod +x apps/web/android/gradlew
+          cd apps/web/android
+          ./gradlew assembleDebug --no-daemon
+
+      - name: 归档命名
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p dist-apk
+          cp apps/web/android/app/build/outputs/apk/debug/app-debug.apk \
+             "dist-apk/FogSeaSurvival-${VERSION}-debug.apk"
+
+      - name: 附到 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-apk/*.apk
+          fail_on_unmatched_files: true
