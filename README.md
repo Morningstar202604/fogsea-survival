@@ -1,4 +1,4 @@
-# 雾海生存 FogSea Survival v1.0
+<p align="center"><img src="docs/logo.svg" alt="FogSea Survival Logo" width="200" height="60" /></p>`n`n# 雾海生存 FogSea Survival v1.0
 
 > 基于热门求生流小说机制重构的文字生存策略游戏（安卓 App / Web）
 >
@@ -184,3 +184,4 @@ fogsea-survival/
 **当前版本**: v1.0.0（正式基线）  
 **最后更新**: 2026-08-30  
 **状态**: 安卓发布目标，web 为测试壳 🚀
+
