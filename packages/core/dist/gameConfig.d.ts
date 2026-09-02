@@ -480,4 +480,21 @@ export declare function calculateReputationEffects(reputation: number): Record<s
 export declare const GAME_VERSION = "1.0.0";
 export declare const GAME_VERSION_NAME = "\u4F53\u7CFB\u5316\u5B8C\u6574\u7248";
 export declare const GAME_VERSION_DESCRIPTION = "\u5341\u9636\u6BB5\u4F53\u7CFB\u3001\u6BCF\u65E5\u7CFB\u7EDF\u3001\u8FF7\u96FE\u89C4\u5219\u3001NPC\u52A8\u6001\uFF0827\u4E2A\u5B8C\u6574NPC\uFF09\u3001\u56E0\u679C\u7CFB\u7EDF\u3001\u6210\u957F\u65B9\u5411\u3001\u5927\u4E8B\u4EF6\u68C0\u9A8C\u3001\u5C5E\u6027\u516C\u5F0F\u3001\u7B49\u7EA7\u7ECF\u9A8C\u3001\u8D27\u5E01\u3001\u57FA\u5730\u5EFA\u7B51\u3001\u6B66\u5668\u54C1\u8D28\u3001\u79F0\u53F7\u3001\u591A\u7ED3\u5C40\u3001\u8D85\u80FD\u529B\u7CFB\u7EDF\u3001\u79D1\u6280\u6811\u7CFB\u7EDF\u3001\u5916\u4EA4\u52BF\u529B\u7CFB\u7EDF\u3001\u58F0\u671B\u7CFB\u7EDF";
+/**
+ * 阶段剧情链调度表：把各阶段的主线剧情场景按时序接入每日循环。
+ * 引擎在每日结算时（无支线/事件进行中）按 dayMin 顺序接管一次场景，
+ * 玩家走完剧情链后经链内选项回到主枢纽（next: start）。
+ * 入口场景均已在内容包中定义；onceFlag 防止重复触发。
+ */
+export interface PhaseStoryBeat {
+    /** 最早触发天数 */
+    dayMin: number;
+    /** 剧情链入口场景 id */
+    entryScene: string;
+    /** 一次性防重复 flag */
+    onceFlag: string;
+    /** 触发时推送的消息标题 */
+    title: string;
+}
+export declare const PHASE_STORY: PhaseStoryBeat[];
 //# sourceMappingURL=gameConfig.d.ts.map

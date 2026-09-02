@@ -1,0 +1,79 @@
+import { it } from 'vitest';
+import { fullContent } from './content/full.js';
+
+it('reachability audit', () => {
+  const story = fullContent.storyline;
+  const allScenes = Object.keys(story.scenes);
+  const lines = fullContent.lines ?? [];
+
+  // 从 start 沿 choice.next / jump.target / roll onSuccess+onFail BFS
+  const seen = new Set<string>([story.initialScene]);
+  const queue: string[] = [story.initialScene];
+  while (queue.length) {
+    const id = queue.shift()!;
+    const node = story.scenes[id];
+    if (!node) continue;
+    for (const c of node.choices ?? []) {
+      for (const e of c.effects ?? []) {
+        if (e.kind === 'jump' && e.target && !seen.has(e.target)) {
+          seen.add(e.target); queue.push(e.target);
+        }
+        for (const t of [e.onSuccess, e.onFail]) {
+          if (t && !seen.has(t)) { seen.add(t); queue.push(t); }
+        }
+      }
+      if (c.next && c.next !== '__return__' && !seen.has(c.next)) {
+        seen.add(c.next); queue.push(c.next);
+      }
+    }
+  }
+  const orphans = allScenes.filter((id) => !seen.has(id));
+
+  // 结局引用统计
+  const endingRefs = new Set<string>();
+  const scanChoices = (choices: any[]) => {
+    for (const c of choices ?? []) {
+      if (c.next && story.endings[c.next]) endingRefs.add(c.next);
+      for (const e of c.effects ?? []) {
+        for (const t of [e.onSuccess, e.onFail, e.target]) {
+          if (t && story.endings[t]) endingRefs.add(t);
+        }
+      }
+    }
+  };
+  for (const node of Object.values(story.scenes)) scanChoices(node.choices);
+  for (const line of lines) for (const node of Object.values(line.scenes ?? {})) scanChoices(node.choices);
+  const orphanEndings = Object.keys(story.endings).filter((id) => !endingRefs.has(id));
+
+  // 支线场景可达性（各自线入口起）
+  const lineOrphans: Record<string, number> = {};
+  for (const line of lines) {
+    const lseen = new Set<string>([line.initialScene]);
+    const lq = [line.initialScene];
+    while (lq.length) {
+      const id = lq.shift()!;
+      const node = line.scenes[id];
+      if (!node) continue;
+      for (const c of node.choices ?? []) {
+        for (const e of c.effects ?? []) {
+          if (e.kind === 'jump' && e.target && line.scenes[e.target] && !lseen.has(e.target)) { lseen.add(e.target); lq.push(e.target); }
+          for (const t of [e.onSuccess, e.onFail]) {
+            if (t && line.scenes[t] && !lseen.has(t)) { lseen.add(t); lq.push(t); }
+          }
+        }
+        if (c.next && line.scenes[c.next] && !lseen.has(c.next)) { lseen.add(c.next); lq.push(c.next); }
+      }
+    }
+    const orph = Object.keys(line.scenes).filter((id) => !lseen.has(id));
+    if (orph.length) lineOrphans[line.id] = orph.length;
+  }
+
+  console.log('[audit] 主线场景总数:', allScenes.length, '可达:', allScenes.length - orphans.length, '孤儿:', orphans.length);
+  console.log('[audit] 孤儿场景(前30):', orphans.slice(0, 30).join(', '));
+  console.log('[audit] 孤儿占比:', (orphans.length / allScenes.length * 100).toFixed(1) + '%');
+  console.log('[audit] 结局总数:', Object.keys(story.endings).length, '被引用:', endingRefs.size, '死结局:', orphanEndings.join(', '));
+  console.log('[audit] 支线数:', lines.length, '各线孤儿:', JSON.stringify(lineOrphans));
+  console.log('[audit] 事件池:', fullContent.randomEvents.length, '其中 weight=0(仅触发):', fullContent.randomEvents.filter((e) => e.weight <= 0).length);
+  const lineSceneCount = lines.reduce((s, l) => s + Object.keys(l.scenes).length, 0);
+  console.log('[audit] 支线场景总数:', lineSceneCount);
+});

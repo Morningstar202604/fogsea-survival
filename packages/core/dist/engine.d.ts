@@ -41,6 +41,13 @@ export declare function drawDailyEvent(content: ContentPack, state: GameState, r
  */
 export declare function scheduleLine(content: ContentPack, state: GameState): void;
 /**
+ * 阶段剧情调度：按 PHASE_STORY 时序把主线剧情链入口接管为当前场景（一次性）。
+ * 与 scheduleLine 不同：不压事件栈——剧情链的选项以 next: start / __return__ 收尾，
+ * 直接落回主枢纽；事件栈保持干净，不影响支线调度。
+ * 入口场景必须在当前内容包中存在（demoContent 等精简包自动跳过）。
+ */
+export declare function schedulePhaseStory(content: ContentPack, state: GameState): string | null;
+/**
  * 推进一天 v2.0：集成基地生产、技能成长、推进机制
  */
 /** 刷新每日面板（天气、迷雾浓度、危险等级、隐藏提示） */

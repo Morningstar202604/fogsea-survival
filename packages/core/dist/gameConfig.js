@@ -3138,4 +3138,40 @@ export function calculateReputationEffects(reputation) {
 export const GAME_VERSION = '1.0.0';
 export const GAME_VERSION_NAME = '体系化完整版';
 export const GAME_VERSION_DESCRIPTION = '十阶段体系、每日系统、迷雾规则、NPC动态（27个完整NPC）、因果系统、成长方向、大事件检验、属性公式、等级经验、货币、基地建筑、武器品质、称号、多结局、超能力系统、科技树系统、外交势力系统、声望系统';
+export const PHASE_STORY = [
+    // —— 第一阶段：独居期（1-7）——
+    { dayMin: 2, entryScene: 'ch1_mist_rule', onceFlag: 'story_ch1_mist_rule_done', title: '迷雾的规则' },
+    { dayMin: 3, entryScene: 'old_k_meet', onceFlag: 'story_laok_done', title: '老K的提议' },
+    { dayMin: 4, entryScene: 'duoduo_hear_cry', onceFlag: 'story_duoduo_done', title: '雾中的哭声' },
+    { dayMin: 5, entryScene: 'trader_zhang_meet', onceFlag: 'story_trader_done', title: '商人老张' },
+    { dayMin: 6, entryScene: 'beast_wave_1_warning', onceFlag: 'story_beastwave1_done', title: '第一次兽潮将至' },
+    // —— 第二阶段：互助组（8-14）——
+    { dayMin: 8, entryScene: 'doctor_chen_find', onceFlag: 'story_doctor_done', title: '医生陈静' },
+    { dayMin: 10, entryScene: 'hunter_zhou_meet', onceFlag: 'story_hunter_done', title: '猎人老周' },
+    { dayMin: 12, entryScene: 'group_conflict_food', onceFlag: 'story_conflict_done', title: '物资之争' },
+    // —— 第三阶段：小队（15-21）——
+    { dayMin: 15, entryScene: 'beast_wave_warning', onceFlag: 'story_beastwave2_done', title: '第二次兽潮' },
+    // —— 第四阶段：车队（22-30）——
+    { dayMin: 22, entryScene: 'mechanic_find_garage', onceFlag: 'story_mechanic_done', title: '机械师小杨' },
+    { dayMin: 24, entryScene: 'fuel_search_mission', onceFlag: 'story_fuel_done', title: '燃料搜索任务' },
+    { dayMin: 27, entryScene: 'vehicle_repair_complete', onceFlag: 'story_caravan_done', title: '车队启程' },
+    // —— 第五阶段：据点（31-45）——
+    { dayMin: 31, entryScene: 'settlement_choose_location', onceFlag: 'story_settlement_done', title: '建立据点' },
+    // —— 第六阶段：扩张（46-65）——
+    { dayMin: 47, entryScene: 'diplomacy_visit_safe_zone', onceFlag: 'story_diplomacy_done', title: '安全区外交' },
+    { dayMin: 55, entryScene: 'final_assault_begin', onceFlag: 'story_lighthouse_done', title: '灯塔攻势' },
+    // —— 第七阶段：深化（66-90）——
+    { dayMin: 66, entryScene: 'phase7_base_upgrade_ceremony', onceFlag: 'story_phase7_base_done', title: '基地升级典礼' },
+    { dayMin: 72, entryScene: 'phase7_tech_tree_unlock', onceFlag: 'story_phase7_tech_done', title: '科技树解锁' },
+    { dayMin: 78, entryScene: 'phase7_awakening_ceremony', onceFlag: 'story_phase7_awaken_done', title: '觉醒者典礼' },
+    { dayMin: 84, entryScene: 'phase7_new_faction_visit', onceFlag: 'story_phase7_faction_done', title: '新势力来访' },
+    { dayMin: 88, entryScene: 'phase7_internal_conflict', onceFlag: 'story_phase7_internal_done', title: '内部矛盾' },
+    // —— 第八阶段：人口（91-120）——
+    { dayMin: 92, entryScene: 'phase8_population_boom', onceFlag: 'story_phase8_boom_done', title: '人口潮' },
+    { dayMin: 100, entryScene: 'phase8_new_faction_free_alliance', onceFlag: 'story_phase8_alliance_done', title: '自由同盟' },
+    // —— 第九阶段：争霸（121-150）——
+    { dayMin: 122, entryScene: 'phase9_evolutionists_return', onceFlag: 'story_phase9_evolution_done', title: '进化论者归来' },
+    // —— 第十阶段：终局（151+）——
+    { dayMin: 155, entryScene: 'phase10_final_battle', onceFlag: 'story_phase10_final_done', title: '最终决战' },
+];
 //# sourceMappingURL=gameConfig.js.map

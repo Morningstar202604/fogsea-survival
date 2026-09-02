@@ -1,0 +1,5 @@
+package com.survival.mist;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}

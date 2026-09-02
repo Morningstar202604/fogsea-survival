@@ -1,0 +1,713 @@
+/**
+ * v2.0 主线剧情 - 结晶线
+ * 
+ * 剧情简介：在探索中发现神秘紫色结晶，蕴含强大能量。
+ * 主角踏上收集结晶、觉醒力量的旅程，逐步揭开迷雾世界的超凡秘密。
+ */
+
+import type { StorylineDef, SceneNode, EndingDef } from '../types.js';
+
+/** 结晶线结局定义 */
+export const CRYSTAL_ENDINGS: Record<string, EndingDef> = {
+  crystal_master: {
+    id: 'crystal_master',
+    title: '结晶大师',
+    desc: '你成功掌握了结晶的力量，成为迷雾世界中少数能够驾驭超凡之力的强者。你的身体已经与结晶融合，获得了近乎永恒的生命。但这力量也让你逐渐远离人性...',
+    category: 'true',
+  },
+  power_corruption: {
+    id: 'power_corruption',
+    title: '力量腐蚀',
+    desc: '过度依赖结晶力量让你的心智逐渐扭曲。你开始视普通幸存者为蝼蚁，沉迷于力量的快感中无法自拔。最终，你成为了自己曾经对抗的怪物...',
+    category: 'bad',
+  },
+  balance_keeper: {
+    id: 'balance_keeper',
+    title: '平衡守护者',
+    desc: '你找到了使用结晶力量的平衡点，既不完全依赖也不完全拒绝。你用这份力量保护弱者，维持幸存者社区的秩序。你是迷雾中的希望之光。',
+    category: 'good',
+  },
+  crystal_explosion: {
+    id: 'crystal_explosion',
+    title: '结晶爆炸',
+    desc: '在一次实验中，结晶能量失控引发大爆炸。你和周围的一切都被吞噬在紫色的光芒中...也许这是解脱，也许是新的开始。',
+    category: 'death',
+  },
+};
+
+/** 结晶线场景节点 */
+export const CRYSTAL_SCENES: Record<string, SceneNode> = {
+  // === 触发场景 ===
+  crystal_discovery: {
+    id: 'crystal_discovery',
+    text: `【第${'{day}'}天】
+
+你在深入迷雾森林探索时，发现了一个奇异的洞穴。洞穴深处散发着微弱的紫色光芒。
+
+走近一看，地面上散落着一些拳头大小的紫色晶体。它们似乎在呼吸般闪烁着，给人一种既危险又诱人的感觉。
+
+当你伸手触碰其中一块时，一股暖流瞬间传遍全身。你能感觉到体内有什么东西被唤醒了...
+
+【系统提示】发现神秘结晶！是否收集？`,
+    choices: [
+      {
+        id: 'collect_crystals',
+        text: '收集结晶（获得x3）',
+        hint: '可能带来未知影响',
+        effects: [
+          { kind: 'item', item: 'mysterious_crystal', amount: 3 },
+          { kind: 'flag', flag: 'crystal_line_started', flagValue: true },
+          { kind: 'resource', resource: 'sanity', delta: -5 },
+          { kind: 'jump', target: 'crystal_first_touch' },
+        ],
+        next: 'crystal_first_touch',
+        result: '你小心翼翼地收集了3块结晶。它们的温度比周围环境略高，仿佛有生命一般...',
+      },
+      {
+        id: 'ignore_crystals',
+        text: '无视结晶，离开洞穴',
+        hint: '安全但错过机会',
+        effects: [
+          { kind: 'flag', flag: 'ignored_crystals', flagValue: true },
+        ],
+        next: '__return__',
+        result: '你选择远离这些诡异的晶体。虽然有些遗憾，但至少保证了安全。',
+      },
+      {
+        id: 'study_crystals',
+        text: '先研究一下（需要智力≥12）',
+        hint: '了解更多信息再做决定',
+        effects: [
+          {
+            kind: 'roll',
+            difficulty: 50,
+            onFail: 'crystal_study_fail',
+            onSuccess: 'crystal_study_success',
+            successEffects: [
+              { kind: 'flag', flag: 'know_crystal_basic', flagValue: true },
+            ],
+          },
+        ],
+        next: 'crystal_study_success',
+        requires: {
+          attributes: { intelligence: 12 },
+        },
+        result: '你仔细观察结晶的结构和能量波动...',
+      },
+    ],
+  },
+
+  crystal_first_touch: {
+    id: 'crystal_first_touch',
+    text: `将结晶放入背包后，你突然感到一阵眩晕。
+
+眼前闪过一些模糊的画面：古老的仪式、身穿长袍的人影、还有...一个巨大的紫色水晶树？
+
+画面转瞬即逝，但你确定这不是幻觉。结晶似乎在向你传递某种信息。
+
+更奇怪的是，你发现自己的感官变得敏锐了。你能听到更远的声音，看到迷雾中隐约的轮廓，甚至能感受到空气中流动的能量...
+
+【属性变化】感知力提升！
+
+你现在面临选择：
+1. 尝试主动感应结晶的能量
+2. 将结晶封存，不再接触
+3. 寻找其他人看看他们是否有类似经历`,
+    choices: [
+      {
+        id: 'sense_crystal_energy',
+        text: '尝试感应结晶能量',
+        hint: '可能觉醒特殊能力',
+        effects: [
+          { kind: 'flag', flag: 'crystal_sense_activated', flagValue: true },
+          { kind: 'resource', resource: 'energy', delta: -20 },
+          { kind: 'jump', target: 'energy_awakening' },
+        ],
+        next: 'energy_awakening',
+        result: '你闭上眼睛，集中精神去感受结晶的能量波动...',
+      },
+      {
+        id: 'seal_crystals',
+        text: '用铅盒封存结晶',
+        hint: '隔绝能量影响',
+        effects: [
+          { kind: 'flag', flag: 'crystals_sealed', flagValue: true },
+          { kind: 'jump', target: 'sealed_crystals' },
+        ],
+        next: 'sealed_crystals',
+        requires: {
+          items: { lead_box: 1 },
+        },
+        result: '你找到铅盒将结晶密封起来，能量波动立刻减弱了很多。',
+      },
+      {
+        id: 'find_others',
+        text: '寻找其他幸存者询问',
+        effects: [
+          { kind: 'jump', target: 'ask_about_crystals' },
+        ],
+        next: 'ask_about_crystals',
+        result: '你决定先去问问其他人是否知道关于结晶的事。',
+      },
+    ],
+  },
+
+  // === 能量觉醒 ===
+  energy_awakening: {
+    id: 'energy_awakening',
+    text: `你盘腿坐下，手中握着一块结晶，开始冥想。
+
+起初什么都没有发生。但几分钟后，你感觉到一股温暖的能量从结晶中流出，顺着手臂进入你的身体。
+
+这股能量在你的经脉中游走，所到之处带来一种奇异的舒适感。你仿佛能"看"到自己体内的能量流动...
+
+【系统提示】检测到灵力觉醒！
+
+你的眼前浮现出一个半透明的界面，显示着：
+- 灵力值：0/100
+- 境界：凡人
+- 功法：无
+
+结晶似乎是一本天然的修炼指南，它正在引导你走上超凡之路。
+
+你可以：
+1. 继续修炼，提升灵力
+2. 尝试用灵力强化身体
+3. 探索结晶的其他用途`,
+    choices: [
+      {
+        id: 'cultivate_spirit',
+        text: '继续修炼提升灵力',
+        hint: '需要时间，消耗能量',
+        effects: [
+          { kind: 'resource', resource: 'energy', delta: -30 },
+          { kind: 'resource', resource: 'food', delta: -20 },
+          { kind: 'flag', flag: 'spirit_cultivation_started', flagValue: true },
+          { kind: 'jump', target: 'first_breakthrough' },
+        ],
+        next: 'first_breakthrough',
+        result: '你沉浸在修炼中，感受着灵力的增长...',
+      },
+      {
+        id: 'reinforce_body',
+        text: '用灵力强化身体',
+        hint: '立即获得属性提升',
+        effects: [
+          { kind: 'flag', flag: 'body_reinforced', flagValue: true },
+          { kind: 'resource', resource: 'energy', delta: -25 },
+          { kind: 'jump', target: 'body_enhancement' },
+        ],
+        next: 'body_enhancement',
+        result: '你引导灵力流入四肢百骸，感受肌肉和骨骼的强化...',
+      },
+      {
+        id: 'explore_crystal_uses',
+        text: '探索结晶的其他用途',
+        effects: [
+          { kind: 'flag', flag: 'crystal_research_started', flagValue: true },
+          { kind: 'jump', target: 'crystal_experiments' },
+        ],
+        next: 'crystal_experiments',
+        result: '你开始实验结晶的各种可能用途...',
+      },
+    ],
+  },
+
+  first_breakthrough: {
+    id: 'first_breakthrough',
+    text: `经过数小时的苦修，你终于感受到了突破！
+
+体内的灵力从涓涓细流变成了小溪，在经脉中欢快地流淌。你的五感变得更加敏锐，甚至能感知到周围生物的情绪波动。
+
+【境界提升】凡人 → 炼气期一层
+【灵力上限】0/100 → 50/100
+【新解锁】基础法术：灵力护盾、灵力冲击
+
+更重要的是，你发现自己对结晶的理解加深了。这些晶体不仅仅是能量源，它们更像是...种子？
+
+脑海中浮现出一些信息：
+- 结晶是"世界树"的碎片
+- 集齐9块不同属性的结晶可以开启"觉醒之门"
+- 目前已发现：紫色（灵力）、红色（火焰）、蓝色（冰霜）
+
+你需要找到更多结晶来解开这个谜团。`,
+    choices: [
+      {
+        id: 'seek_more_crystals',
+        text: '出发寻找更多结晶',
+        hint: '前往危险区域',
+        effects: [
+          { kind: 'flag', flag: 'crystal_hunt_started', flagValue: true },
+          { kind: 'jump', target: 'crystal_hunting' },
+        ],
+        next: 'crystal_hunting',
+        result: '你下定决心要集齐9块结晶，揭开世界树的秘密。',
+      },
+      {
+        id: 'practice_spells',
+        text: '先练习新解锁的法术',
+        effects: [
+          { kind: 'flag', flag: 'spells_practiced', flagValue: true },
+          { kind: 'resource', resource: 'energy', delta: -20 },
+          { kind: 'jump', target: 'spell_training' },
+        ],
+        next: 'spell_training',
+        result: '你开始练习灵力护盾和灵力冲击...',
+      },
+    ],
+  },
+
+  // === 结晶狩猎 ===
+  crystal_hunting: {
+    id: 'crystal_hunting',
+    text: `根据结晶的指引，你来到了迷雾深处的"禁忌之地"。
+
+这里的迷雾呈现诡异的紫色，空气中弥漫着浓厚的能量。你能感觉到地面下埋藏着大量的结晶矿脉。
+
+但同时也感觉到了危险——这里有强大的守护兽。
+
+前方有三个可能的挖掘点：
+1. 东侧山谷：能量波动强烈，但有守卫
+2. 西侧废墟：相对安全，但结晶品质可能较低
+3. 地下洞穴：最危险，但可能有稀有结晶`,
+    choices: [
+      {
+        id: 'mine_east_valley',
+        text: '挖掘东侧山谷',
+        hint: '高风险高回报',
+        effects: [
+          {
+            kind: 'roll',
+            difficulty: 65,
+            onFail: 'guardian_attack',
+            onSuccess: 'successful_mining',
+            successEffects: [
+              { kind: 'item', item: 'red_crystal', amount: 2 },
+              { kind: 'item', item: 'purple_crystal', amount: 1 },
+            ],
+          },
+        ],
+        next: 'successful_mining',
+        result: '你小心地靠近山谷，开始挖掘...',
+      },
+      {
+        id: 'mine_west_ruins',
+        text: '搜索西侧废墟',
+        hint: '较安全',
+        effects: [
+          { kind: 'item', item: 'blue_crystal', amount: 1 },
+          { kind: 'item', item: 'purple_crystal', amount: 1 },
+          { kind: 'resource', resource: 'energy', delta: -10 },
+        ],
+        next: 'moderate_success',
+        result: '你在废墟中仔细搜索，找到了几块散落的结晶。',
+      },
+      {
+        id: 'explore_underground',
+        text: '探索地下洞穴',
+        hint: '极度危险，可能有BOSS',
+        effects: [
+          {
+            kind: 'roll',
+            difficulty: 75,
+            onFail: 'cave_trap',
+            onSuccess: 'rare_crystal_find',
+            lethal: false,
+            successEffects: [
+              { kind: 'item', item: 'golden_crystal', amount: 1 },
+              { kind: 'item', item: 'ancient_scroll', amount: 1 },
+            ],
+          },
+        ],
+        next: 'rare_crystal_find',
+        result: '你深吸一口气，踏入黑暗的洞穴...',
+      },
+    ],
+  },
+
+  successful_mining: {
+    id: 'successful_mining',
+    text: `经过一番努力，你成功挖掘出了3块结晶！
+
+其中包括2块红色的火焰结晶和1块紫色的灵力结晶。红色结晶散发着炽热的气息，握在手中能感受到澎湃的火元素能量。
+
+【获得】红色结晶 x2，紫色结晶 x1
+【当前拥有】紫色 x4，红色 x2
+
+更令人兴奋的是，你在挖掘过程中发现了一块石碑，上面刻着古老的文字：
+
+"当九色结晶齐聚，世界树之门将再次开启。
+但警惕贪婪之心，力量既是祝福也是诅咒。
+唯有平衡者，方能承载世界树的意志。"
+
+这证实了你的猜测——结晶与世界树有关！
+
+现在你有足够的结晶可以尝试融合了。`,
+    choices: [
+      {
+        id: 'attempt_fusion',
+        text: '尝试融合结晶',
+        hint: '可能获得强大力量，也有风险',
+        effects: [
+          { kind: 'item', item: 'purple_crystal', amount: -2 },
+          { kind: 'item', item: 'red_crystal', amount: -1 },
+          {
+            kind: 'roll',
+            difficulty: 60,
+            onFail: 'fusion_backlash',
+            onSuccess: 'fusion_success',
+            successEffects: [
+              { kind: 'flag', flag: 'crystal_fusion_master', flagValue: true },
+              { kind: 'resource', resource: 'health', delta: 20 },
+              { kind: 'resource', resource: 'sanity', delta: 20 },
+            ],
+          },
+        ],
+        next: 'fusion_success',
+        result: '你将3块结晶放在一起，引导灵力促使它们融合...',
+      },
+      {
+        id: 'continue_collecting',
+        text: '继续收集更多结晶',
+        effects: [
+          { kind: 'jump', target: 'more_crystal_hunting' },
+        ],
+        next: 'more_crystal_hunting',
+        result: '你觉得现在融合还太早，决定先收集更多种类的结晶。',
+      },
+    ],
+  },
+
+  // === 融合成功 ===
+  fusion_success: {
+    id: 'fusion_success',
+    text: `随着你的引导，3块结晶开始发出耀眼的光芒。
+
+紫色和红色的能量交织在一起，形成了一道绚丽的光柱。你感觉到体内的灵力在疯狂涌动，仿佛要冲破某种界限...
+
+【融合成功！】
+【获得】复合结晶（紫+红）x1
+【效果】灵力上限+50，解锁火系法术
+【新法术】火焰球、烈焰护盾、爆炎术
+
+更重要的是，你掌握了结晶融合的技巧！这意味着你可以将不同属性的结晶组合，创造出更强大的力量。
+
+但你也注意到，融合后的结晶散发出一种令人心悸的能量波动。如果使用不当，可能会造成灾难性的后果...
+
+【警告】过度依赖结晶力量可能导致心智腐蚀
+
+你现在需要决定如何使用这份力量。`,
+    choices: [
+      {
+        id: 'use_power_responsibly',
+        text: '谨慎使用，保持平衡',
+        hint: '正道之路',
+        effects: [
+          { kind: 'flag', flag: 'balanced_path', flagValue: true },
+          { kind: 'jump', target: 'ending_balance_keeper' },
+        ],
+        next: 'ending_balance_keeper',
+        result: '你发誓要合理使用这份力量，不被其控制。',
+      },
+      {
+        id: 'embrace_power',
+        text: '全力追求更强力量',
+        hint: '可能走向极端',
+        effects: [
+          { kind: 'flag', flag: 'power_hungry', flagValue: true },
+          { kind: 'jump', target: 'power_obsession' },
+        ],
+        next: 'power_obsession',
+        result: '你渴望更多的力量，开始疯狂收集结晶...',
+      },
+    ],
+  },
+
+  // === 力量腐蚀路径 ===
+  power_obsession: {
+    id: 'power_obsession',
+    text: `你对力量的渴望越来越强烈。
+
+每天除了修炼就是寻找结晶，对其他事情漠不关心。基地的建设停滞了，与其他幸存者的联系也断绝了。
+
+你的眼中只有结晶的光芒，心中只有变强的执念。
+
+某天，你在镜中看到自己的倒影——瞳孔已经变成了诡异的紫色，皮肤下隐约可见结晶的纹路...
+
+【警告】结晶腐蚀度：60%
+【状态】轻度异化
+
+但你不在乎。只要能变得更强，付出什么代价都值得。
+
+你决定进行最后的实验——将9块结晶全部融合，打开通往"神之领域"的大门。`,
+    choices: [
+      {
+        id: 'final_experiment',
+        text: '进行最终实验',
+        hint: '生死一线',
+        effects: [
+          {
+            kind: 'roll',
+            difficulty: 80,
+            onFail: 'ending_crystal_explosion',
+            onSuccess: 'ending_crystal_master',
+            lethal: true,
+          },
+        ],
+        next: 'ending_crystal_master',
+        result: '你将所有结晶摆放在法阵中央，开始吟唱古老的咒语...',
+      },
+      {
+        id: 'step_back',
+        text: '悬崖勒马，回头是岸',
+        hint: '还有机会挽救',
+        effects: [
+          { kind: 'flag', flag: 'redemption', flagValue: true },
+          { kind: 'jump', target: 'ending_balance_keeper' },
+        ],
+        next: 'ending_balance_keeper',
+        result: '在最后一刻，你意识到了自己的迷失...',
+      },
+    ],
+  },
+
+  // === 结局场景 ===
+  ending_balance_keeper: {
+    id: 'ending_balance_keeper',
+    text: `【结局：平衡守护者】
+
+你找到了使用结晶力量的正确方式。
+
+既不拒绝这份天赐的力量，也不被其奴役。你用结晶之力保护弱者，建立了一个小型的幸存者社区。
+
+你的基地成为了迷雾中的灯塔，吸引着那些寻求庇护的人。而你，作为社区的守护者，默默地维持着这份脆弱的和平。
+
+偶尔，你还会深入禁忌之地，寻找更多关于世界树的秘密。但你知道，真正的力量不在于结晶本身，而在于使用它的人。
+
+【结晶线完成】
+【解锁称号】平衡守护者
+【特殊能力】结晶感知、灵力治疗、结界布置
+【社区影响力】高`,
+    choices: [
+      {
+        id: 'continue_game',
+        text: '继续游戏',
+        effects: [{ kind: 'jump', target: '__return__' }],
+        next: '__return__',
+        result: '',
+      },
+    ],
+  },
+
+  ending_crystal_master: {
+    id: 'ending_crystal_master',
+    text: `【结局：结晶大师】
+
+9块结晶在你面前融合，绽放出前所未有的光芒。
+
+一道光柱冲天而起，穿透了厚重的迷雾。在那一瞬间，你看到了世界的真相——
+
+原来整个迷雾世界就是一棵巨大的世界树，而结晶是它的种子。你是被选中的"园丁"，肩负着重建世界树的使命。
+
+你的身体开始结晶化，意识与世界树连接。你获得了近乎神明的力量，但也失去了部分人性。
+
+从此，你成为了迷雾传说中的存在——结晶大师。有人说你已经飞升，有人说你还在某个地方守护着这个世界。
+
+【结晶线完成·真结局】
+【解锁称号】结晶大师
+【特殊能力】世界树共鸣、空间传送、结晶创造
+【状态】半神化`,
+    choices: [
+      {
+        id: 'continue_game',
+        text: '继续游戏',
+        effects: [{ kind: 'jump', target: '__return__' }],
+        next: '__return__',
+        result: '',
+      },
+    ],
+  },
+
+  ending_crystal_explosion: {
+    id: 'ending_crystal_explosion',
+    text: `【结局：结晶爆炸】
+
+融合实验失败了。
+
+9块结晶的能量产生了剧烈的冲突，引发了连锁爆炸。紫色的光芒吞噬了一切，包括你自己。
+
+在意识消散前的最后一刻，你听到了一个声音：
+
+"下一个尝试者，希望你能做得更好..."
+
+然后是一片寂静。
+
+【游戏结束】
+【存活天数】${'{day}'}天
+【解锁结局】结晶爆炸
+【提示】融合结晶需要更高的技巧和准备`,
+    choices: [],
+    next: 'death_ending',
+  },
+
+  // === 辅助场景 ===
+  crystal_study_success: {
+    id: 'crystal_study_success',
+    text: `通过仔细观察，你发现了一些重要信息：
+
+1. 结晶内部有复杂的能量回路，类似电路板
+2. 不同颜色的结晶散发不同属性的能量
+3. 结晶之间会产生共振，距离越近共振越强
+4. 长时间接触可能导致轻微的精神影响
+
+这些信息对你后续的研究很有帮助。`,
+    choices: [
+      {
+        id: 'collect_after_study',
+        text: '现在收集结晶',
+        effects: [
+          { kind: 'item', item: 'mysterious_crystal', amount: 3 },
+          { kind: 'flag', flag: 'crystal_line_started', flagValue: true },
+          { kind: 'jump', target: 'crystal_first_touch' },
+        ],
+        next: 'crystal_first_touch',
+        result: '',
+      },
+    ],
+  },
+
+  body_enhancement: {
+    id: 'body_enhancement',
+    text: `灵力流过你的身体，带来了显著的变化：
+
+【属性提升】
+- 力量 +3
+- 敏捷 +2  
+- 体质 +3
+- 感知 +5
+
+你的肌肉变得更加紧实，反应速度明显提升。更重要的是，你发现自己能在短时间内爆发超越常人的力量。
+
+这就是修仙者的起点——炼体！`,
+    choices: [
+      {
+        id: 'continue_cultivation',
+        text: '继续修炼',
+        effects: [{ kind: 'jump', target: 'first_breakthrough' }],
+        next: 'first_breakthrough',
+        result: '',
+      },
+    ],
+  },
+
+  spell_training: {
+    id: 'spell_training',
+    text: `经过反复练习，你终于掌握了两个基础法术：
+
+【灵力护盾】消耗10灵力，生成持续30秒的能量护盾，可抵挡50点伤害
+【灵力冲击】消耗15灵力，发射一道能量波，造成30-50点伤害
+
+虽然还不够强大，但已经是不错的开始了。`,
+    choices: [
+      {
+        id: 'seek_crystals',
+        text: '出发寻找更多结晶',
+        effects: [{ kind: 'jump', target: 'crystal_hunting' }],
+        next: 'crystal_hunting',
+        result: '',
+      },
+    ],
+  },
+
+  moderate_success: {
+    id: 'moderate_success',
+    text: `虽然不是大丰收，但也算有所收获。
+
+你找到了1块蓝色冰霜结晶和1块紫色灵力结晶。蓝色结晶摸起来冰冷刺骨，蕴含着寒元素的能量。
+
+【当前拥有】紫色 x4，蓝色 x1
+
+看来需要去更危险的地方才能找到稀有结晶。`,
+    choices: [
+      {
+        id: 'go_deeper',
+        text: '前往更深的区域',
+        effects: [{ kind: 'jump', target: 'crystal_hunting' }],
+        next: 'crystal_hunting',
+        result: '',
+      },
+    ],
+  },
+
+  more_crystal_hunting: {
+    id: 'more_crystal_hunting',
+    text: `你继续在禁忌之地探索，又找到了一些结晶。
+
+但现在你意识到，单纯收集是不够的。你需要学习如何更好地利用它们。
+
+也许应该找个安全的地方，好好研究一下结晶融合的 technique...`,
+    choices: [
+      {
+        id: 'return_to_base',
+        text: '返回基地研究',
+        effects: [{ kind: 'jump', target: 'successful_mining' }],
+        next: 'successful_mining',
+        result: '',
+      },
+    ],
+  },
+
+  // 占位场景（失败分支）
+  guardian_attack: {
+    id: 'guardian_attack',
+    text: `【战斗】守护兽袭击！`,
+    choices: [],
+    next: '__return__',
+  },
+  cave_trap: {
+    id: 'cave_trap',
+    text: `【陷阱】你触发了洞穴中的机关！`,
+    choices: [],
+    next: '__return__',
+  },
+  fusion_backlash: {
+    id: 'fusion_backlash',
+    text: `【反噬】融合失败，受到能量反冲！`,
+    choices: [],
+    next: '__return__',
+  },
+  crystal_study_fail: {
+    id: 'crystal_study_fail',
+    text: `你没有看出什么特别的信息。`,
+    choices: [],
+    next: '__return__',
+  },
+  sealed_crystals: {
+    id: 'sealed_crystals',
+    text: `结晶被封存，暂时不会产生影响。`,
+    choices: [],
+    next: '__return__',
+  },
+  ask_about_crystals: {
+    id: 'ask_about_crystals',
+    text: `其他人对结晶也知之甚少。`,
+    choices: [],
+    next: '__return__',
+  },
+  rare_crystal_find: {
+    id: 'rare_crystal_find',
+    text: `发现了稀有金色结晶！`,
+    choices: [],
+    next: '__return__',
+  },
+};
+
+/** 结晶线剧本定义 */
+export const CRYSTAL_STORYLINE: StorylineDef = {
+  id: 'crystal_line',
+  title: '结晶线：世界树的碎片',
+  desc: '发现神秘结晶，踏上修仙之路，揭开世界树的秘密。',
+  initialScene: 'crystal_discovery',
+  scenes: CRYSTAL_SCENES,
+  endings: CRYSTAL_ENDINGS,
+};

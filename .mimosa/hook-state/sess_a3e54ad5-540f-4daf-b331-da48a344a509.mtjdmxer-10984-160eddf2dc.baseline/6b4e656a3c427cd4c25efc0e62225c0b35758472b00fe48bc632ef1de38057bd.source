@@ -1,0 +1,44 @@
+/**
+ * v1.0 每日签到补给（品类标配留存钩子）
+ *
+ * 连签奖励按 7 天周期循环；第 7 天（streak % 7 === 0）发放周大奖。
+ * 断签定义：跳过每日结算（不跑 runDaily 即不累计）。
+ */
+import type { GameState } from './types.js';
+import { deltaResource } from './resources.js';
+
+interface SigninReward {
+  text: string;
+  apply: (state: GameState) => void;
+}
+
+const CYCLE: Record<number, SigninReward> = {
+  1: { text: '木材×10', apply: (s) => { s.inventory['wood'] = (s.inventory['wood'] ?? 0) + 10; } },
+  2: { text: '食物×8', apply: (s) => { s.inventory['food'] = (s.inventory['food'] ?? 0) + 8; } },
+  3: {
+    text: '水×8、理智+5',
+    apply: (s) => {
+      s.inventory['water'] = (s.inventory['water'] ?? 0) + 8;
+      deltaResource(s.resources.sanity, 5);
+    },
+  },
+  4: { text: '石材×8', apply: (s) => { s.inventory['stone'] = (s.inventory['stone'] ?? 0) + 8; } },
+  5: { text: '金属×5', apply: (s) => { s.inventory['metal'] = (s.inventory['metal'] ?? 0) + 5; } },
+  6: { text: '理智+8、体力+8', apply: (s) => { deltaResource(s.resources.sanity, 8); deltaResource(s.resources.energy, 8); } },
+  0: {
+    text: '周大奖：木矛×1、食物×15',
+    apply: (s) => {
+      s.inventory['wooden_spear'] = (s.inventory['wooden_spear'] ?? 0) + 1;
+      s.inventory['food'] = (s.inventory['food'] ?? 0) + 15;
+    },
+  },
+};
+
+/** 每日结算第 0 步调用：累加连签并发放当日奖励。 */
+export function processSignin(state: GameState): string {
+  state.runStats.signinStreak = (state.runStats.signinStreak ?? 0) + 1;
+  const streak = state.runStats.signinStreak;
+  const reward = CYCLE[streak % 7];
+  reward.apply(state);
+  return `【签到】连续签到第 ${streak} 天：获得 ${reward.text}。`;
+}
