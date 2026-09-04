@@ -7,4 +7,16 @@ export default defineConfig({
   plugins: [vue()],
   server: { port: 5173, host: true },
   preview: { port: 4173, host: true },
+  build: {
+    // 面板已按 tab 分包（GameScreen defineAsyncComponent）；@fogsea/core 内容包体积天然较大，
+    // 抬高告警阈值以聚焦真实问题（仍保留 code-splitting 收益）。
+    chunkSizeWarningLimit: 1600,
+    rolldownOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules') && (id.includes('/vue') || id.includes('\\vue'))) return 'vue';
+        },
+      },
+    },
+  },
 });

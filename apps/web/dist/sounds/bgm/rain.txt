@@ -1,0 +1,6 @@
+# BGM: 雨天氛围
+# ID: rain
+# Duration: 5:30
+# Mood: peaceful
+# Description: 这是雨天氛围的占位文件
+# 实际音频文件需要替换此文件

@@ -4,10 +4,10 @@
 >
 > **关键词**：迷雾求生 · 文字游戏 · 生存策略 · 全民求生 · roguelite · 天赋三选一 · 基地建设 · 兽潮天灾 · 排行榜 · 安卓APK
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://gitcode.com/badhope/fogsea-survival)
+[![Version](https://img.shields.io/badge/version-2.0.2-blue)](https://gitcode.com/badhope/fogsea-survival)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web-green)](https://gitcode.com/badhope/fogsea-survival/releases)
-[![Test](https://img.shields.io/badge/tests-71%2F71-brightgreen)](packages/core)
+[![Test](https://img.shields.io/badge/tests-75%2F75-brightgreen)](packages/core)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](package.json)
 
 ## 📖 项目简介
@@ -181,7 +181,7 @@ fogsea-survival/
 
 ---
 
-**当前版本**: v1.0.0（正式基线）  
+**当前版本**: v2.0.2（正式基线）  
 **最后更新**: 2026-08-30  
 **状态**: 安卓发布目标，web 为测试壳 🚀
 

@@ -12,4 +12,67 @@ export declare const RANK_TOTAL = 162;
 export declare function computeRank(state: GameState): number;
 /** 每 3 天的排行榜播报；无播报日返回 null。 */
 export declare function rankMessage(state: GameState): string | null;
+/** 排位等级 */
+export declare enum RankingTier {
+    S = "S",// 榜一
+    A = "A",// 榜一榜单前三
+    B = "B",// 榜单第4-10名
+    C = "C",// 榜单第11-20名
+    D = "D"
+}
+/** 排位积分系统 */
+export interface RankingPointSystem {
+    decayRate: number;
+    minimumProtectionDays: number;
+    scoringComponents: {
+        survivalDays: (days: number) => number;
+        baseLevel: (level: number) => number;
+        resources: (total: number) => number;
+        companions: (companionCount: number) => number;
+        achievements: (achievementCount: number) => number;
+    };
+}
+/** 默认排名积分系统 */
+export declare const defaultRankingSystem: RankingPointSystem;
+/** 排位数据 */
+export interface RankingEntry {
+    playerId: string;
+    playerName: string;
+    survivalDays: number;
+    baseLevel: number;
+    totalResources: number;
+    companionCount: number;
+    achievementCount: number;
+    totalScore: number;
+    tier: RankingTier;
+    lastLogin: number;
+    daysSinceLastLogin: number;
+}
+/** 排行榜状态 */
+export interface RankingState {
+    entries: RankingEntry[];
+    totalPlayers: number;
+    lastUpdated: number;
+    protectionPeriodActive: boolean;
+}
+/** 计算总分 */
+export declare function calculateTotalScore(entry: RankingEntry, system: RankingPointSystem): number;
+/** 确定排位 tier */
+export declare function determineTier(totalScore: number): RankingTier;
+/** 应用不进则退机制 */
+export declare function applyDecay(entry: RankingEntry, system: RankingPointSystem, _currentDay: number): RankingEntry;
+/** 更新排行榜 */
+export declare function updateRanking(newEntry: RankingEntry, currentState: RankingState, system: RankingPointSystem): RankingState;
+/** 结算奖励发放 */
+export interface SettlementAward {
+    tier: RankingTier;
+    survivalDays: number;
+    baseLevel: number;
+    resources: number;
+    companions: number;
+    achievements: number;
+    tierBonus: string[];
+    mainReward: string;
+}
+export declare function distributeSettlementAward(tier: RankingTier, state: GameState): SettlementAward;
 //# sourceMappingURL=ranking.d.ts.map

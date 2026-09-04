@@ -127,3 +127,424 @@ export function applyCompanionDaily(state: GameState): string[] {
   }
   return messages;
 }
+
+// ============================================================
+// 支线任务和好感度系统
+// ============================================================
+
+/** 好感度等级 */
+export enum AffectionLevel {
+  LOW = 'low',           // 0-30：互动有限
+  MEDIUM = 'medium',     // 31-60：定期任务
+  HIGH = 'high',         // 61-80：专属支线开启
+  VERY_HIGH = 'veryHigh' // 81-100：专属结局条件
+}
+
+/** 同伴状态 */
+export enum CompanionStatus {
+  FRIEND = 'friend',        // 普通友谊
+  ALLY = 'ally',            // 盟友（好感度 ≥ 50）
+  LOVER = 'lover',          // 爱人（好感度 ≥ 80）
+  BETRAYED = 'betrayed',    // 已背叛
+  LEFT = 'left'             // 已离开
+}
+
+/** 支线任务类型 */
+export interface CompanionQuest {
+  id: string;
+  name: string;
+  description: string;
+  type: 'main' | 'special' | 'relationship';
+  minAffection: number;
+  completionReward: {
+    affectionChange: number;
+    items?: Record<string, number>;
+    flags?: Record<string, boolean>;
+  };
+}
+
+/** 同伴数据结构扩展 */
+export interface CompanionDataExtended {
+  id: string;
+  name: string;
+  affection: number; // 当前好感度
+  status: CompanionStatus;
+  affectionLevel: AffectionLevel;
+  completedQuests: string[];
+  triggeredEvents: string[];
+  finalCondition?: {
+    met: boolean;
+    requirements: string[];
+  };
+}
+
+/** 同伴支线任务定义 */
+export const COMPANION_QUESTS: Record<string, CompanionQuest[]> = {
+  duoduo: [
+    {
+      id: 'duoduo_main',
+      name: '朵朵的过去',
+      description: '了解朵朵的过去，帮助她找到家人',
+      type: 'main',
+      minAffection: 20,
+      completionReward: {
+        affectionChange: 15,
+        items: { mysterious_crystal: 1 },
+        flags: { quest_duoduo_main_completed: true },
+      },
+    },
+    {
+      id: 'duoduo_special',
+      name: '朵朵的礼物',
+      description: '为朵朵准备一份特别的礼物',
+      type: 'special',
+      minAffection: 50,
+      completionReward: {
+        affectionChange: 20,
+        items: { research_data: 1 },
+        flags: { quest_duoduo_special_completed: true },
+      },
+    },
+    {
+      id: 'duoduo_relationship',
+      name: '朵朵的信任',
+      description: '加深与朵朵的感情，建立深厚信任',
+      type: 'relationship',
+      minAffection: 80,
+      completionReward: {
+        affectionChange: 25,
+        flags: { quest_duoduo_relationship_completed: true },
+      },
+    },
+  ],
+  laok: [
+    {
+      id: 'laok_main',
+      name: '老K的情报',
+      description: '协助老K收集情报，建立情报网络',
+      type: 'main',
+      minAffection: 20,
+      completionReward: {
+        affectionChange: 10,
+        items: { radio_parts: 1 },
+        flags: { quest_laok_main_completed: true },
+      },
+    },
+    {
+      id: 'laok_special',
+      name: '老K的过去',
+      description: '了解老K的过去，建立更深的信任',
+      type: 'special',
+      minAffection: 50,
+      completionReward: {
+        affectionChange: 15,
+        items: { gunpowder: 5 },
+        flags: { quest_laok_special_completed: true },
+      },
+    },
+    {
+      id: 'laok_relationship',
+      name: '老K的忠诚',
+      description: '与老K建立深厚的战斗友谊',
+      type: 'relationship',
+      minAffection: 80,
+      completionReward: {
+        affectionChange: 20,
+        flags: { quest_laok_relationship_completed: true },
+      },
+    },
+  ],
+  doc: [
+    {
+      id: 'doc_main',
+      name: '林医生的使命',
+      description: '协助林医生治疗病患，建立医疗系统',
+      type: 'main',
+      minAffection: 20,
+      completionReward: {
+        affectionChange: 15,
+        items: { herb: 10 },
+        flags: { quest_doc_main_completed: true },
+      },
+    },
+    {
+      id: 'doc_special',
+      name: '林医生的过去',
+      description: '了解林医生的过去，建立更深的信任',
+      type: 'special',
+      minAffection: 50,
+      completionReward: {
+        affectionChange: 20,
+        items: { bandage: 5 },
+        flags: { quest_doc_special_completed: true },
+      },
+    },
+    {
+      id: 'doc_relationship',
+      name: '林医生的承诺',
+      description: '与林医生建立深厚的信任关系',
+      type: 'relationship',
+      minAffection: 80,
+      completionReward: {
+        affectionChange: 25,
+        flags: { quest_doc_relationship_completed: true },
+      },
+    },
+  ],
+  rat: [
+    {
+      id: 'rat_main',
+      name: '鼠王的交易',
+      description: '与鼠王建立交易关系，获得地下情报',
+      type: 'main',
+      minAffection: 20,
+      completionReward: {
+        affectionChange: 10,
+        items: { mutant_core: 2 },
+        flags: { quest_rat_main_completed: true },
+      },
+    },
+    {
+      id: 'rat_special',
+      name: '鼠王的过去',
+      description: '了解鼠王的过去，建立更深的信任',
+      type: 'special',
+      minAffection: 50,
+      completionReward: {
+        affectionChange: 15,
+        items: { rat_tail: 3 },
+        flags: { quest_rat_special_completed: true },
+      },
+    },
+    {
+      id: 'rat_relationship',
+      name: '鼠王的忠诚',
+      description: '与鼠王建立深厚的联盟关系',
+      type: 'relationship',
+      minAffection: 80,
+      completionReward: {
+        affectionChange: 20,
+        flags: { quest_rat_relationship_completed: true },
+      },
+    },
+  ],
+  rescue: [
+    {
+      id: 'rescue_main',
+      name: '救援队的任务',
+      description: '配合救援队的登陆作战，建立外部联系',
+      type: 'main',
+      minAffection: 20,
+      completionReward: {
+        affectionChange: 15,
+        items: { signal_flare: 1 },
+        flags: { quest_rescue_main_completed: true },
+      },
+    },
+    {
+      id: 'rescue_special',
+      name: '救援队的过去',
+      description: '了解救援队的过去，建立更深的信任',
+      type: 'special',
+      minAffection: 50,
+      completionReward: {
+        affectionChange: 20,
+        items: { alliance_badge: 1 },
+        flags: { quest_rescue_special_completed: true },
+      },
+    },
+    {
+      id: 'rescue_relationship',
+      name: '救援队的承诺',
+      description: '与救援队建立深厚的同盟关系',
+      type: 'relationship',
+      minAffection: 80,
+      completionReward: {
+        affectionChange: 25,
+        flags: { quest_rescue_relationship_completed: true },
+      },
+    },
+  ],
+  crystal: [
+    {
+      id: 'crystal_main',
+      name: '结晶之声的秘密',
+      description: '解码结晶之声的秘密，获得古老知识',
+      type: 'main',
+      minAffection: 20,
+      completionReward: {
+        affectionChange: 15,
+        items: { mysterious_crystal: 2 },
+        flags: { quest_crystal_main_completed: true },
+      },
+    },
+    {
+      id: 'crystal_special',
+      name: '结晶共鸣',
+      description: '与结晶建立更深的联系，获得特殊能力',
+      type: 'special',
+      minAffection: 50,
+      completionReward: {
+        affectionChange: 20,
+        items: { ancient_scroll: 1 },
+        flags: { quest_crystal_special_completed: true },
+      },
+    },
+    {
+      id: 'crystal_relationship',
+      name: '结晶融合',
+      description: '与结晶完全融合，获得超凡力量',
+      type: 'relationship',
+      minAffection: 80,
+      completionReward: {
+        affectionChange: 25,
+        flags: { quest_crystal_relationship_completed: true },
+      },
+    },
+  ],
+};
+
+/** 初始化同伴数据 */
+export function initCompanionData(): Record<string, CompanionDataExtended> {
+  const data: Record<string, CompanionDataExtended> = {};
+  for (const companion of COMPANION_DEFS) {
+    data[companion.id] = {
+      id: companion.id,
+      name: companion.name,
+      affection: 0,
+      status: CompanionStatus.FRIEND,
+      affectionLevel: AffectionLevel.LOW,
+      completedQuests: [],
+      triggeredEvents: [],
+    };
+  }
+  return data;
+}
+
+/** 获取好感度等级 */
+export function getAffectionLevel(affection: number): AffectionLevel {
+  if (affection >= 81) return AffectionLevel.VERY_HIGH;
+  if (affection >= 61) return AffectionLevel.HIGH;
+  if (affection >= 31) return AffectionLevel.MEDIUM;
+  return AffectionLevel.LOW;
+}
+
+/** 计算好感度变化 */
+export function calculateAffectionChange(
+  action: 'help' | 'gift' | 'conflict' | 'ignore' | 'rescue',
+  companionId: string,
+  currentAffection: number,
+  playerChoiceQuality: 'excellent' | 'good' | 'poor' = 'good',
+): { change: number; newAffection: number; newLevel: AffectionLevel } {
+  const baseChanges: Record<string, Record<string, number>> = {
+    duoduo: { help: 10, gift: 5, conflict: -5, ignore: 0, rescue: 15 },
+    laok: { help: 5, gift: 3, conflict: -3, ignore: 0, rescue: 8 },
+    doc: { help: 12, gift: 8, conflict: -8, ignore: 0, rescue: 20 },
+    rat: { help: 3, gift: -3, conflict: 5, ignore: 0, rescue: 10 },
+    rescue: { help: 7, gift: 5, conflict: -5, ignore: 0, rescue: 15 },
+    crystal: { help: 5, gift: 3, conflict: -5, ignore: 0, rescue: 8 },
+  };
+  
+  const actionChanges = baseChanges[companionId]?.[action] ?? 0;
+  let modifier = 1;
+  
+  // 根据好感度质量修正
+  if (playerChoiceQuality === 'excellent') {
+    modifier = 1.5;
+  } else if (playerChoiceQuality === 'poor') {
+    modifier = 0.5;
+  }
+  
+  const change = Math.round(actionChanges * modifier);
+  const newAffection = Math.max(0, Math.min(100, currentAffection + change));
+  
+  return {
+    change,
+    newAffection,
+    newLevel: getAffectionLevel(newAffection),
+  };
+}
+
+/** 触发同伴支线任务 */
+export function triggerCompanionQuest(
+  companionId: string,
+  currentAffection: number,
+  questType: 'main' | 'special' | 'relationship',
+): { success: boolean; questId: string; affectionChange: number; message: string } {
+  const quests = COMPANION_QUESTS[companionId];
+  if (!quests) {
+    return {
+      success: false,
+      questId: '',
+      affectionChange: 0,
+      message: '同伴不存在',
+    };
+  }
+  
+  const quest = quests.find(q => q.type === questType && q.minAffection <= currentAffection);
+  if (!quest) {
+    return {
+      success: false,
+      questId: '',
+      affectionChange: 0,
+      message: '没有可用的支线任务',
+    };
+  }
+  
+  return {
+    success: true,
+    questId: quest.id,
+    affectionChange: quest.completionReward.affectionChange,
+    message: `触发支线任务: ${quest.name} - ${quest.description}`,
+  };
+}
+
+/** 处理同伴背叛/离开 */
+export function handleCompanionDeparture(
+  companionId: string,
+  currentAffection: number,
+  currentStatus: CompanionStatus,
+): { newStatus: CompanionStatus; affectionChange: number; message: string } {
+  const companion = COMPANION_DEFS.find(c => c.id === companionId);
+  const name = companion?.name ?? companionId;
+  
+  // 如果好感度很低（≤20）或发生严重冲突
+  let newStatus: CompanionStatus;
+  let affectionChange: number;
+  let message: string;
+  
+  if (currentAffection <= 20 && currentStatus === CompanionStatus.FRIEND) {
+    // 低好感度自动离开
+    newStatus = CompanionStatus.LEFT;
+    affectionChange = -currentAffection;
+    message = `${name}意识到我们的目标不再一致，决定离开。`;
+  } else if (currentAffection >= 80 && currentStatus === CompanionStatus.LOVER) {
+    // 最高好感度可能转为永久盟友
+    newStatus = CompanionStatus.ALLY;
+    affectionChange = 0;
+    message = `${name}承诺永远站在你身边，无论发生什么。`;
+  } else if (currentAffection >= 50 && currentStatus === CompanionStatus.ALLY) {
+    // 中等高好感度保持盟友
+    newStatus = CompanionStatus.ALLY;
+    affectionChange = 0;
+    message = `${name}作为你的盟友，将继续提供支持。`;
+  } else {
+    // 中等好感度可能背叛或离开
+    const betrayalChance = 0.3;
+    if (Math.random() < betrayalChance) {
+      newStatus = CompanionStatus.BETRAYED;
+      affectionChange = -Math.floor(currentAffection / 2);
+      message = `${name}背叛了你，转而效力于敌对势力。`;
+    } else {
+      newStatus = CompanionStatus.LEFT;
+      affectionChange = -Math.floor(currentAffection * 0.5);
+      message = `${name}意识到无法继续，决定离开。`;
+    }
+  }
+  
+  return {
+    newStatus,
+    affectionChange,
+    message,
+  };
+}

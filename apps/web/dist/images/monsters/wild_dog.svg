@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bodyGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#8b4513;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Background -->
+  <rect width="400" height="400" fill="#2d2d2d" rx="20"/>
+  <!-- Body -->
+  <ellipse cx="200" cy="200" rx="150" ry="120" fill="url(#bodyGrad)" stroke="#654321" stroke-width="4"/>
+  <!-- Eyes -->
+  <ellipse cx="150" cy="180" rx="30" ry="25" fill="#ff0000"/>
+  <ellipse cx="250" cy="180" rx="30" ry="25" fill="#ff0000"/>
+  <circle cx="150" cy="180" r="15" fill="#8b0000"/>
+  <circle cx="250" cy="180" r="15" fill="#8b0000"/>
+  <circle cx="150" cy="180" r="8" fill="#000"/>
+  <circle cx="250" cy="180" r="8" fill="#000"/>
+  <!-- Mouth -->
+  <path d="M120 250 Q200 320 280 250" stroke="#000" stroke-width="5" fill="none"/>
+  <!-- Teeth -->
+  <polygon points="140,250 150,280 160,250" fill="#fff"/>
+  <polygon points="180,250 190,290 200,250" fill="#fff"/>
+  <polygon points="220,250 230,280 240,250" fill="#fff"/>
+  <polygon points="260,250 270,270 280,250" fill="#fff"/>
+  <!-- Features -->
+  <path d="M120 160 L100 120 L140 140" fill="#8b4513" stroke="#654321" stroke-width="2"/><path d="M280 160 L300 120 L260 140" fill="#8b4513" stroke="#654321" stroke-width="2"/><path d="M180 300 Q200 350 220 300" fill="none" stroke="#8b4513" stroke-width="8"/>
+  <!-- Name plate -->
+  <rect x="50" y="340" width="300" height="50" rx="10" fill="rgba(0,0,0,0.7)"/>
+  <text x="200" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#fff" font-weight="bold">Wild Dog</text>
+</svg>

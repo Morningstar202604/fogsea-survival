@@ -458,4 +458,142 @@ export function refreshMerchantInventory(merchant, day) {
         merchant.lastRefresh = day;
     }
 }
+// ============================================================
+// 四阶段经济演进系统
+// ============================================================
+/** 经济阶段枚举 */
+export var EconomicPhase;
+(function (EconomicPhase) {
+    EconomicPhase["BARTER"] = "barter";
+    EconomicPhase["CREDIT"] = "credit";
+    EconomicPhase["MARKET"] = "market";
+    EconomicPhase["CURRENCY"] = "currency"; // 阶段4: 货币发行 (Day 51+)
+})(EconomicPhase || (EconomicPhase = {}));
+/** 交易比例 (阶段1: 以物易物) */
+export const BARTER_RATIOS = {
+    wood: 2, // 木材 ↔ 食物: 2:1
+    stone: 3, // 石材 ↔ 工具: 3:1
+    metal: 1, // 金属 ↔ 武器: 视等级而定
+    food: 1,
+    water: 1,
+};
+/** 商城积分物价表 (阶段2) */
+export const CREDIT_PRICES = {
+    // 常用物资价格 (迷雾币)
+    purifiedWater: 1,
+    blackBread: 0.5,
+    rareCrystal: 100,
+    advancedBlueprint: 500,
+    // 收购价格 (系统自动回购)
+    wood: 10,
+    stone: 15,
+    food: 8,
+    water: 12,
+};
+/** 声望状态 */
+export var ReputationStatus;
+(function (ReputationStatus) {
+    ReputationStatus["FRIENDLY"] = "friendly";
+    ReputationStatus["RESPECTED"] = "respected";
+    ReputationStatus["NEUTRAL"] = "neutral";
+    ReputationStatus["HOSTILE"] = "hostile";
+    ReputationStatus["EXILED"] = "exiled";
+    ReputationStatus["POSITIVE"] = "positive";
+    ReputationStatus["NEGATIVE"] = "negative";
+})(ReputationStatus || (ReputationStatus = {}));
+/** 商人 NPC 类型 */
+export var MerchantType;
+(function (MerchantType) {
+    MerchantType["ORDINARY"] = "ordinary";
+    MerchantType["RARE"] = "rare";
+    MerchantType["HOSTILE"] = "hostile"; // 高价低质, 可能诈骗
+})(MerchantType || (MerchantType = {}));
+/** 创建扩展经济状态 */
+export function createInitialEconomyExtended() {
+    return {
+        ...createInitialEconomy(),
+        currentPhase: EconomicPhase.BARTER,
+        playerReputation: 0,
+        reputationChanges: [],
+    };
+}
+/** 检查阶段转换 */
+export function checkPhaseTransition(state) {
+    const day = state.day;
+    const economy = state.economy;
+    // 阶段1 → 阶段2: 达到第11天
+    if (day >= 11 && economy.currentPhase === EconomicPhase.BARTER) {
+        return EconomicPhase.CREDIT;
+    }
+    // 阶段2 → 阶段3: 达到第31天
+    if (day >= 31 && economy.currentPhase === EconomicPhase.CREDIT) {
+        return EconomicPhase.MARKET;
+    }
+    // 阶段3 → 阶段4: 达到第51天
+    if (day >= 51 && economy.currentPhase === EconomicPhase.MARKET) {
+        return EconomicPhase.CURRENCY;
+    }
+    return null;
+}
+/** 处理交易（根据当前阶段） */
+export function processTrade(state, itemId, quantity, isPlayerTrade = false) {
+    const { currentPhase } = state.economy;
+    let reputationChange = 0;
+    // 根据当前阶段处理交易
+    switch (currentPhase) {
+        case EconomicPhase.BARTER:
+            // 以物易物模式
+            const ratio = BARTER_RATIOS[itemId] || 1;
+            const equivalentQuantity = Math.floor(quantity * ratio);
+            state.inventory[itemId] = (state.inventory[itemId] ?? 0) + equivalentQuantity;
+            break;
+        case EconomicPhase.CREDIT:
+            // 商城积分模式
+            const price = CREDIT_PRICES[itemId] || 0;
+            const totalCost = price * quantity;
+            state.economy.currency -= totalCost;
+            break;
+        case EconomicPhase.MARKET:
+            // 玩家市场模式
+            if (isPlayerTrade) {
+                reputationChange = calculateReputationImpact(ReputationStatus.POSITIVE, state.economy.playerReputation);
+                state.economy.playerReputation += reputationChange;
+            }
+            break;
+        case EconomicPhase.CURRENCY:
+            // 货币发行模式
+            break;
+    }
+    const message = getTradeMessage(currentPhase, itemId, quantity, reputationChange);
+    return {
+        success: true,
+        message,
+        reputationChange,
+    };
+}
+/** 获取交易消息 */
+function getTradeMessage(phase, itemId, quantity, reputationChange) {
+    const phaseNames = {
+        [EconomicPhase.BARTER]: '以物易物',
+        [EconomicPhase.CREDIT]: '商城积分',
+        [EconomicPhase.MARKET]: '玩家市场',
+        [EconomicPhase.CURRENCY]: '自定义货币',
+    };
+    let reputationInfo = '';
+    if (reputationChange !== 0) {
+        const sign = reputationChange > 0 ? '+' : '';
+        reputationInfo = ` (声望${sign}${reputationChange})`;
+    }
+    return `交易完成: ${phaseNames[phase]} - ${itemId} × ${quantity}${reputationInfo}`;
+}
+/** 计算声望影响 */
+function calculateReputationImpact(review, currentRep) {
+    if (review === ReputationStatus.POSITIVE) {
+        return Math.min(5, 100 - currentRep); // 最多 +5，上限 100
+    }
+    else if (review === ReputationStatus.NEGATIVE) {
+        return Math.max(-5, -100 - currentRep); // 最多 -5，下限 -100
+    }
+    return 0;
+}
 //# sourceMappingURL=economy.js.map

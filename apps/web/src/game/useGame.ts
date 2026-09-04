@@ -32,6 +32,8 @@ import {
   getNpcStatuses,
   recruitCompanion,
   STRUCTURE_DEFS,
+  enterStoryLine,
+  STORY_TRIGGERS,
   type GameState,
   type Choice,
   type CombatAction,
@@ -285,7 +287,7 @@ function createSession(): GameSession {
   function build(structureId: string): void {
     if (!s.state) return;
     const pos = { x: s.state.base.structures.length, y: 0 };
-    const result = buildStructureCore(s.state as any, structureId, pos);
+    const result = buildStructureCore(s.state, structureId, pos);
     showToast(result.message);
     pushLog(result.message, 'system');
     if (result.success) {
@@ -355,10 +357,18 @@ function createSession(): GameSession {
 
   function startStory(storyId: string): void {
     if (!s.state) return;
-    // 标记故事线已触发
+    // 双轨合并：手动开始与引擎触发共用 enterStoryLine（line_done_<id> 判定）
+    const story = STORY_TRIGGERS.find((t) => t.id === storyId);
+    const lineId = story?.questId ?? storyId;
+    const line = fullContent.lines?.find((l) => l.id === lineId);
     s.state.flags[`story_${storyId}_started`] = true;
-    showToast(`开始探索${storyId}剧情线`);
-    pushLog(`你决定探索${storyId}的剧情线...`, 'system');
+    if (line && enterStoryLine(s.state, fullContent, lineId)) {
+      showToast(`开始探索${storyId}剧情线`);
+      pushLog(`【剧情】开始探索「${line.title ?? storyId}」的剧情...`, 'system');
+    } else {
+      showToast(`开始探索${storyId}剧情线`);
+      pushLog(`你决定探索${storyId}的剧情线...`, 'system');
+    }
     persist();
   }
 
@@ -373,12 +383,21 @@ function createSession(): GameSession {
       pushLog(entry, 'result');
     }
 
+    // v4.0：记录战斗因果到 consequenceLog
+    if (s.state.causalTracker) {
+      s.state.causalTracker.consequenceLog.push({
+        day: s.state.day,
+        cause: action === 'use_item' ? '使用战斗道具' : `${action}战斗`,
+        effect: r.result?.victory ? '击败敌人' : '战斗进行中',
+      });
+    }
+
     if (r.ended && r.result) {
       if (r.result.victory) {
         showToast('战斗胜利！');
         pushLog('击败了敌人！获得战利品。', 'system');
         // v3.0：战斗胜利奖励经验、积分、掉落
-        const enemyLevel = s.state.combat ? (s.state.combat as any).enemyLevel ?? 1 : 1;
+        const enemyLevel = s.state.combat ? s.state.combat.enemyLevel ?? 1 : 1;
         const expGain = calculateCombatExp(enemyLevel, true);
         const pointsGain = calculateCombatPoints(enemyLevel, s.state.attributes.luck);
         const levelResult = gainExp(s.state, expGain);

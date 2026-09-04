@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="bodyGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#f5f5dc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5f5dc;stop-opacity:0.6" />
+    </radialGradient>
+  </defs>
+  <!-- Body -->
+  <ellipse cx="100" cy="100" rx="40" ry="32.0" fill="url(#bodyGrad)" stroke="#f5f5dc" stroke-width="3"/>
+  <!-- Eyes -->
+  <ellipse cx="85" cy="90" rx="10" ry="8" fill="#ff0000"/>
+  <ellipse cx="115" cy="90" rx="10" ry="8" fill="#ff0000"/>
+  <circle cx="85" cy="90" r="4" fill="#000"/>
+  <circle cx="115" cy="90" r="4" fill="#000"/>
+  <!-- Mouth -->
+  <path d="M75 115 Q100 140 125 115" stroke="#000" stroke-width="3" fill="none"/>
+  <!-- Teeth -->
+  <line x1="80" y1="115" x2="85" y2="125" stroke="#fff" stroke-width="2"/>
+  <line x1="95" y1="115" x2="100" y2="125" stroke="#fff" stroke-width="2"/>
+  <line x1="105" y1="115" x2="110" y2="125" stroke="#fff" stroke-width="2"/>
+  <line x1="120" y1="115" x2="115" y2="125" stroke="#fff" stroke-width="2"/>
+  <!-- Name label -->
+  <text x="100" y="190" text-anchor="middle" font-family="Arial" font-size="12" fill="#f5f5dc">骸骨亡灵</text>
+</svg>

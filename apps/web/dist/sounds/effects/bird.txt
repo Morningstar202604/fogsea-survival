@@ -1,0 +1,5 @@
+# Sound Effect: 鸟叫声
+# ID: bird
+# Duration: 0:01
+# Description: 这是鸟叫声的占位文件
+# 实际音频文件需要替换此文件

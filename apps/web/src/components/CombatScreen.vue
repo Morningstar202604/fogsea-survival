@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGame } from '../game/useGame';
-import { MONSTER_DATABASE } from '@fogsea/core';
+import { MONSTER_DATABASE, COMBAT_ITEM_EFFECTS, ITEM_DATABASE } from '@fogsea/core';
+import type { CombatAction } from '@fogsea/core';
 
 const g = useGame();
 
@@ -17,6 +18,9 @@ const combatInfo = computed(() => {
     monsterMaxHp: st.combat.enemyMaxHp,
     round: st.combat.round,
     log: st.combat.log || [],
+    usableItems: Object.entries(st.inventory ?? {})
+      .filter(([id, qty]) => qty > 0 && COMBAT_ITEM_EFFECTS[id])
+      .map(([id, qty]) => ({ id, name: ITEM_DATABASE[id]?.name ?? id, count: qty })),
   };
 });
 
@@ -30,20 +34,8 @@ function getHpColor(pct: number): string {
   return '#4f9d6f';
 }
 
-function attack() {
-  g.combatAction?.('attack');
-}
-
-function defend() {
-  g.combatAction?.('defend');
-}
-
-function useSkill() {
-  g.combatAction?.('use_item');
-}
-
-function flee() {
-  g.combatAction?.('flee');
+function action(a: CombatAction): void {
+  g.combatAction?.(a);
 }
 </script>
 
@@ -108,19 +100,33 @@ function flee() {
 
     <!-- 行动按钮 -->
     <div class="combat-actions">
-      <button class="action-btn attack" @click="attack">
+      <button class="action-btn attack" @click="action('attack')">
         ⚔️ 攻击
       </button>
-      <button class="action-btn defend" @click="defend">
+      <button class="action-btn defend" @click="action('defend')">
         🛡️ 防御
       </button>
-      <button class="action-btn skill" @click="useSkill">
-        ✨ 技能
+      <button
+        class="action-btn skill"
+        :disabled="combatInfo.usableItems.length === 0"
+        title="自动使用背包中效果最好的消耗品"
+        @click="action('use_item')"
+      >
+        🧪 使用道具
       </button>
-      <button class="action-btn flee" @click="flee">
+      <button class="action-btn flee" @click="action('flee')">
         🏃 逃跑
       </button>
     </div>
+
+    <!-- 可用战斗道具 -->
+    <div v-if="combatInfo.usableItems.length > 0" class="usable-items">
+      <span class="usable-title">背包道具：</span>
+      <span v-for="it in combatInfo.usableItems" :key="it.id" class="usable-chip">
+        {{ it.name }}×{{ it.count }}
+      </span>
+    </div>
+    <p v-else class="no-item">没有可用的战斗道具</p>
 
     <div class="turn-indicator">
       第 {{ combatInfo.round }} 回合
@@ -197,7 +203,8 @@ function flee() {
 .hp-fill {
   height: 100%;
   border-radius: 6px;
-  transition: width 0.4s ease, background 0.4s ease;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .monster-desc {
@@ -307,6 +314,30 @@ function flee() {
   background: rgba(255, 255, 255, 0.15);
   border-color: #7aa2c9;
   color: #e4e9f2;
+}
+
+/* 可用战斗道具 */
+.usable-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+}
+.usable-title {
+  color: #8b95a7;
+}
+.usable-chip {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(79, 157, 111, 0.12);
+  border: 1px solid rgba(79, 157, 111, 0.3);
+  color: #9cc4a8;
+}
+.no-item {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #566072;
 }
 
 .turn-indicator {

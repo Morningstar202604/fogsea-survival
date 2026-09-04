@@ -1,0 +1,5 @@
+# Sound Effect: 魔法音效
+# ID: magic
+# Duration: 0:02
+# Description: 这是魔法音效的占位文件
+# 实际音频文件需要替换此文件

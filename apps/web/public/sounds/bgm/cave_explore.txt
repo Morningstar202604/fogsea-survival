@@ -1,0 +1,6 @@
+# BGM: 洞穴探索
+# ID: cave_explore
+# Duration: 4:10
+# Mood: dark
+# Description: 这是洞穴探索的占位文件
+# 实际音频文件需要替换此文件

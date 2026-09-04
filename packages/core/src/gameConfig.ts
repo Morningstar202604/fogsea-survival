@@ -3614,9 +3614,9 @@ export function calculateReputationEffects(reputation: number): Record<string, n
 // ============================================================
 // 二十二、版本信息
 // ============================================================
-export const GAME_VERSION = '1.0.0';
+export const GAME_VERSION = '2.0.2';
 export const GAME_VERSION_NAME = '体系化完整版';
-export const GAME_VERSION_DESCRIPTION = '十阶段体系、每日系统、迷雾规则、NPC动态（27个完整NPC）、因果系统、成长方向、大事件检验、属性公式、等级经验、货币、基地建筑、武器品质、称号、多结局、超能力系统、科技树系统、外交势力系统、声望系统';
+export const GAME_VERSION_DESCRIPTION = '十阶段体系、每日系统、迷雾规则、NPC动态（27个完整NPC）、因果系统、成长方向、大事件检验、属性公式、等级经验、货币、基地建筑、武器品质、称号、多结局、超能力系统、科技树系统、外交势力系统、声望系统、叙事引擎、AI事件、策略系统';
 
 // ============================================================
 // 二十三、阶段剧情链调度

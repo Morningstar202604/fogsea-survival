@@ -133,7 +133,7 @@
 - monorepo：`packages/core`（纯 TS 引擎，零 DOM 依赖）+ `apps/web`（Vue3 测试壳）+ Capacitor 安卓壳
 - 引擎新增系统一律：独立模块 + types.ts 挂 state + save.ts 旧档兼容 + vitest 覆盖
 - 内容校验：validate.test.ts 为合入门禁（next 可达/资源键/物品 id/文本泄漏）
-- 版本基线：**1.0.0**（root/core/web/gradle 统一）；此后 semver：内容=minor、系统=major 里程碑
+- 版本基线：**2.0.2**（root/core/web/gradle 统一）；此后 semver：内容=minor、系统=major 里程碑
 - 已知技术债：STORY_TRIGGERS 双轨待合并、full.ts 待拆分、dist 出 git、use_item 实现
 
 ---

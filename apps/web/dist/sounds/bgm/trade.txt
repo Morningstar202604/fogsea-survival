@@ -1,0 +1,6 @@
+# BGM: 交易音乐
+# ID: trade
+# Duration: 3:45
+# Mood: neutral
+# Description: 这是交易音乐的占位文件
+# 实际音频文件需要替换此文件

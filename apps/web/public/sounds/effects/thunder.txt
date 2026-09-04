@@ -1,0 +1,5 @@
+# Sound Effect: 雷声
+# ID: thunder
+# Duration: 0:01
+# Description: 这是雷声的占位文件
+# 实际音频文件需要替换此文件

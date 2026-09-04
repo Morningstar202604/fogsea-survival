@@ -1,0 +1,5 @@
+# Sound Effect: 喝药水
+# ID: potion_drink
+# Duration: 0:01
+# Description: 这是喝药水的占位文件
+# 实际音频文件需要替换此文件

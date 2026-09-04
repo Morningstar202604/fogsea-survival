@@ -279,10 +279,11 @@ export function checkProgression(state, content) {
     const storyTrigger = checkStoryTriggers(state);
     if (storyTrigger) {
         check.storyTrigger = storyTrigger;
-        check.messages.push(`【剧情触发】新的任务线已开启！`);
-        // 将支线压栈
-        state.eventStack.push(state.currentScene);
-        // TODO: 加载支线初始场景
+        // 双轨合并：与 content.lines[].trigger（engine.scheduleLine）共用 enterStoryLine，
+        // 统一以 line_done_<id> 判定是否已开启，避免重复触发；无对应支线时不压栈（杜绝假死锁）。
+        if (enterStoryLine(state, content, storyTrigger.questId)) {
+            check.messages.push(`【剧情触发】新的任务线已开启！`);
+        }
     }
     // 4. 检查资源枯竭
     const depletion = checkResourceDepletion(state);
@@ -339,6 +340,24 @@ function checkCatastrophes(state) {
         }
     }
     return result;
+}
+/**
+ * 双轨合并入口：STORY_TRIGGERS 与 content.lines[].trigger（engine.scheduleLine）共用同一套
+ * 开启判定 —— 统一写 line_done_<id> 旗标，杜绝两轨各自记录导致重复/漏触发。
+ * 成功切入支线返回 true；线不存在 / 已开启 / 事件栈占用 / 缺少当前场景时返回 false。
+ */
+export function enterStoryLine(state, content, lineId) {
+    if (state.eventStack.length)
+        return false;
+    if (state.flags[`line_done_${lineId}`])
+        return false;
+    const line = (content.lines ?? []).find((l) => l.id === lineId);
+    if (!line || !line.initialScene || !state.currentScene)
+        return false;
+    state.flags[`line_done_${lineId}`] = true;
+    state.eventStack.push(state.currentScene);
+    state.currentScene = line.initialScene;
+    return true;
 }
 /**
  * 检查剧情触发器

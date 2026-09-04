@@ -1,0 +1,5 @@
+# Sound Effect: 门吱呀声
+# ID: door_creak
+# Duration: 0:01
+# Description: 这是门吱呀声的占位文件
+# 实际音频文件需要替换此文件

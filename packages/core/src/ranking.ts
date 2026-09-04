@@ -44,3 +44,180 @@ export function rankMessage(state: GameState): string | null {
   }
   return `【排行榜】当前排名 #${rank} / ${RANK_TOTAL}。你前面是「${rival}」，他昨天刚升了 2 级基地。`;
 }
+
+// ============================================================
+// 不进则退机制
+// ============================================================
+
+/** 排位等级 */
+export enum RankingTier {
+  S = 'S',      // 榜一
+  A = 'A',      // 榜一榜单前三
+  B = 'B',      // 榜单第4-10名
+  C = 'C',      // 榜单第11-20名
+  D = 'D'       // 榜单第21-162名
+}
+
+/** 排位积分系统 */
+export interface RankingPointSystem {
+  decayRate: number; // 每天无登录扣除的比例
+  minimumProtectionDays: number; // 新手保护期
+  scoringComponents: {
+    survivalDays: (days: number) => number;
+    baseLevel: (level: number) => number;
+    resources: (total: number) => number;
+    companions: (companionCount: number) => number;
+    achievements: (achievementCount: number) => number;
+  };
+}
+
+/** 默认排名积分系统 */
+export const defaultRankingSystem: RankingPointSystem = {
+  decayRate: 0.1,
+  minimumProtectionDays: 7,
+  scoringComponents: {
+    survivalDays: (days: number) => Math.min(30, days / 5),
+    baseLevel: (level: number) => level * 2,
+    resources: (total: number) => Math.min(20, total / 100),
+    companions: (count: number) => Math.min(15, count * 2),
+    achievements: (count: number) => Math.min(10, count),
+  },
+};
+
+/** 排位数据 */
+export interface RankingEntry {
+  playerId: string;
+  playerName: string;
+  survivalDays: number;
+  baseLevel: number;
+  totalResources: number;
+  companionCount: number;
+  achievementCount: number;
+  totalScore: number;
+  tier: RankingTier;
+  lastLogin: number;
+  daysSinceLastLogin: number;
+}
+
+/** 排行榜状态 */
+export interface RankingState {
+  entries: RankingEntry[];
+  totalPlayers: number;
+  lastUpdated: number;
+  protectionPeriodActive: boolean;
+}
+
+/** 计算总分 */
+export function calculateTotalScore(entry: RankingEntry, system: RankingPointSystem): number {
+  const { scoringComponents } = system;
+  return (
+    scoringComponents.survivalDays(entry.survivalDays) +
+    scoringComponents.baseLevel(entry.baseLevel) +
+    scoringComponents.resources(entry.totalResources) +
+    scoringComponents.companions(entry.companionCount) +
+    scoringComponents.achievements(entry.achievementCount)
+  );
+}
+
+/** 确定排位 tier */
+export function determineTier(totalScore: number): RankingTier {
+  if (totalScore >= 85) return RankingTier.S;
+  if (totalScore >= 70) return RankingTier.A;
+  if (totalScore >= 55) return RankingTier.B;
+  if (totalScore >= 40) return RankingTier.C;
+  return RankingTier.D;
+}
+
+/** 应用不进则退机制 */
+export function applyDecay(
+  entry: RankingEntry,
+  system: RankingPointSystem,
+  _currentDay: number,
+): RankingEntry {
+  if (entry.daysSinceLastLogin < system.minimumProtectionDays) {
+    return entry;
+  }
+  
+  const decayDays = entry.daysSinceLastLogin - system.minimumProtectionDays;
+  const decayFactor = 1 - system.decayRate * decayDays;
+  const newTotalScore = Math.max(0, entry.totalScore * decayFactor);
+  
+  return {
+    ...entry,
+    totalScore: newTotalScore,
+    tier: determineTier(newTotalScore),
+  };
+}
+
+/** 更新排行榜 */
+export function updateRanking(
+  newEntry: RankingEntry,
+  currentState: RankingState,
+  system: RankingPointSystem,
+): RankingState {
+  const updatedEntries = [...currentState.entries, newEntry];
+  
+  updatedEntries.sort((a, b) => b.totalScore - a.totalScore);
+  
+  const maxPlayers = 162;
+  if (updatedEntries.length > maxPlayers) {
+    updatedEntries.pop();
+  }
+  
+  return {
+    entries: updatedEntries,
+    totalPlayers: Math.min(maxPlayers, updatedEntries.length),
+    lastUpdated: Date.now(),
+    protectionPeriodActive: newEntry.daysSinceLastLogin < system.minimumProtectionDays,
+  };
+}
+
+/** 结算奖励发放 */
+export interface SettlementAward {
+  tier: RankingTier;
+  survivalDays: number;
+  baseLevel: number;
+  resources: number;
+  companions: number;
+  achievements: number;
+  tierBonus: string[];
+  mainReward: string;
+}
+
+export function distributeSettlementAward(tier: RankingTier, state: GameState): SettlementAward {
+  const baseRewards: SettlementAward = {
+    tier,
+    survivalDays: state.day,
+    baseLevel: state.base?.level ?? 1,
+    resources: Object.values(state.inventory).reduce((a, b) => a + b, 0),
+    companions: Object.keys(state.flags).filter(f => f.startsWith('companion_')).length,
+    achievements: state.meta?.unlockedAchievements?.length ?? 0,
+    tierBonus: [],
+    mainReward: '',
+  };
+  
+  switch (tier) {
+    case RankingTier.S:
+      baseRewards.tierBonus = ['专属称号', '稀有皮肤', '游戏内永久Buff'];
+      baseRewards.mainReward = '传说级物资箱';
+      break;
+    case RankingTier.A:
+      baseRewards.tierBonus = ['游戏内货币', '高级物资包', '独特建筑蓝图'];
+      baseRewards.mainReward = '高级物资箱';
+      break;
+    case RankingTier.B:
+      baseRewards.tierBonus = ['基础物资包', '普通建筑蓝图', '经验加成'];
+      baseRewards.mainReward = '中级物资箱';
+      break;
+    case RankingTier.C:
+      baseRewards.tierBonus = ['基础物资包', '基础蓝图', '少量经验'];
+      baseRewards.mainReward = '基础物资箱';
+      break;
+    case RankingTier.D:
+      baseRewards.tierBonus = ['最低通关奖励', '基础经验'];
+      baseRewards.mainReward = '生存奖励包';
+      break;
+  }
+  
+  return baseRewards;
+}

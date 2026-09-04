@@ -122,4 +122,57 @@ export declare function getUnlockedMerchants(state: GameState & {
  * 刷新商人库存
  */
 export declare function refreshMerchantInventory(merchant: MerchantNPC, day: number): void;
+/** 经济阶段枚举 */
+export declare enum EconomicPhase {
+    BARTER = "barter",// 阶段1: 以物易物 (Day 1-10)
+    CREDIT = "credit",// 阶段2: 商城积分 (Day 11-30)
+    MARKET = "market",// 阶段3: 玩家市场 (Day 31-50)
+    CURRENCY = "currency"
+}
+/** 交易比例 (阶段1: 以物易物) */
+export declare const BARTER_RATIOS: Record<string, number>;
+/** 商城积分物价表 (阶段2) */
+export declare const CREDIT_PRICES: Record<string, number>;
+/** 声望状态 */
+export declare enum ReputationStatus {
+    FRIENDLY = "friendly",// 声望 ≥ 50: 特殊交易解锁
+    RESPECTED = "respected",// 声望 ≥ 100: 商会邀请
+    NEUTRAL = "neutral",// -50 < 声望 < 50
+    HOSTILE = "hostile",// 声望 ≤ -50: 羁绊敌对，定期袭击
+    EXILED = "exiled",// 声望 ≤ -100: permanent enemy
+    POSITIVE = "positive",
+    NEGATIVE = "negative"
+}
+/** 声望变化记录 */
+export interface ReputationChange {
+    source: string;
+    change: number;
+    reason: string;
+    timestamp: number;
+}
+/** 商人 NPC 类型 */
+export declare enum MerchantType {
+    ORDINARY = "ordinary",// 固定库存, 固定价格
+    RARE = "rare",// 随机库存, 议价空间
+    HOSTILE = "hostile"
+}
+/** 经济系统状态扩展 */
+export interface EconomyStateExtended extends EconomyState {
+    currentPhase: EconomicPhase;
+    playerReputation: number;
+    reputationChanges: ReputationChange[];
+    unlockedMerchants: string[];
+}
+/** 创建扩展经济状态 */
+export declare function createInitialEconomyExtended(): EconomyStateExtended;
+/** 检查阶段转换 */
+export declare function checkPhaseTransition(state: GameState): EconomicPhase | null;
+/** 处理交易（根据当前阶段） */
+export declare function processTrade(state: GameState & {
+    economy: EconomyStateExtended;
+}, itemId: string, quantity: number, isPlayerTrade?: boolean): {
+    success: boolean;
+    message: string;
+    reputationChange: number;
+};
 //# sourceMappingURL=economy.d.ts.map

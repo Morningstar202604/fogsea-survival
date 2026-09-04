@@ -1,0 +1,6 @@
+# BGM: 基地音乐
+# ID: base
+# Duration: 5:15
+# Mood: safe
+# Description: 这是基地音乐的占位文件
+# 实际音频文件需要替换此文件

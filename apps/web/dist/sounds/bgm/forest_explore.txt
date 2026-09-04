@@ -1,0 +1,6 @@
+# BGM: 森林探索
+# ID: forest_explore
+# Duration: 4:20
+# Mood: mysterious
+# Description: 这是森林探索的占位文件
+# 实际音频文件需要替换此文件

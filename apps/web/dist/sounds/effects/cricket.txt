@@ -1,0 +1,5 @@
+# Sound Effect: 蟋蟀声
+# ID: cricket
+# Duration: 0:01
+# Description: 这是蟋蟀声的占位文件
+# 实际音频文件需要替换此文件

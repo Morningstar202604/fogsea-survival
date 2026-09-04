@@ -1,0 +1,6 @@
+# BGM: 胜利音乐
+# ID: victory
+# Duration: 2:00
+# Mood: triumphant
+# Description: 这是胜利音乐的占位文件
+# 实际音频文件需要替换此文件

@@ -11,6 +11,19 @@ import { rollD100 } from './dice.js';
 import { calculateSkillBonuses, gainSkillPoints } from './skills.js';
 import { DEFAULT_WORLD_TIERS } from './progression.js';
 import { ITEM_DATABASE } from './economy.js';
+import { deltaResource } from './resources.js';
+/** 战斗可用品道具表 */
+export const COMBAT_ITEM_EFFECTS = {
+    bandage: { healHp: 10 },
+    medicine: { healHp: 25 },
+    first_aid_kit: { healHp: 50 },
+    dried_meat: { restoreResource: { key: 'food', amount: 15 } },
+    clean_water: { restoreResource: { key: 'water', amount: 15 } },
+    energy_drink: { restoreResource: { key: 'energy', amount: 20 } },
+    warm_rations: { restoreResource: { key: 'warmth', amount: 10 } },
+    tranquilizer: { buffAttack: 5, buffAgility: 3 },
+    stimulant: { buffAttack: 10, buffDefense: -3 },
+};
 /** 怪物库 */
 export const MONSTER_DATABASE = {
     // 低级怪物（第1-7天）
@@ -147,9 +160,13 @@ export function executeCombatRound(state, session, playerAction, rng) {
         if (weaponItem && weaponItem.attack)
             weaponAttack = weaponItem.attack;
     }
-    // 基础伤害 = 力量 * 1.2 + 武器攻击力，再乘以技能加成
-    const playerAttack = (state.attributes.strength * 1.2 + weaponAttack) * skillBonuses.combat.damageMultiplier;
-    const playerDefense = state.attributes.agility * 0.5;
+    // 临时战斗加成（道具等）
+    let buffAttack = 0;
+    let buffDefense = 0;
+    let buffAgility = 0;
+    // 基础伤害 = 力量 * 1.2 + 武器攻击力 + 临时加成，再乘以技能加成
+    const playerAttack = (state.attributes.strength * 1.2 + weaponAttack + buffAttack) * skillBonuses.combat.damageMultiplier;
+    const playerDefense = state.attributes.agility * 0.5 + buffDefense;
     const playerCritChance = skillBonuses.combat.critChance;
     let playerDamageThisRound = 0;
     let monsterDamageThisRound = 0;
@@ -204,8 +221,46 @@ export function executeCombatRound(state, session, playerAction, rng) {
             break;
         }
         case 'use_item': {
-            // TODO: 使用道具逻辑
-            log.push('使用了道具（待实现）');
+            const consumables = Object.entries(state.inventory)
+                .filter(([id, qty]) => qty > 0 && COMBAT_ITEM_EFFECTS[id])
+                .sort((a, b) => {
+                const aEff = COMBAT_ITEM_EFFECTS[a[0]];
+                const bEff = COMBAT_ITEM_EFFECTS[b[0]];
+                const aHeal = aEff.healHp ?? 0;
+                const bHeal = bEff.healHp ?? 0;
+                return bHeal - aHeal;
+            });
+            if (consumables.length === 0) {
+                log.push('没有可用的战斗道具！');
+                break;
+            }
+            const [usedId] = consumables[0];
+            const effect = COMBAT_ITEM_EFFECTS[usedId];
+            state.inventory[usedId] -= 1;
+            if (state.inventory[usedId] === 0)
+                delete state.inventory[usedId];
+            const itemName = ITEM_DATABASE[usedId]?.name ?? usedId;
+            if (effect.healHp) {
+                deltaResource(state.resources.health, effect.healHp);
+                log.push(`使用${itemName}，恢复 ${effect.healHp} 点生命`);
+            }
+            if (effect.restoreResource) {
+                const resKey = effect.restoreResource.key;
+                deltaResource(state.resources[resKey], effect.restoreResource.amount);
+                log.push(`使用${itemName}，恢复 ${effect.restoreResource.amount} 点${resKey}`);
+            }
+            if (effect.buffAttack) {
+                buffAttack += effect.buffAttack;
+                log.push(`使用${itemName}，攻击力临时+${effect.buffAttack}`);
+            }
+            if (effect.buffDefense) {
+                buffDefense += effect.buffDefense;
+                log.push(`使用${itemName}，防御力临时${effect.buffDefense >= 0 ? '+' : ''}${effect.buffDefense}`);
+            }
+            if (effect.buffAgility) {
+                buffAgility += effect.buffAgility;
+                log.push(`使用${itemName}，敏捷临时+${effect.buffAgility}`);
+            }
             break;
         }
     }
