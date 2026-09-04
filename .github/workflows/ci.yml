@@ -27,7 +27,7 @@ jobs:
       - name: 类型检查（core + web）
         run: pnpm typecheck
 
-      - name: 单元测试（71 用例）
+      - name: 单元测试（75 用例）
         run: pnpm test
 
       - name: 内容校验（387 事件 / 44 支线 / 14 结局）
