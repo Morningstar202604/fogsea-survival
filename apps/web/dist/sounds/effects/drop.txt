@@ -1,5 +1,0 @@
-# Sound Effect: 丢弃音效
-# ID: drop
-# Duration: 0:01
-# Description: 这是丢弃音效的占位文件
-# 实际音频文件需要替换此文件

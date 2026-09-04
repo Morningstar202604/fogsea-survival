@@ -1,6 +1,0 @@
-# BGM: 探索音乐
-# ID: exploration
-# Duration: 4:00
-# Mood: adventure
-# Description: 这是探索音乐的占位文件
-# 实际音频文件需要替换此文件

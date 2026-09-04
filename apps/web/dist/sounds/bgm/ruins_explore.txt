@@ -1,6 +1,0 @@
-# BGM: 废墟探索
-# ID: ruins_explore
-# Duration: 3:55
-# Mood: tense
-# Description: 这是废墟探索的占位文件
-# 实际音频文件需要替换此文件

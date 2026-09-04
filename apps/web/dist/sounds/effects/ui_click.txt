@@ -1,5 +1,0 @@
-# Sound Effect: UI点击
-# ID: ui_click
-# Duration: 0:00
-# Description: 这是UI点击的占位文件
-# 实际音频文件需要替换此文件

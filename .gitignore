@@ -28,3 +28,7 @@ temp_dev.log
 *.tmp
 .gitignore_*
 
+
+# 构建产物 / 工具残留
+dist/
+.mimosa/

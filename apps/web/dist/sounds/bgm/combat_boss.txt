@@ -1,6 +1,0 @@
-# BGM: BOSS战斗
-# ID: combat_boss
-# Duration: 3:15
-# Mood: epic
-# Description: 这是BOSS战斗的占位文件
-# 实际音频文件需要替换此文件

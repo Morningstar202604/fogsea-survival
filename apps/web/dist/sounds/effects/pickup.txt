@@ -1,5 +1,0 @@
-# Sound Effect: 拾取音效
-# ID: pickup
-# Duration: 0:01
-# Description: 这是拾取音效的占位文件
-# 实际音频文件需要替换此文件

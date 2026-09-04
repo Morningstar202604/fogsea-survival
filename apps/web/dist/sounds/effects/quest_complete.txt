@@ -1,5 +1,0 @@
-# Sound Effect: 任务完成
-# ID: quest_complete
-# Duration: 0:02
-# Description: 这是任务完成的占位文件
-# 实际音频文件需要替换此文件

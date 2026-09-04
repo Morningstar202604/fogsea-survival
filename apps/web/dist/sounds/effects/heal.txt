@@ -1,5 +1,0 @@
-# Sound Effect: 治疗音效
-# ID: heal
-# Duration: 0:02
-# Description: 这是治疗音效的占位文件
-# 实际音频文件需要替换此文件

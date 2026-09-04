@@ -1,6 +1,0 @@
-# BGM: 升级音乐
-# ID: level_up
-# Duration: 1:45
-# Mood: celebration
-# Description: 这是升级音乐的占位文件
-# 实际音频文件需要替换此文件

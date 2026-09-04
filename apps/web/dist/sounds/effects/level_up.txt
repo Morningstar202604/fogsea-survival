@@ -1,5 +1,0 @@
-# Sound Effect: 升级音效
-# ID: level_up
-# Duration: 0:02
-# Description: 这是升级音效的占位文件
-# 实际音频文件需要替换此文件

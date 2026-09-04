@@ -1,5 +1,0 @@
-# Sound Effect: 减益施加
-# ID: debuff_apply
-# Duration: 0:01
-# Description: 这是减益施加的占位文件
-# 实际音频文件需要替换此文件
