@@ -1,5 +1,0 @@
-# Sound Effect: 雨声
-# ID: rain
-# Duration: 0:02
-# Description: 这是雨声的占位文件
-# 实际音频文件需要替换此文件

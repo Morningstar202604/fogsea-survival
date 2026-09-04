@@ -1,6 +1,0 @@
-# BGM: 悲伤时刻
-# ID: sad
-# Duration: 4:30
-# Mood: sad
-# Description: 这是悲伤时刻的占位文件
-# 实际音频文件需要替换此文件

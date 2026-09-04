@@ -1,5 +1,0 @@
-# Sound Effect: 宝箱打开
-# ID: chest_open
-# Duration: 0:01
-# Description: 这是宝箱打开的占位文件
-# 实际音频文件需要替换此文件

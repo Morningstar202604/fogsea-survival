@@ -1,5 +1,0 @@
-# Sound Effect: 玩家受伤
-# ID: player_hurt
-# Duration: 0:01
-# Description: 这是玩家受伤的占位文件
-# 实际音频文件需要替换此文件

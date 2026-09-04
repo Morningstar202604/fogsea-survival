@@ -1,5 +1,0 @@
-# Sound Effect: 狼嚎
-# ID: wolf_howl
-# Duration: 0:02
-# Description: 这是狼嚎的占位文件
-# 实际音频文件需要替换此文件

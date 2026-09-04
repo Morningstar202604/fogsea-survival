@@ -1,6 +1,0 @@
-# BGM: 主菜单音乐
-# ID: main_theme
-# Duration: 3:45
-# Mood: epic
-# Description: 这是主菜单音乐的占位文件
-# 实际音频文件需要替换此文件

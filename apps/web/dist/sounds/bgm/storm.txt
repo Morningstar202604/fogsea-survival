@@ -1,6 +1,0 @@
-# BGM: 暴风雨
-# ID: storm
-# Duration: 4:45
-# Mood: intense
-# Description: 这是暴风雨的占位文件
-# 实际音频文件需要替换此文件

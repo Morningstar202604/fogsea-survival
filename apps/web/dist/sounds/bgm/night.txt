@@ -1,6 +1,0 @@
-# BGM: 夜晚氛围
-# ID: night
-# Duration: 6:00
-# Mood: eerie
-# Description: 这是夜晚氛围的占位文件
-# 实际音频文件需要替换此文件

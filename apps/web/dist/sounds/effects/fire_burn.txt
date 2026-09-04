@@ -1,5 +1,0 @@
-# Sound Effect: 火焰燃烧
-# ID: fire_burn
-# Duration: 0:02
-# Description: 这是火焰燃烧的占位文件
-# 实际音频文件需要替换此文件

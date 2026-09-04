@@ -1,6 +1,0 @@
-# BGM: 危险临近
-# ID: danger
-# Duration: 2:45
-# Mood: suspense
-# Description: 这是危险临近的占位文件
-# 实际音频文件需要替换此文件

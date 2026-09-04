@@ -1,6 +1,0 @@
-# BGM: 失败音乐
-# ID: defeat
-# Duration: 3:00
-# Mood: melancholy
-# Description: 这是失败音乐的占位文件
-# 实际音频文件需要替换此文件

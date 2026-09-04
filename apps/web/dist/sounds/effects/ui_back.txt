@@ -1,5 +1,0 @@
-# Sound Effect: UI返回
-# ID: ui_back
-# Duration: 0:00
-# Description: 这是UI返回的占位文件
-# 实际音频文件需要替换此文件

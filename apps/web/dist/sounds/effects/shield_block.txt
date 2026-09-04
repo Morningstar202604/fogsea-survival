@@ -1,5 +1,0 @@
-# Sound Effect: 盾牌格挡
-# ID: shield_block
-# Duration: 0:01
-# Description: 这是盾牌格挡的占位文件
-# 实际音频文件需要替换此文件
