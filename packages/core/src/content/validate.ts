@@ -185,7 +185,7 @@ export function validateContentPack(content: ContentPack): ValidationIssue[] {
   const endings = endingIds(content);
 
   // 版本
-  if (typeof content.version !== 'number') issues.push({ code: 'V1', path: 'version', msg: 'version 非法' });
+  if (typeof content.version !== 'string' || !/^\d+\.\d+\.\d+$/.test(content.version)) issues.push({ code: 'V1', path: 'version', msg: 'version 非法，应为 x.y.z 格式' });
 
   // 主线
   const story = content.storyline;

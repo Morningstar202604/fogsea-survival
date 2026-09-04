@@ -145,6 +145,14 @@ export declare function checkProgression(state: GameState & {
     progression: ProgressionState;
 }, content: ContentPack): ProgressionCheck;
 /**
+ * 双轨合并入口：STORY_TRIGGERS 与 content.lines[].trigger（engine.scheduleLine）共用同一套
+ * 开启判定 —— 统一写 line_done_<id> 旗标，杜绝两轨各自记录导致重复/漏触发。
+ * 成功切入支线返回 true；线不存在 / 已开启 / 事件栈占用 / 缺少当前场景时返回 false。
+ */
+export declare function enterStoryLine(state: GameState & {
+    progression: ProgressionState;
+}, content: ContentPack, lineId: string): boolean;
+/**
  * 处理天灾结果
  */
 /** 天灾结算前置评估：核对基地等级/防御/储备物资，返回是否守住及原因播报。 */

@@ -1,0 +1,5 @@
+# Sound Effect: 猫头鹰叫
+# ID: owl
+# Duration: 0:01
+# Description: 这是猫头鹰叫的占位文件
+# 实际音频文件需要替换此文件

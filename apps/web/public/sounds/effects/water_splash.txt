@@ -1,0 +1,5 @@
+# Sound Effect: 水花音效
+# ID: water_splash
+# Duration: 0:01
+# Description: 这是水花音效的占位文件
+# 实际音频文件需要替换此文件

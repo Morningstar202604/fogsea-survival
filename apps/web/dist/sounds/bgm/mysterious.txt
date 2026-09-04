@@ -1,0 +1,6 @@
+# BGM: 神秘事件
+# ID: mysterious
+# Duration: 3:30
+# Mood: mysterious
+# Description: 这是神秘事件的占位文件
+# 实际音频文件需要替换此文件

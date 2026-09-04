@@ -1,0 +1,5 @@
+# Sound Effect: 脚步音效
+# ID: footstep
+# Duration: 0:01
+# Description: 这是脚步音效的占位文件
+# 实际音频文件需要替换此文件

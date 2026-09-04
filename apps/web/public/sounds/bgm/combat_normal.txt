@@ -1,0 +1,6 @@
+# BGM: 普通战斗
+# ID: combat_normal
+# Duration: 2:30
+# Mood: intense
+# Description: 这是普通战斗的占位文件
+# 实际音频文件需要替换此文件

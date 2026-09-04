@@ -379,7 +379,7 @@ export function createInitialBase(): BaseInfo {
  * 升级基地
  */
 export function upgradeBase(
-  state: GameState & { base: BaseInfo },
+  state: GameState,
 ): UpgradeResult {
   const currentLevel = state.base.level;
   const nextLevel = currentLevel + 1;
@@ -429,7 +429,7 @@ export function upgradeBase(
  * 建造建筑
  */
 export function buildStructure(
-  state: GameState & { base: BaseInfo },
+  state: GameState,
   structureId: string,
   position: { x: number; y: number },
 ): BuildResult {
@@ -515,7 +515,7 @@ export function buildStructure(
  * 处理每日生产
  */
 export function processDailyProduction(
-  state: GameState & { base: BaseInfo },
+  state: GameState,
 ): ProductionResult {
   const produced: Record<string, number> = {};
   const messages: string[] = [];
@@ -581,7 +581,7 @@ function recalculateDefense(base: BaseInfo): void {
  * 处理兽潮攻击
  */
 export function handleBeastWave(
-  state: GameState & { base: BaseInfo },
+  state: GameState,
   wavePower: number,
 ): { success: boolean; damage: number; messages: string[] } {
   const messages: string[] = [];
@@ -651,7 +651,7 @@ function damageBaseStructures(base: BaseInfo, damage: number): number {
  * 获取可建造的建筑列表（基于当前基地等级和资源）
  */
 export function getAvailableStructures(
-  state: GameState & { base: BaseInfo },
+  state: GameState,
 ): Array<{ def: StructureDef; canBuild: boolean; reason?: string }> {
   const result: Array<{ def: StructureDef; canBuild: boolean; reason?: string }> = [];
 

@@ -3,7 +3,7 @@
  * Phase 2 将由迁移脚本生成的完整版（44 场剧本 + 事件池 + 14 结局）覆盖此导出。
  */
 export const demoContent = {
-    version: 1,
+    version: '2.0.2',
     storyline: {
         id: 'demo',
         title: '迷雾降临（试玩）',

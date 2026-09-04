@@ -267,9 +267,10 @@ function sellItem(itemId: string) {
 }
 
 .prices-section {
-  padding: 0.6rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
+  padding: 0.7rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
 }
 
 .price-list {

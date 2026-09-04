@@ -8,7 +8,7 @@
 import type { BaseInfo } from './base.js';
 import type { SkillTreeState } from './skills.js';
 import type { ProgressionState } from './progression.js';
-import type { EconomyState } from './economy.js';
+import type { EconomyState, EconomyStateExtended } from './economy.js';
 
 /** 资源键：食物 / 水 / 生命 / 理智 / 体力 / 温暖 */
 export type ResourceKey = 'food' | 'water' | 'health' | 'sanity' | 'energy' | 'warmth';
@@ -162,7 +162,7 @@ export interface SceneLineDef {
 
 /** 全部内容（剧本线 + 触发式支线 + 事件池 + 每日结算规则） */
 export interface ContentPack {
-  version: number;
+  version: string;
   storyline: StorylineDef;
   /** 触发式支线：满足 trigger 时由引擎压栈切入，结束返回主线 */
   lines?: SceneLineDef[];
@@ -208,7 +208,7 @@ export interface Outcome {
 
 /** 游戏状态（单一对象）v2.0 */
 export interface GameState {
-  version: number;
+  version: string;
   day: number;
   resources: Resources;
   flags: Record<string, boolean>;
@@ -240,7 +240,7 @@ export interface GameState {
   progression: ProgressionState;
   
   /** 经济状态 */
-  economy: EconomyState;
+  economy: EconomyState | EconomyStateExtended;
 
   /** 物品等级（物品自动升级系统：使用次数累积→熟练度升级） */
   itemLevels: Record<string, { uses: number; level: number }>;
@@ -362,6 +362,29 @@ export interface GameState {
 
   /** 游戏版本 */
   gameVersion: string;
+
+  // === v2.1 新增：天赋深精系统 ===
+
+  /** 天赋深精状态 */
+  talentDeepState?: Record<string, {
+    talentId: string;
+    deepLevel: number;
+    pointsInvested: number;
+    isActive: boolean;
+  }>;
+
+  // === v2.1 新增：同伴支线任务和好感度系统 ===
+
+  /** 同伴数据 */
+  companionData?: Record<string, {
+    id: string;
+    name: string;
+    affection: number;
+    status: string;
+    affectionLevel: string;
+    completedQuests: string[];
+    triggeredEvents: string[];
+  }>;
 }
 
 /** 玩家基础属性 */
@@ -384,6 +407,7 @@ export interface CombatSession {
   enemyId: string;
   enemyHp: number;
   enemyMaxHp: number;
+  enemyLevel?: number;
   round: number;
   log: string[];
 }

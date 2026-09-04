@@ -1,0 +1,6 @@
+# BGM: 和平时光
+# ID: peaceful
+# Duration: 5:00
+# Mood: calm
+# Description: 这是和平时光的占位文件
+# 实际音频文件需要替换此文件

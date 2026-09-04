@@ -1,20 +1,28 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, defineAsyncComponent } from 'vue';
 import { useGame } from '../game/useGame';
 import ResourceBar from './ResourceBar.vue';
 import SceneView from './SceneView.vue';
-import BasePanel from './BasePanel.vue';
-import SkillTreePanel from './SkillTreePanel.vue';
-import CombatScreen from './CombatScreen.vue';
-import MarketPanel from './MarketPanel.vue';
-import ProgressionIndicator from './ProgressionIndicator.vue';
-import InventoryPanel from './InventoryPanel.vue';
-import NpcPanel from './NpcPanel.vue';
+
+// 各面板按需加载：拆分为独立 chunk，降低首屏主包体积
+const BasePanel = defineAsyncComponent(() => import('./BasePanel.vue'));
+const SkillTreePanel = defineAsyncComponent(() => import('./SkillTreePanel.vue'));
+const CombatScreen = defineAsyncComponent(() => import('./CombatScreen.vue'));
+const MarketPanel = defineAsyncComponent(() => import('./MarketPanel.vue'));
+const ProgressionIndicator = defineAsyncComponent(() => import('./ProgressionIndicator.vue'));
+const InventoryPanel = defineAsyncComponent(() => import('./InventoryPanel.vue'));
+const NpcPanel = defineAsyncComponent(() => import('./NpcPanel.vue'));
+const StrategyPanel = defineAsyncComponent(() => import('./StrategyPanel.vue'));
+const NarrativePanel = defineAsyncComponent(() => import('./NarrativePanel.vue'));
+const AiEventPanel = defineAsyncComponent(() => import('./AiEventPanel.vue'));
 
 const g = useGame();
-const activeTab = ref<'story' | 'base' | 'skills' | 'inventory' | 'npc' | 'combat' | 'market' | 'progression'>('story');
+const activeTab = ref<'story' | 'base' | 'skills' | 'inventory' | 'npc' | 'combat' | 'market' | 'progression' | 'strategy' | 'narrative' | 'ai_event'>('story');
 
 const isInCombat = computed(() => g.state?.combat !== undefined);
+
+// 只显示最近 20 条日志
+const recentLog = computed(() => g.log.slice(-20));
 
 // 遭遇战开始时自动切到战斗页
 watch(isInCombat, (inCombat) => {
@@ -33,7 +41,7 @@ function exportSave(): void {
   URL.revokeObjectURL(url);
 }
 
-const tabLabels = {
+const tabLabels: Record<string, string> = {
   story: '📖 剧情',
   base: '🏠 基地',
   inventory: '🎒 背包',
@@ -42,6 +50,9 @@ const tabLabels = {
   combat: '⚔️ 战斗',
   market: '💰 市场',
   progression: '🌍 推进',
+  strategy: '🔮 策略',
+  narrative: '📜 叙事',
+  ai_event: '🎲 事件',
 };
 </script>
 
@@ -97,6 +108,15 @@ const tabLabels = {
         
         <!-- 推进状态视图 -->
         <ProgressionIndicator v-else-if="activeTab === 'progression'" />
+
+        <!-- 策略引擎视图 -->
+        <StrategyPanel v-else-if="activeTab === 'strategy'" />
+
+        <!-- 叙事引擎视图 -->
+        <NarrativePanel v-else-if="activeTab === 'narrative'" />
+
+        <!-- AI事件引擎视图 -->
+        <AiEventPanel v-else-if="activeTab === 'ai_event'" />
       </div>
 
       <div class="footer">
@@ -109,7 +129,17 @@ const tabLabels = {
 
     <aside class="panel right">
       <h3 class="aside-title">生存日志</h3>
-      <p class="aside-note">跟随迷雾中的线索，撑过每一天。</p>
+      <div v-if="g.log.length === 0" class="aside-note">跟随迷雾中的线索，撑过每一天。</div>
+      <div v-else class="log-entries">
+        <div
+          v-for="(entry, i) in recentLog"
+          :key="i"
+          class="log-entry"
+          :class="`log-${entry.kind}`"
+        >
+          {{ entry.text }}
+        </div>
+      </div>
     </aside>
   </div>
 </template>
@@ -128,13 +158,14 @@ const tabLabels = {
   box-sizing: border-box;
 }
 .panel {
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 12px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 .left {
   gap: 1rem;
@@ -143,6 +174,7 @@ const tabLabels = {
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 .right {
   gap: 0.5rem;
@@ -157,36 +189,64 @@ const tabLabels = {
 /* 标签页导航 */
 .tab-nav {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.35rem;
   margin-bottom: 0.8rem;
   padding-bottom: 0.6rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+.tab-nav::-webkit-scrollbar {
+  height: 4px;
+}
+.tab-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tab-nav::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
 }
 
 .tab-btn {
-  padding: 0.5rem 0.8rem;
+  padding: 0.45rem 0.75rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  border-radius: 8px;
   color: #8b95a7;
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
-
+.tab-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(122,162,201,0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
 .tab-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.2);
   color: #cdd6e4;
+  transform: translateY(-1px);
 }
-
+.tab-btn:hover::before {
+  opacity: 1;
+}
 .tab-btn.active {
-  background: rgba(122, 162, 201, 0.15);
+  background: linear-gradient(135deg, rgba(122,162,201,0.2) 0%, rgba(122,162,201,0.1) 100%);
   border-color: #7aa2c9;
   color: #e4e9f2;
   font-weight: 600;
+  box-shadow: 0 2px 8px rgba(122,162,201,0.2);
+}
+.tab-btn.active::before {
+  opacity: 1;
 }
 
 /* 内容区域 */
@@ -194,6 +254,18 @@ const tabLabels = {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.content-area::-webkit-scrollbar {
+  width: 6px;
+}
+.content-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.content-area::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
 }
 
 .empty-view {
@@ -206,41 +278,91 @@ const tabLabels = {
   text-align: center;
   padding: 2rem;
 }
-
-.empty-view p {
-  margin: 0;
-}
+.empty-view p { margin: 0; }
 
 .footer {
   padding-top: 0.8rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 0.8rem;
 }
+
+/* 右侧日志 */
 .aside-title {
-  margin: 0;
-  font-size: 0.95rem;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
   color: #aeb7c7;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.aside-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: linear-gradient(to bottom, #7aa2c9, #4f9d6f);
+  border-radius: 2px;
 }
 .aside-note {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   line-height: 1.6;
   color: #566072;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem 0.5rem;
 }
+.log-entries {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+.log-entries::-webkit-scrollbar { width: 4px; }
+.log-entries::-webkit-scrollbar-track { background: transparent; }
+.log-entries::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+.log-entry {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  padding: 0.3rem 0.45rem;
+  border-radius: 4px;
+  word-break: break-word;
+  animation: log-in 0.2s ease-out;
+}
+@keyframes log-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.log-scene    { background: rgba(122,162,201,0.08); color: #8b95a7; border-left: 2px solid #7aa2c9; }
+.log-result   { background: rgba(86,158,109,0.08); color: #9cc4a8; border-left: 2px solid #569e6d; }
+.log-daily    { background: rgba(180,130,60,0.08); color: #c4a46a; border-left: 2px solid #b4823c; font-weight: 500; }
+.log-system   { background: rgba(160,100,180,0.08); color: #b89adb; border-left: 2px solid #a064b4; }
+
 .btn {
   padding: 0.55rem 0.9rem;
   border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: opacity 0.15s ease;
+  transition: all 0.15s ease;
 }
 .btn.primary {
-  background: #2f6f9f;
+  background: linear-gradient(135deg, #2f6f9f 0%, #265a82 100%);
   color: #fff;
+  box-shadow: 0 2px 12px rgba(47,111,159,0.3);
 }
 .btn.primary:hover {
-  background: #357eaf;
+  background: linear-gradient(135deg, #357eaf 0%, #2f6f9f 100%);
+  box-shadow: 0 4px 16px rgba(47,111,159,0.4);
+  transform: translateY(-1px);
 }
 .btn.ghost {
   background: transparent;
@@ -250,12 +372,15 @@ const tabLabels = {
 .btn.ghost:hover {
   border-color: #7aa2c9;
   color: #e4e9f2;
+  background: rgba(122,162,201,0.06);
 }
 .btn.wide {
   width: 100%;
   padding: 0.7rem;
   font-size: 0.95rem;
 }
+
+/* 响应式 */
 @media (max-width: 900px) {
   .layout {
     grid-template-columns: 1fr;
@@ -265,17 +390,9 @@ const tabLabels = {
     gap: 0.7rem;
     padding: 0.7rem;
   }
-  .right {
-    display: none;
-  }
-  .left {
-    order: 1;
-  }
-  .main {
-    order: 2;
-  }
-  .tab-nav {
-    flex-wrap: wrap;
-  }
+  .right { display: none; }
+  .left { order: 1; }
+  .main { order: 2; }
+  .tab-nav { flex-wrap: wrap; }
 }
 </style>

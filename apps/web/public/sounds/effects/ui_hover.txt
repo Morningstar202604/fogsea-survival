@@ -1,0 +1,5 @@
+# Sound Effect: UI悬停
+# ID: ui_hover
+# Duration: 0:00
+# Description: 这是UI悬停的占位文件
+# 实际音频文件需要替换此文件

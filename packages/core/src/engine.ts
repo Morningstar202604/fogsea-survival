@@ -18,7 +18,7 @@ import { Rng } from './rng.js';
 // v2.0 新增系统导入
 import { createInitialBase, processDailyProduction } from './base.js';
 import { createInitialSkillTree, gainSkillPoints } from './skills.js';
-import { createInitialProgressionState, checkProgression, evaluateCatastrophe, resolveCatastrophe } from './progression.js';
+import { createInitialProgressionState, checkProgression, evaluateCatastrophe, resolveCatastrophe, enterStoryLine } from './progression.js';
 import { createInitialEconomy, ITEM_DATABASE, updateMarketPrices } from './economy.js';
 import { applyTalent } from './talents.js';
 import { applyCompanionDaily } from './companions.js';
@@ -34,6 +34,11 @@ import {
   getMajorEventByDay, assessMajorEventDifficulty,
   getUnlockedZones, calculateBaseDefense,
 } from './gameConfig.js';
+
+// v4.0 新增系统导入：叙事引擎、AI事件、策略系统
+import { NarrativeEngine } from './narrative.js';
+import { AIEventGenerator } from './aiEvents.js';
+import { StrategyEngine, StrategyArchetype } from './strategy.js';
 
 /** 创建新一局状态 v2.1：集成所有新系统；talentId 提供则落地开局天赋 */
 export function createInitialState(
@@ -118,7 +123,7 @@ export function createInitialState(
       infamy: 0,
     },
     unlockedZones: ['safe_house', 'nearby_ruins'],
-    gameVersion: '1.0.0',
+    gameVersion: '2.0.2',
   };
   if (talentId) applyTalent(state, talentId);
   return state;
@@ -357,10 +362,8 @@ export function scheduleLine(content: ContentPack, state: GameState): void {
     if (t.dayMin && state.day < t.dayMin) continue;
     if (t.flags && !t.flags.every((f) => state.flags[f])) continue;
     if (t.notFlags && t.notFlags.some((f) => state.flags[f])) continue;
-    state.eventStack.push(state.currentScene);
-    state.currentScene = line.initialScene;
-    state.flags[`line_done_${line.id}`] = true;
-    break;
+    // 双轨合并：统一走 enterStoryLine 写入 line_done_<id>（与 STORY_TRIGGERS 共用判定）
+    if (enterStoryLine(state, content, line.id)) break;
   }
 }
 
@@ -718,6 +721,100 @@ export function runDaily(
     return { dead: true, messages, event: null };
   }
 
+  // ============ v4.0 新增系统集成 ============
+
+  // 14. 策略分析系统（每日分析玩家策略）
+  const strategyEngine = new StrategyEngine(state.day);
+  const strategyAdvice = strategyEngine.generateStrategyAdvice(state);
+  if (state.day % 5 === 0) { // 每5天推送一次策略建议
+    messages.push(`【策略分析】当前策略：${strategyAdvice.analysis.dominantStrategy}`);
+    messages.push(`整体效率：${Math.round(strategyAdvice.analysis.overallEfficiency)}%`);
+    if (strategyAdvice.advice.length > 0) {
+      messages.push(`建议：${strategyAdvice.advice[0]}`);
+    }
+  }
+
+  // 15. AI事件生成器（动态生成随机事件）
+  const aiEventGenerator = new AIEventGenerator(state.day);
+  const aiEvent = aiEventGenerator.generateEvent(state, state.day); // 每天生成1个AI事件
+  if (aiEvent && !state.eventStack.length) {
+    messages.push(`【AI事件】${aiEvent.description}`);
+    // 应用AI事件影响（使用成功影响）
+    for (const option of aiEvent.options) {
+      for (const impact of option.successImpacts) {
+        if (impact.type === 'resource' && impact.resource) {
+          const resourceKey = impact.resource as keyof typeof state.resources;
+          if (state.resources[resourceKey]) {
+            deltaResource(state.resources[resourceKey], impact.amount ?? 0);
+          }
+        } else if (impact.type === 'flag' && impact.flag) {
+          state.flags[impact.flag] = impact.flagValue ?? true;
+        }
+      }
+    }
+  }
+
+  // 16. 叙事引擎（检查叙事触发条件）
+  const narrativeEngine = new NarrativeEngine(state.day);
+  const narrativeScene = narrativeEngine.generateScene(state);
+  if (narrativeScene && state.day % 3 === 0) { // 每3天可能触发叙事场景
+    messages.push(`【叙事事件】${narrativeScene.title}`);
+    messages.push(narrativeScene.text);
+    // 应用叙事场景的影响（通过场景类型判断）
+    const sceneType = narrativeScene.type;
+    if (sceneType === 'disaster' || sceneType === 'dilemma') {
+      // 灾难/困境场景消耗资源
+      deltaResource(state.resources.sanity, -5);
+    }
+  }
+
+  // 17. 策略影响应用（根据主导策略给予加成/惩罚）
+  const dominantStrategy = strategyAdvice.analysis.dominantStrategy;
+  switch (dominantStrategy) {
+    case StrategyArchetype.FARMING:
+      if (state.resources.food.current > 50) {
+        deltaResource(state.resources.food, 5);
+        messages.push('【种田流加成】你的农场产出提升（食物+5）');
+      }
+      break;
+    case StrategyArchetype.COMBAT:
+      if (state.combatKills > 5) {
+        state.attributes.strength += 1;
+        messages.push('【战斗流加成】战斗经验提升（力量+1）');
+      }
+      break;
+    case StrategyArchetype.STRATEGY:
+      if (state.attributes.intelligence > 15) {
+        deltaResource(state.resources.water, 3);
+        deltaResource(state.resources.food, 3);
+        messages.push('【策略流加成】智谋优势（食物+3、水+3）');
+      }
+      break;
+    case StrategyArchetype.EXPLORATION:
+      if (state.attributes.agility > 12) {
+        state.flags['exploration_bonus'] = true;
+        messages.push('【探索流加成】探索效率提升');
+      }
+      break;
+    case StrategyArchetype.SOCIAL:
+      if (state.reputation.overall > 0) {
+        state.reputation.overall += 1;
+        messages.push('【社交流加成】声望提升（+1）');
+      }
+      break;
+    case StrategyArchetype.MYSTICAL:
+      if (state.flags['absorbed_storm_power'] || state.flags['blessed_by_tree']) {
+        state.resources.sanity.current = Math.min(
+          state.resources.sanity.max,
+          state.resources.sanity.current + 5
+        );
+        messages.push('【神秘流加成】理智恢复（+5）');
+      }
+      break;
+    default:
+      break;
+  }
+
   return {
     dead: false,
     messages,
@@ -957,33 +1054,34 @@ function triggerEnding(content: ContentPack, state: GameState, endingId: string)
 export function canBuildBuilding(state: GameState, buildingId: string): { canBuild: boolean; reason?: string; cost?: Record<string, number> } {
   const building = BASE_CONFIG.buildings.find(b => b.id === buildingId);
   if (!building) return { canBuild: false, reason: '建筑不存在' };
-  
+
   // 检查阶段解锁
   const phase = getPhaseByDay(state.day);
   if (phase.id < building.unlockPhase) {
     return { canBuild: false, reason: `需要第${building.unlockPhase}阶段才能建造` };
   }
-  
+
   // 检查是否已达到最高等级
   const currentLevel = state.buildings[buildingId] ?? 0;
   if (currentLevel >= building.maxLevel) {
     return { canBuild: false, reason: '已达到最高等级' };
   }
-  
+
   // 计算建造成本（每级递增）
   const cost: Record<string, number> = {};
   const levelMultiplier = Math.pow(1.5, currentLevel);
   for (const [item, baseCost] of Object.entries(building.cost)) {
     cost[item] = Math.floor(baseCost * levelMultiplier);
   }
-  
-  // 检查资源是否足够（简化：检查迷雾积分和关键物资）
-  // 实际项目中应该检查具体的物资库存
-  const totalCost = Object.values(cost).reduce((a, b) => a + b, 0);
-  if (state.mistPoints < totalCost && currentLevel > 0) {
-    return { canBuild: false, reason: `需要${totalCost}迷雾积分，当前${state.mistPoints}` };
+
+  // 检查实际物资库存
+  for (const [item, amount] of Object.entries(cost)) {
+    const available = state.inventory[item] ?? 0;
+    if (available < amount) {
+      return { canBuild: false, reason: `物资不足！需要 ${item} x${amount}，当前 ${available}` };
+    }
   }
-  
+
   return { canBuild: true, cost };
 }
 
@@ -993,15 +1091,15 @@ export function buildOrUpgradeBuilding(state: GameState, buildingId: string): { 
   if (!check.canBuild) {
     return { success: false, message: check.reason ?? '无法建造' };
   }
-  
+
   const building = BASE_CONFIG.buildings.find(b => b.id === buildingId)!;
   const currentLevel = state.buildings[buildingId] ?? 0;
-  
-  // 扣除资源（简化：扣除迷雾积分）
+
+  // 扣除实际物资
   if (check.cost) {
-    const totalCost = Object.values(check.cost).reduce((a, b) => a + b, 0);
-    if (currentLevel > 0) {
-      state.mistPoints = Math.max(0, state.mistPoints - totalCost);
+    for (const [item, amount] of Object.entries(check.cost)) {
+      state.inventory[item] = (state.inventory[item] ?? 0) - amount;
+      if (state.inventory[item] <= 0) delete state.inventory[item];
     }
   }
   

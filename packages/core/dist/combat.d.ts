@@ -33,6 +33,19 @@ export interface LootEntry {
 }
 /** 战斗动作 */
 export type CombatAction = 'attack' | 'defend' | 'use_item' | 'flee';
+/** 战斗中使用的道具定义 */
+export interface CombatItemEffect {
+    healHp?: number;
+    restoreResource?: {
+        key: 'food' | 'water' | 'sanity' | 'energy' | 'warmth';
+        amount: number;
+    };
+    buffAttack?: number;
+    buffDefense?: number;
+    buffAgility?: number;
+}
+/** 战斗可用品道具表 */
+export declare const COMBAT_ITEM_EFFECTS: Record<string, CombatItemEffect>;
 /** 战斗结果 */
 export interface CombatResult {
     victory: boolean;

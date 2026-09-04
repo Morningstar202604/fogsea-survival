@@ -22,6 +22,10 @@ export * from './npc.js';
 export * from './companions.js';
 // v3.0 统一配置与公式
 export * from './gameConfig.js';
+// v4.0 增强系统
+export * from './strategy.js';
+export * from './narrative.js';
+export * from './aiEvents.js';
 // v0.5.0 第一阶段内容
 export * from './content/phase1.js';
 export * from './content/phase2.js';
