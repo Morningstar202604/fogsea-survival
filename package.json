@@ -2,7 +2,7 @@
   "name": "fogsea-survival",
   "private": true,
   "version": "0.4.2",
-  "description": "雾海生存 FogSea Survival v2 - 基于小说机制重构的迷雾求生策略游戏 (Vue3 + TS monorepo)",
+  "description": "雾海生存 FogSea Survival v0.4.2 - 基于小说机制重构的迷雾求生策略游戏 (Vue3 + TS monorepo)",
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",

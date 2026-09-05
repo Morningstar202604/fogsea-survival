@@ -285,4 +285,4 @@ export const GENERAL_SKILLS: SkillDef[] = [
 ---
 
 **最后更新**: 2026-08-29  
-**版本**: v2.0.0-alpha.1
+**版本**: v0.4.2

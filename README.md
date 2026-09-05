@@ -6,9 +6,9 @@
 >
 > **关键词**：迷雾求生 · 文字游戏 · 生存策略 · 全民求生 · roguelite · 天赋三选一 · 基地建设 · 兽潮天灾 · 排行榜 · 安卓APK
 
-[![Version](https://img.shields.io/badge/version-0.4.2-blue)](https://gitcode.com/badhope/fogsea-survival)
+[![Version](https://img.shields.io/badge/version-0.4.2-blue)](https://github.com/Morningstar202604/fogsea-survival)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web-green)](https://gitcode.com/badhope/fogsea-survival/releases)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web-green)](https://github.com/Morningstar202604/fogsea-survival/releases)
 [![Test](https://img.shields.io/badge/tests-75%2F75-brightgreen)](packages/core)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](package.json)
 
@@ -34,8 +34,6 @@
 
 1. 前往 Releases 页面下载 `FogSeaSurvival-v0.4.2-debug.apk`（约 4.4MB）：
    - GitHub：https://github.com/Morningstar202604/fogsea-survival/releases
-   - Gitee：https://gitee.com/badhope/fogsea-survival/releases
-   - GitCode：https://gitcode.com/badhope/fogsea-survival/releases
 2. 允许安装未知来源应用后安装
 3. 离线可玩，进度保存在本机
 
@@ -171,11 +169,9 @@ fogsea-survival/
 
 本项目采用 [Apache License 2.0](LICENSE) 开源协议。
 
-## 🔗 仓库镜像（三平台同步，Release 均附 APK）
+## 🔗 仓库
 
-- GitCode：https://gitcode.com/badhope/fogsea-survival
 - GitHub：https://github.com/Morningstar202604/fogsea-survival
-- Gitee：https://gitee.com/badhope/fogsea-survival
 
 ## 🙏 致谢
 
@@ -184,6 +180,6 @@ fogsea-survival/
 ---
 
 **当前版本**: v0.4.2  
-**最后更新**: 2026-08-30  
+**最后更新**: 2026-09-04  
 **状态**: 安卓发布目标，web 为测试壳
 
