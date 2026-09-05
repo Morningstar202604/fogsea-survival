@@ -1,10 +1,12 @@
-<p align="center"><img src="docs/logo.svg" alt="FogSea Survival Logo" width="200" height="60" /></p>`n`n# 雾海生存 FogSea Survival v2.0.2
+<p align="center"><img src="docs/logo.svg" alt="FogSea Survival Logo" width="200" height="60" /></p>
+
+# 雾海生存 FogSea Survival v0.4.2
 
 > 基于热门求生流小说机制重构的文字生存策略游戏（安卓 App / Web）
 >
 > **关键词**：迷雾求生 · 文字游戏 · 生存策略 · 全民求生 · roguelite · 天赋三选一 · 基地建设 · 兽潮天灾 · 排行榜 · 安卓APK
 
-[![Version](https://img.shields.io/badge/version-2.0.2-blue)](https://gitcode.com/badhope/fogsea-survival)
+[![Version](https://img.shields.io/badge/version-0.4.2-blue)](https://gitcode.com/badhope/fogsea-survival)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web-green)](https://gitcode.com/badhope/fogsea-survival/releases)
 [![Test](https://img.shields.io/badge/tests-75%2F75-brightgreen)](packages/core)
@@ -14,7 +16,7 @@
 
 **雾海生存**（FogSea Survival）是一款受热门网络小说启发的文字生存策略游戏。全球数十亿人类被卷入神秘的迷雾世界，每个人从一个小木屋开始，在充满危险的未知环境中艰难求生。
 
-### 🎮 核心特色（v2.0.2 正式基线）
+### 🎮 核心特色
 
 - **🎲 开局天赋三选一** - S/A/B 分级 9 天赋，加权抽取，build 由选择铸成
 - **⏳ 行动点日循环** - 每天 3 点行动力：搜寻/休整/加固/夜巡狩猎，资源分配即策略
@@ -30,7 +32,7 @@
 
 ## 📱 下载安装（安卓）
 
-1. 前往 Releases 页面下载 `FogSeaSurvival-v2.0.2-debug.apk`（约 4.4MB）：
+1. 前往 Releases 页面下载 `FogSeaSurvival-v0.4.2-debug.apk`（约 4.4MB）：
    - GitHub：https://github.com/Morningstar202604/fogsea-survival/releases
    - Gitee：https://gitee.com/badhope/fogsea-survival/releases
    - GitCode：https://gitcode.com/badhope/fogsea-survival/releases
@@ -181,7 +183,7 @@ fogsea-survival/
 
 ---
 
-**当前版本**: v2.0.2（正式基线）  
+**当前版本**: v0.4.2  
 **最后更新**: 2026-08-30  
-**状态**: 安卓发布目标，web 为测试壳 🚀
+**状态**: 安卓发布目标，web 为测试壳
 
